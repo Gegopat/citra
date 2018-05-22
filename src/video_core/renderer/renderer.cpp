@@ -460,7 +460,6 @@ Core::System::ResultStatus Renderer::Init() {
         return Core::System::ResultStatus::ErrorVideoCore_ErrorBelowGL33;
     InitOpenGLObjects();
     rasterizer = std::make_unique<Rasterizer>(system.CoreTiming());
-    VideoCore::g_bg_color_update_requested = true;
     return Core::System::ResultStatus::Success;
 }
 

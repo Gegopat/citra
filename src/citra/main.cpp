@@ -136,15 +136,28 @@ void GMainWindow::InitializeWidgets() {
     progress_bar->setMaximum(INT_MAX);
     progress_bar->hide();
     statusBar()->addPermanentWidget(progress_bar);
-    touch_label = new QLabel();
-    touch_label->hide();
-    perf_stats_label = new QLabel();
-    perf_stats_label->hide();
-    perf_stats_label->setToolTip("Performance information (Speed | FPS | Frametime)");
-    perf_stats_label->setFrameStyle(QFrame::NoFrame);
-    perf_stats_label->setContentsMargins(4, 0, 4, 0);
-    statusBar()->addPermanentWidget(touch_label, 0);
-    statusBar()->addPermanentWidget(perf_stats_label, 0);
+    emu_speed_label = new QLabel();
+    emu_speed_label->setToolTip("Current emulation speed. Values higher or lower than 100% "
+                                "indicate emulation is running faster or slower than a console.");
+    fps_label = new QLabel();
+    fps_label->setToolTip("How many frames per second the program is currently displaying.");
+    emu_frametime_label = new QLabel();
+    emu_frametime_label->setToolTip(
+        "Time taken to emulate a frame, not counting framelimiting or v-sync. For "
+        "full-speed emulation this should be at most 16.67 ms (with screen refresh rate set to "
+        "60).");
+    emu_frametime_label = new QLabel();
+    emu_frametime_label->setToolTip(
+        "Time taken to emulate a frame, not counting framelimiting or v-sync. For "
+        "full-speed emulation this should be at most 16.67 ms (with screen refresh rate set to "
+        "60).");
+    touch_screen_pos_label = new QLabel();
+    for (auto& label : {touch_screen_pos_label, emu_speed_label, fps_label, emu_frametime_label}) {
+        label->hide();
+        label->setFrameStyle(QFrame::NoFrame);
+        label->setContentsMargins(4, 0, 4, 0);
+        statusBar()->addPermanentWidget(label, 0);
+    }
     statusBar()->addPermanentWidget(multiplayer_state->GetStatusIcon(), 0);
     statusBar()->setVisible(true);
     // Removes an ugly inner border from the status bar widgets under Linux
@@ -182,71 +195,51 @@ void GMainWindow::InitializeRecentFileMenuActions() {
 }
 
 void GMainWindow::InitializeHotkeys() {
-    hotkey_registry.RegisterHotkey("Main Window", "Load File", QKeySequence::Open);
-    hotkey_registry.RegisterHotkey("Main Window", "Load/Remove Amiibo",
-                                   QKeySequence(Qt::Key_Comma));
-    hotkey_registry.RegisterHotkey("Main Window", "Continue/Pause", QKeySequence(Qt::Key_F4));
-    hotkey_registry.RegisterHotkey("Main Window", "Restart", QKeySequence(Qt::Key_F5));
-    hotkey_registry.RegisterHotkey("Main Window", "Swap Screens", QKeySequence(Qt::Key_F9));
-    hotkey_registry.RegisterHotkey("Main Window", "Toggle Screen Layout",
-                                   QKeySequence(Qt::Key_F10));
-    hotkey_registry.RegisterHotkey("Main Window", "Fullscreen", QKeySequence::FullScreen);
-    hotkey_registry.RegisterHotkey("Main Window", "Exit Fullscreen", QKeySequence(Qt::Key_Escape));
-    hotkey_registry.RegisterHotkey("Main Window", "Toggle Speed Limit", QKeySequence("CTRL+Z"));
-    hotkey_registry.RegisterHotkey("Main Window", "Increase Speed Limit",
-                                   QKeySequence(Qt::Key_Plus));
-    hotkey_registry.RegisterHotkey("Main Window", "Decrease Speed Limit",
-                                   QKeySequence(Qt::Key_Minus));
-    hotkey_registry.RegisterHotkey("Main Window", "Increase Internal Resolution",
-                                   QKeySequence("CTRL+I"));
-    hotkey_registry.RegisterHotkey("Main Window", "Decrease Internal Resolution",
-                                   QKeySequence("CTRL+D"));
-    hotkey_registry.RegisterHotkey("Main Window", "Capture Screenshot", QKeySequence("CTRL+S"));
-    hotkey_registry.RegisterHotkey("Main Window", "Toggle Sleep Mode", QKeySequence(Qt::Key_F2));
-    hotkey_registry.RegisterHotkey("Main Window", "Change CPU Ticks", QKeySequence("CTRL+T"));
-    hotkey_registry.RegisterHotkey("Main Window", "Toggle Frame Advancing", QKeySequence("CTRL+A"));
-    hotkey_registry.RegisterHotkey("Main Window", "Advance Frame", QKeySequence(Qt::Key_Backslash));
-    hotkey_registry.RegisterHotkey("Main Window", "Open User Directory", QKeySequence("CTRL+U"));
-    hotkey_registry.RegisterHotkey("Main Window", "Toggle Hardware Shaders",
-                                   QKeySequence("CTRL+W"));
     hotkey_registry.LoadHotkeys();
+    ui.action_Load_File->setShortcut(hotkey_registry.GetKeySequence("Main Window", "Load File"));
+    ui.action_Load_File->setShortcutContext(
+        hotkey_registry.GetShortcutContext("Main Window", "Load File"));
+    ui.action_Exit->setShortcut(hotkey_registry.GetKeySequence("Main Window", "Exit Citra"));
+    ui.action_Exit->setShortcutContext(
+        hotkey_registry.GetShortcutContext("Main Window", "Exit Citra"));
+    ui.action_Stop->setShortcut(hotkey_registry.GetKeySequence("Main Window", "Stop Emulation"));
+    ui.action_Stop->setShortcutContext(
+        hotkey_registry.GetShortcutContext("Main Window", "Stop Emulation"));
+    ui.action_Show_Filter_Bar->setShortcut(
+        hotkey_registry.GetKeySequence("Main Window", "Toggle Filter Bar"));
+    ui.action_Show_Filter_Bar->setShortcutContext(
+        hotkey_registry.GetShortcutContext("Main Window", "Toggle Filter Bar"));
+    ui.action_Show_Status_Bar->setShortcut(
+        hotkey_registry.GetKeySequence("Main Window", "Toggle Status Bar"));
+    ui.action_Show_Status_Bar->setShortcutContext(
+        hotkey_registry.GetShortcutContext("Main Window", "Toggle Status Bar"));
     connect(hotkey_registry.GetHotkey("Main Window", "Load File", this), &QShortcut::activated,
             this, &GMainWindow::OnMenuLoadFile);
-    connect(hotkey_registry.GetHotkey("Main Window", "Load/Remove Amiibo", this),
+    connect(hotkey_registry.GetHotkey("Main Window", "Continue/Pause Emulation", this),
             &QShortcut::activated, this, [&] {
-                if (!system.IsPoweredOn())
-                    return;
-                if (ui.action_Remove_Amiibo->isEnabled())
-                    OnRemoveAmiibo();
-                else
-                    OnLoadAmiibo();
-            });
-    connect(hotkey_registry.GetHotkey("Main Window", "Continue/Pause", this), &QShortcut::activated,
-            this, [&] {
-                if (system.IsPoweredOn() && !system.IsSleepModeEnabled()) {
-                    if (system.IsRunning())
+                if (system.IsPoweredOn())
+                    if (emu_thread->IsRunning())
                         OnPauseProgram();
                     else
                         OnStartProgram();
-                }
             });
-    connect(hotkey_registry.GetHotkey("Main Window", "Restart", this), &QShortcut::activated, this,
-            [this] {
+    connect(hotkey_registry.GetHotkey("Main Window", "Restart Emulation", this),
+            &QShortcut::activated, this, [this] {
                 if (!system.IsPoweredOn())
                     return;
                 BootProgram(system.GetFilePath());
             });
-    connect(hotkey_registry.GetHotkey("Main Window", "Swap Screens", screens),
+    connect(hotkey_registry.GetHotkey("Main Window", "Swap Screens", render_window),
             &QShortcut::activated, ui.action_Screen_Layout_Swap_Screens, &QAction::trigger);
-    connect(hotkey_registry.GetHotkey("Main Window", "Toggle Screen Layout", screens),
+    connect(hotkey_registry.GetHotkey("Main Window", "Toggle Screen Layout", render_window),
             &QShortcut::activated, this, &GMainWindow::ToggleScreenLayout);
-    connect(hotkey_registry.GetHotkey("Main Window", "Fullscreen", screens), &QShortcut::activated,
-            ui.action_Fullscreen, &QAction::trigger);
-    connect(hotkey_registry.GetHotkey("Main Window", "Fullscreen", screens),
+    connect(hotkey_registry.GetHotkey("Main Window", "Fullscreen", render_window),
+            &QShortcut::activated, ui.action_Fullscreen, &QAction::trigger);
+    connect(hotkey_registry.GetHotkey("Main Window", "Fullscreen", render_window),
             &QShortcut::activatedAmbiguously, ui.action_Fullscreen, &QAction::trigger);
     connect(hotkey_registry.GetHotkey("Main Window", "Exit Fullscreen", this),
             &QShortcut::activated, this, [&] {
-                if (system.IsPoweredOn()) {
+                if (system.IsRunning()) {
                     ui.action_Fullscreen->setChecked(false);
                     ToggleFullscreen();
                 }
@@ -254,45 +247,44 @@ void GMainWindow::InitializeHotkeys() {
     connect(hotkey_registry.GetHotkey("Main Window", "Toggle Speed Limit", this),
             &QShortcut::activated, this, [&] {
                 Settings::values.use_frame_limit = !Settings::values.use_frame_limit;
-                UpdatePerfStats();
+                UpdateStatusBar();
             });
     constexpr u16 SPEED_LIMIT_STEP{5};
     connect(hotkey_registry.GetHotkey("Main Window", "Increase Speed Limit", this),
             &QShortcut::activated, this, [&] {
                 if (Settings::values.frame_limit < 9999 - SPEED_LIMIT_STEP) {
                     Settings::values.frame_limit += SPEED_LIMIT_STEP;
-                    UpdatePerfStats();
+                    UpdateStatusBar();
                 }
             });
     connect(hotkey_registry.GetHotkey("Main Window", "Decrease Speed Limit", this),
             &QShortcut::activated, this, [&] {
                 if (Settings::values.frame_limit > SPEED_LIMIT_STEP) {
                     Settings::values.frame_limit -= SPEED_LIMIT_STEP;
-                    UpdatePerfStats();
+                    UpdateStatusBar();
                 }
             });
-    connect(hotkey_registry.GetHotkey("Main Window", "Increase Internal Resolution", this),
-            &QShortcut::activated, this, [&] {
-                if (Settings::values.resolution_factor < 10)
-                    ++Settings::values.resolution_factor;
+    connect(hotkey_registry.GetHotkey("Main Window", "Toggle Frame Advancing", this),
+            &QShortcut::activated, ui.action_Enable_Frame_Advancing, &QAction::trigger);
+    connect(hotkey_registry.GetHotkey("Main Window", "Advance Frame", this), &QShortcut::activated,
+            ui.action_Advance_Frame, &QAction::trigger);
+    connect(hotkey_registry.GetHotkey("Main Window", "Load Amiibo", this), &QShortcut::activated,
+            this, [&] {
+                if (ui.action_Load_Amiibo->isEnabled())
+                    OnLoadAmiibo();
             });
-    connect(hotkey_registry.GetHotkey("Main Window", "Decrease Internal Resolution", this),
-            &QShortcut::activated, this, [&] {
-                if (Settings::values.resolution_factor > 1)
-                    --Settings::values.resolution_factor;
+    connect(hotkey_registry.GetHotkey("Main Window", "Remove Amiibo", this), &QShortcut::activated,
+            this, [&] {
+                if (ui.action_Remove_Amiibo->isEnabled())
+                    OnRemoveAmiibo();
             });
     connect(hotkey_registry.GetHotkey("Main Window", "Capture Screenshot", this),
             &QShortcut::activated, this, [&] {
-                if (system.IsRunning())
+                if (emu_thread->IsRunning())
                     OnCaptureScreenshot();
             });
     connect(hotkey_registry.GetHotkey("Main Window", "Toggle Sleep Mode", this),
-            &QShortcut::activated, this, [&] {
-                if (system.IsPoweredOn()) {
-                    ui.action_Sleep_Mode->setChecked(!ui.action_Sleep_Mode->isChecked());
-                    ToggleSleepMode();
-                }
-            });
+            &QShortcut::activated, ui.action_Sleep_Mode, &QAction::trigger);
     connect(hotkey_registry.GetHotkey("Main Window", "Change CPU Ticks", this),
             &QShortcut::activated, this, [&] {
                 auto str{QInputDialog::getText(this, "Change CPU Ticks", "Ticks:")};
@@ -307,17 +299,6 @@ void GMainWindow::InitializeHotkeys() {
                         system.CPU().SyncSettings();
                 } else
                     QMessageBox::critical(this, "Error", "Invalid number");
-            });
-    connect(hotkey_registry.GetHotkey("Main Window", "Toggle Frame Advancing", this),
-            &QShortcut::activated, ui.action_Enable_Frame_Advancing, &QAction::trigger);
-    connect(hotkey_registry.GetHotkey("Main Window", "Advance Frame", this), &QShortcut::activated,
-            ui.action_Advance_Frame, &QAction::trigger);
-    connect(hotkey_registry.GetHotkey("Main Window", "Open User Directory", this),
-            &QShortcut::activated, ui.action_Open_User_Directory, &QAction::trigger);
-    connect(hotkey_registry.GetHotkey("Main Window", "Toggle Hardware Shaders", this),
-            &QShortcut::activated, this, [&] {
-                Settings::values.use_hw_shaders = !Settings::values.use_hw_shaders;
-                Settings::Apply(system);
             });
 }
 
@@ -364,7 +345,7 @@ void GMainWindow::ConnectWidgetEvents() {
     connect(program_list, &ProgramList::ShowList, this, &GMainWindow::OnProgramListShowList);
     connect(this, &GMainWindow::EmulationStarting, screens, &Screens::OnEmulationStarting);
     connect(this, &GMainWindow::EmulationStopping, screens, &Screens::OnEmulationStopping);
-    connect(&perf_stats_update_timer, &QTimer::timeout, this, &GMainWindow::UpdatePerfStats);
+    connect(&status_bar_update_timer, &QTimer::timeout, this, &GMainWindow::UpdateStatusBar);
     connect(this, &GMainWindow::UpdateProgress, this, &GMainWindow::OnUpdateProgress);
     connect(this, &GMainWindow::CIAInstallReport, this, &GMainWindow::OnCIAInstallReport);
     connect(this, &GMainWindow::CIAInstallFinished, this, &GMainWindow::OnCIAInstallFinished);
@@ -575,11 +556,12 @@ void GMainWindow::BootProgram(const std::string& filename) {
     screens->moveContext();
     emu_thread->start();
     connect(screens, &Screens::Closed, this, &GMainWindow::OnStopProgram);
-    connect(screens, &Screens::TouchChanged, this, &GMainWindow::OnTouchChanged);
+    connect(screens, &Screens::TouchScreenPositionChanged, this,
+            &GMainWindow::OnTouchScreenPositionChanged);
     // Update the GUI
     program_list->hide();
     program_list_placeholder->hide();
-    perf_stats_update_timer.start(2000);
+    status_bar_update_timer.start(2000);
     screens->show();
     screens->setFocus();
     if (ui.action_Fullscreen->isChecked())
@@ -638,7 +620,7 @@ void GMainWindow::ShutdownProgram() {
         program_list->show();
     program_list->setFilterFocus();
     // Disable status bar updates
-    perf_stats_update_timer.stop();
+    status_bar_update_timer.stop();
     message_label->setVisible(false);
     perf_stats_label->setVisible(false);
     touch_label->setVisible(false);
@@ -767,7 +749,7 @@ void GMainWindow::OnProgramListOpenDirectory(const QString& directory) {
 }
 
 void GMainWindow::OnProgramListAddDirectory() {
-    QString dir_path{QFileDialog::getExistingDirectory(this, "Select Directory")};
+    auto dir_path{QFileDialog::getExistingDirectory(this, "Select Directory")};
     if (dir_path.isEmpty())
         return;
     UISettings::AppDir program_dir{dir_path, false, true};
@@ -797,15 +779,13 @@ void GMainWindow::OnMenuLoadFile() {
 }
 
 void GMainWindow::OnMenuInstallCIA() {
-    QStringList filepaths{QFileDialog::getOpenFileNames(
+    auto filepaths{QFileDialog::getOpenFileNames(
         this, "Install CIA", ".", "CTR Importable Archive (*.cia);;All Files (*.*)")};
     if (filepaths.isEmpty())
         return;
-
     ui.action_Install_CIA->setEnabled(false);
     program_list->setDirectoryWatcherEnabled(false);
     progress_bar->show();
-
     QtConcurrent::run([&, filepaths] {
         Service::AM::InstallStatus status;
         const auto cia_progress{
@@ -941,9 +921,10 @@ void GMainWindow::OnStopProgram() {
     ShutdownProgram();
 }
 
-void GMainWindow::OnTouchChanged(unsigned x, unsigned y) {
-    touch_label->setText(QString("Touch: %1, %2").arg(QString::number(x), QString::number(y)));
-    touch_label->show();
+void GMainWindow::OnTouchScreenPositionChanged(unsigned x, unsigned y) {
+    touch_screen_pos_label->setText(
+        QString("Touch screen position: %1, %2").arg(QString::number(x), QString::number(y)));
+    touch_screen_pos_label->show();
 }
 
 void GMainWindow::ToggleFullscreen() {
@@ -1054,7 +1035,7 @@ void GMainWindow::OnOpenConfiguration() {
             SyncMenuUISettings();
             program_list->Refresh();
         } else {
-            configuration_dialog.ApplyConfiguration();
+            configuration_dialog.ApplyConfiguration(hotkey_registry);
             if (UISettings::values.theme != old_theme) {
                 UpdateUITheme();
                 emit UpdateThemedIcons();
@@ -1073,6 +1054,7 @@ void GMainWindow::OnOpenConfiguration() {
             else
                 ShutdownDiscordRPC();
 #endif
+        InitializeHotkeys();
     } else {
         Settings::values.profiles = old_profiles;
         Settings::LoadProfile(old_profile);
@@ -1191,7 +1173,7 @@ void GMainWindow::OnRecordMovie() {
     if (system.IsPoweredOn()) {
         auto answer{QMessageBox::warning(
             this, "Record Movie",
-            "To keep consistency with the RNG, it is recommended to record the movie from game "
+            "To keep consistency with the RNG, it is recommended to record the movie from program "
             "start.<br>Are you sure you still want to record movies now?",
             QMessageBox::Yes | QMessageBox::No)};
         if (answer == QMessageBox::No)
@@ -1208,7 +1190,7 @@ void GMainWindow::OnRecordMovie() {
         movie_record_on_start = true;
         movie_record_path = path;
         QMessageBox::information(this, "Record Movie",
-                                 "Recording will start once you boot a game.");
+                                 "Recording will start once you boot a program.");
     }
     ui.action_Record_Movie->setEnabled(false);
     ui.action_Play_Movie->setEnabled(false);
@@ -1259,7 +1241,7 @@ void GMainWindow::OnPlayMovie() {
     if (system.IsPoweredOn()) {
         auto answer{QMessageBox::warning(
             this, "Play Movie",
-            "To keep consistency with the RNG, it is recommended to play the movie from game "
+            "To keep consistency with the RNG, it is recommended to play the movie from program "
             "start.<br>Are you sure you still want to play movies now?",
             QMessageBox::Yes | QMessageBox::No)};
         if (answer == QMessageBox::No)
@@ -1366,24 +1348,25 @@ void GMainWindow::OnDumpRAM() {
     LOG_INFO(Frontend, "Memory dump finished.");
 }
 
-void GMainWindow::UpdatePerfStats() {
+void GMainWindow::UpdateStatusBar() {
     if (!emu_thread) {
-        perf_stats_update_timer.stop();
+        status_bar_update_timer.stop();
         return;
     }
     auto results{system.GetAndResetPerfStats()};
     if (Settings::values.use_frame_limit)
-        perf_stats_label->setText(QString("%1 % / %2 % | %3 FPS | %4 ms")
-                                      .arg(results.emulation_speed * 100.0, 0, 'f', 0)
-                                      .arg(Settings::values.frame_limit)
-                                      .arg(results.program_fps, 0, 'f', 0)
-                                      .arg(results.frametime * 1000.0, 0, 'f', 2));
+        emu_speed_label->setText(QString("Speed: %1% / %2%")
+                                     .arg(results.emulation_speed * 100.0, 0, 'f', 0)
+                                     .arg(Settings::values.frame_limit));
     else
-        perf_stats_label->setText(QString("%1 % | %2 FPS | %3 ms")
-                                      .arg(results.emulation_speed * 100.0, 0, 'f', 0)
-                                      .arg(results.program_fps, 0, 'f', 0)
-                                      .arg(results.frametime * 1000.0, 0, 'f', 2));
-    perf_stats_label->setVisible(true);
+        emu_speed_label->setText(
+            QString("Speed: %1%").arg(results.emulation_speed * 100.0, 0, 'f', 0));
+    fps_label->setText(QString("FPS: %1").arg(results.program_fps, 0, 'f', 0));
+    emu_frametime_label->setText(
+        QString("Frame: %1 ms").arg(results.frametime * 1000.0, 0, 'f', 2));
+    emu_speed_label->setVisible(true);
+    fps_label->setVisible(true);
+    emu_frametime_label->setVisible(true);
 }
 
 void GMainWindow::OnCoreError(Core::System::ResultStatus result, const std::string& details) {
@@ -1433,7 +1416,7 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, const std::stri
             }
         }
     } else {
-        // Only show the message if the game is still running.
+        // Only show the message if the program is still running.
         if (emu_thread) {
             system.SetRunning(true);
             message_label->setText(status_message);

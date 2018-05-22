@@ -10,6 +10,7 @@
 #include <optional>
 #include <string>
 #include <QKeyEvent>
+#include <QKeySequence>
 #include <QWidget>
 #include "common/param_package.h"
 #include "core/settings.h"
@@ -34,8 +35,48 @@ public:
     void ApplyConfiguration();
 
     void ApplyProfile();
+    void EmitInputKeysChanged();
+
+public slots:
+    void OnHotkeysChanged(QList<QKeySequence> new_key_list);
+
+signals:
+    void InputKeysChanged(QList<QKeySequence> new_key_list);
 
 private:
+    /// Load configuration settings.
+    void LoadConfiguration();
+
+    /// Finish polling and configure input using the input_setter
+    void SetPollingResult(const Common::ParamPackage& params, bool abort);
+
+    /// Handle key press events.
+    void keyPressEvent(QKeyEvent* event) override;
+
+    void OnNewProfile();
+    void OnDeleteProfile();
+    void OnRenameProfile();
+
+    /// Generates list of all used keys
+    QList<QKeySequence> GetUsedKeyboardKeys();
+
+    /// Restore all buttons to their default values.
+    void RestoreDefaults();
+
+    /// Clear all input configuration
+    void ClearAll();
+
+    /// Update UI to reflect current configuration.
+    void UpdateButtonLabels();
+
+    /// Called when the button was pressed.
+    void HandleClick(QPushButton* button,
+                     std::function<void(const Common::ParamPackage&)> new_input_setter,
+                     InputCommon::Polling::DeviceType type);
+
+    /// Generates list of all used keys
+    QList<QKeySequence> GetUsedKeyboardKeys();
+
     std::unique_ptr<Ui::ConfigurationInput> ui;
     std::unique_ptr<QTimer> timeout_timer;
     std::unique_ptr<QTimer> poll_timer;
@@ -62,33 +103,12 @@ private:
     static const std::array<std::string, ANALOG_SUB_BUTTONS_NUM> analog_sub_buttons;
     std::vector<std::unique_ptr<InputCommon::Polling::DevicePoller>> device_pollers;
 
+    /// Keys currently registered as hotkeys
+    QList<QKeySequence> hotkey_list;
+
     bool want_keyboard_keys{}; ///< A flag to indicate if keyboard keys are okay when configuring an
                                ///< input. If this is false, keyboard events are ignored.
 
-    /// Load configuration settings.
-    void LoadConfiguration();
-
-    /// Restore all buttons to their default values.
-    void RestoreDefaults();
-
-    /// Clear all input configuration
-    void ClearAll();
-
-    /// Update UI to reflect current configuration.
-    void UpdateButtonLabels();
-
-    /// Called when the button was pressed.
-    void HandleClick(QPushButton* button,
-                     std::function<void(const Common::ParamPackage&)> new_input_setter,
-                     InputCommon::Polling::DeviceType type);
-
-    /// Finish polling and configure input using the input_setter
-    void setPollingResult(const Common::ParamPackage& params, bool abort);
-
-    /// Handle key press events.
-    void keyPressEvent(QKeyEvent* event) override;
-
-    void OnNewProfile();
-    void OnDeleteProfile();
-    void OnRenameProfile();
+    /// The key code of the previous state of the key being currently bound.
+    int previous_key_code;
 };

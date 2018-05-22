@@ -117,7 +117,7 @@ signals:
     /// Emitted when the window is closed
     void Closed();
 
-    void TouchChanged(unsigned, unsigned);
+    void TouchScreenPositionChanged(unsigned, unsigned);
 
 private:
     std::pair<unsigned, unsigned> ScaleTouch(const QPointF pos) const;

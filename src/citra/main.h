@@ -75,7 +75,7 @@ private slots:
     void OnStartProgram();
     void OnPauseProgram();
     void OnStopProgram();
-    void OnTouchChanged(unsigned, unsigned);
+    void OnTouchScreenPositionChanged(unsigned, unsigned);
 
     /// Called when user selects an program in the program list widget.
     void OnProgramListLoadFile(const QString& path);
@@ -170,7 +170,7 @@ private:
     void closeEvent(QCloseEvent* event) override;
 
     bool ValidateMovie(const QString& path, u64 program_id = 0);
-    void UpdatePerfStats();
+    void UpdateStatusBar();
     void UpdateTitle();
 
     Q_INVOKABLE void OnMoviePlaybackCompleted();
@@ -184,14 +184,12 @@ private:
 
     // Status bar elements
     QProgressBar* progress_bar;
-    QLabel* message_label;
-    QLabel* perf_stats_label;
-    QLabel* touch_label;
+    QLabel *message_label, *emu_speed_label, *fps_label, *emu_frametime_label,
+        *touch_screen_pos_label;
 
     s64 discord_rpc_start_time;
 
-    QTimer perf_stats_update_timer;
-    QTimer movie_play_timer;
+    QTimer status_bar_update_timer, movie_play_timer;
 
     Network::RoomMember::CallbackHandle<Network::RoomInformation> callback_handle;
 

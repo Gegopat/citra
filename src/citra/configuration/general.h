@@ -15,8 +15,6 @@ namespace Ui {
 class ConfigurationGeneral;
 } // namespace Ui
 
-class HotkeyRegistry;
-
 class ConfigurationGeneral : public QWidget {
     Q_OBJECT
 
@@ -26,7 +24,6 @@ public:
 
     void LoadConfiguration(Core::System& system);
     void ApplyConfiguration();
-    void PopulateHotkeyList(const HotkeyRegistry& registry);
 
 signals:
     void RestoreDefaultsRequested();

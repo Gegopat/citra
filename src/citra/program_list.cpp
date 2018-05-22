@@ -335,7 +335,7 @@ void ProgramList::ValidateEntry(const QModelIndex& item) {
     // The click should still register in the first column no matter which column was
     // clicked
     int row{item_model->itemFromIndex(item)->row()};
-    const auto* parent{item_model->itemFromIndex(item.parent())};
+    const auto parent{item_model->itemFromIndex(item.parent())};
     if (!parent)
         parent = item_model->invisibleRootItem();
     const auto child{parent->child(row, COLUMN_NAME)};

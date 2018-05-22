@@ -14,7 +14,7 @@ ConfigurationDialog::ConfigurationDialog(QWidget* parent, const HotkeyRegistry& 
                                          Core::System& system)
     : QDialog{parent}, ui{std::make_unique<Ui::ConfigurationDialog>()}, system{system} {
     ui->setupUi(this);
-    ui->generalTab->PopulateHotkeyList(registry);
+    ui->hotkeysTab->Populate(registry);
     PopulateSelectionList();
     connect(ui->generalTab, &ConfigurationGeneral::RestoreDefaultsRequested, [this] {
         restore_defaults_requested = true;
@@ -29,15 +29,23 @@ ConfigurationDialog::ConfigurationDialog(QWidget* parent, const HotkeyRegistry& 
     ui->systemTab->LoadConfiguration(system);
     ui->hacksTab->LoadConfiguration(system);
     ui->lleTab->LoadConfiguration(system);
+    connect(ui->inputTab, &ConfigurationInput::InputKeysChanged, ui->hotkeysTab,
+            &ConfigurationHotkeys::OnInputKeysChanged);
+    connect(ui->hotkeysTab, &ConfigurationHotkeys::HotkeysChanged, ui->inputTab,
+            &ConfigurationInput::OnHotkeysChanged);
+    // Synchronise lists upon initialisation
+    ui->inputTab->EmitInputKeysChanged();
+    ui->hotkeysTab->EmitHotkeysChanged();
 }
 
 ConfigurationDialog::~ConfigurationDialog() {}
 
-void ConfigurationDialog::ApplyConfiguration() {
+void ConfigurationDialog::ApplyConfiguration(HotkeyRegistry& registry) {
     ui->generalTab->ApplyConfiguration();
     ui->systemTab->ApplyConfiguration();
     ui->inputTab->ApplyConfiguration();
     ui->inputTab->ApplyProfile();
+    ui->hotkeysTab->ApplyConfiguration(registry);
     ui->graphicsTab->ApplyConfiguration();
     ui->audioTab->ApplyConfiguration();
     ui->cameraTab->ApplyConfiguration();
@@ -53,7 +61,7 @@ void ConfigurationDialog::PopulateSelectionList() {
         {"General", {"General", "UI"}},
         {"System", {"System", "Audio", "Camera", "Hacks", "LLE"}},
         {"Graphics", {"Graphics"}},
-        {"Controls", {"Input"}},
+        {"Controls", {"Input", "Hotkeys"}},
     }};
     for (const auto& entry : items) {
         auto item{new QListWidgetItem(entry.first)};
@@ -70,6 +78,7 @@ void ConfigurationDialog::UpdateVisibleTabs() {
         {"General", ui->generalTab},
         {"System", ui->systemTab},
         {"Input", ui->inputTab},
+        {"Hotkeys", ui->hotkeysTab},
         {"Graphics", ui->graphicsTab},
         {"Audio", ui->audioTab},
         {"Camera", ui->cameraTab},

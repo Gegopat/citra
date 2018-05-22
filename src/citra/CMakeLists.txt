@@ -45,7 +45,8 @@ add_executable(citra
     configuration/general.cpp
     configuration/general.h
     configuration/graphics.cpp
-    configuration/graphics.h
+    configuration/hotkeys.cpp
+    configuration/hotkeys.h
     configuration/input.cpp
     configuration/input.h
     configuration/motion_touch.cpp
@@ -85,6 +86,8 @@ add_executable(citra
     ui_settings.h
     util/clickable_label.cpp
     util/clickable_label.h
+    util/sequence_dialog/sequence_dialog.cpp
+    util/sequence_dialog/sequence_dialog.h
     util/util.cpp
     util/util.h
 )
@@ -100,6 +103,7 @@ set(UIS
     configuration/lle.ui
     configuration/general.ui
     configuration/graphics.ui
+    configuration/hotkeys.ui
     configuration/input.ui
     configuration/motion_touch.ui
     configuration/system.ui

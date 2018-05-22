@@ -25,7 +25,7 @@ public:
                                  Core::System& system);
     ~ConfigurationDialog();
 
-    void ApplyConfiguration();
+    void ApplyConfiguration(HotkeyRegistry& registry);
 
     bool restore_defaults_requested{};
 

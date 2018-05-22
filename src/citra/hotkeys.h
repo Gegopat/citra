@@ -5,8 +5,6 @@
 #pragma once
 
 #include <map>
-#include <memory>
-#include "ui_hotkeys.h"
 
 class QDialog;
 class QKeySequence;
@@ -14,7 +12,7 @@ class QShortcut;
 
 class HotkeyRegistry final {
 public:
-    friend class GHotkeysDialog;
+    friend class ConfigureHotkeys;
 
     explicit HotkeyRegistry();
     ~HotkeyRegistry();
@@ -39,47 +37,36 @@ public:
      * @param group  General group this hotkey belongs to (e.g. "Main Window", "Debugger").
      * @param action Name of the action (e.g. "Start Emulation", "Load Image").
      * @param widget Parent widget of the returned QShortcut.
-     * @warning If multiple QWidgets' call this function for the same action, the returned QShortcut
+     * @warning If multiple QWidgets call this function for the same action, the returned QShortcut
      *          will be the same. Thus, you shouldn't rely on the caller really being the
      *          QShortcut's parent.
      */
     QShortcut* GetHotkey(const QString& group, const QString& action, QWidget* widget);
 
     /**
-     * Register a hotkey.
-     * @param group General group this hotkey belongs to (e.g. "Main Window", "Debugger")
-     * @param action Name of the action (e.g. "Start Emulation", "Load Image")
-     * @param default_keyseq Default key sequence to assign if the hotkey wasn't present in the
-     *                       settings file before
-     * @param default_context Default context to assign if the hotkey wasn't present in the settings
-     *                        file before
-     * @warning Both the group and action strings will be displayed in the hotkey settings dialog
+     * Returns a QKeySequence object who signal can be connected to QAction->SetShortcut.
+     * @param group General group this hotkey belongs to.
+     * @param action Name of the action.
      */
-    void RegisterHotkey(const QString& group, const QString& action,
-                        const QKeySequence& default_keyseq = {},
-                        Qt::ShortcutContext default_context = Qt::WindowShortcut);
+    QKeySequence GetKeySequence(const QString& group, const QString& action);
+
+    /**
+     * Returns a Qt::ShortcutContext object who can be connected to other
+     * QAction->SetShortcutContext.
+     * @param group General group this shortcutcontext belongs to.
+     * @param action Name of the action.
+     */
+    Qt::ShortcutContext GetShortcutContext(const QString& group, const QString& action);
 
 private:
     struct Hotkey {
         QKeySequence keyseq;
-        QShortcut* shortcut = nullptr;
-        Qt::ShortcutContext context = Qt::WindowShortcut;
+        QShortcut* shortcut{};
+        Qt::ShortcutContext context{Qt::WindowShortcut};
     };
 
     using HotkeyMap = std::map<QString, Hotkey>;
     using HotkeyGroupMap = std::map<QString, HotkeyMap>;
 
     HotkeyGroupMap hotkey_groups;
-};
-
-class GHotkeysDialog : public QWidget {
-    Q_OBJECT
-
-public:
-    explicit GHotkeysDialog(QWidget* parent = nullptr);
-
-    void Populate(const HotkeyRegistry& registry);
-
-private:
-    std::unique_ptr<Ui::Hotkeys> ui;
 };

@@ -210,7 +210,7 @@ ConfigurationInput::ConfigurationInput(QWidget* parent)
         });
     }
     connect(ui->buttonMotionTouch, &QPushButton::released, [this] {
-        QDialog* motion_touch_dialog{new ConfigurationMotionTouch(this)};
+        auto motion_touch_dialog{new ConfigurationMotionTouch(this)};
         return motion_touch_dialog->exec();
     });
     connect(ui->buttonClearAll, &QPushButton::released, [this] { ClearAll(); });
@@ -225,18 +225,37 @@ ConfigurationInput::ConfigurationInput(QWidget* parent)
         LoadConfiguration();
     });
     timeout_timer->setSingleShot(true);
-    connect(timeout_timer.get(), &QTimer::timeout, [this]() { setPollingResult({}, true); });
+    connect(timeout_timer.get(), &QTimer::timeout, [this]() { SetPollingResult({}, true); });
     connect(poll_timer.get(), &QTimer::timeout, [this]() {
         Common::ParamPackage params{};
         for (auto& poller : device_pollers) {
             params = poller->GetNextInput();
             if (params.Has("engine")) {
-                setPollingResult(params, false);
+                SetPollingResult(params, false);
                 return;
             }
         }
     });
     LoadConfiguration();
+}
+
+void ConfigureInput::EmitInputKeysChanged() {
+    emit InputKeysChanged(GetUsedKeyboardKeys());
+}
+
+void ConfigureInput::OnHotkeysChanged(QList<QKeySequence> new_key_list) {
+    hotkey_list = new_key_list;
+}
+
+QList<QKeySequence> ConfigureInput::GetUsedKeyboardKeys() {
+    QList<QKeySequence> list;
+    for (int button = 0; button < Settings::NativeButton::NumButtons; button++) {
+        auto button_param = buttons_param[button];
+        if (button_param.Get("engine", "") == "keyboard") {
+            list << QKeySequence(button_param.Get("code", 0));
+        }
+    }
+    return list;
 }
 
 void ConfigurationInput::LoadConfiguration() {
@@ -298,11 +317,13 @@ void ConfigurationInput::UpdateButtonLabels() {
                     AnalogToText(analogs_param[analog_id], analog_sub_buttons[sub_button_id]));
         analog_map_stick[analog_id]->setText("Set Analog Stick");
     }
+    EmitInputKeysChanged();
 }
 
 void ConfigurationInput::HandleClick(
     QPushButton* button, std::function<void(const Common::ParamPackage&)> new_input_setter,
     InputCommon::Polling::DeviceType type) {
+    previous_key_code = QKeySequence{button->text()}[0];
     button->setText("[press key]");
     button->setFocus();
     input_setter = new_input_setter;
@@ -317,7 +338,7 @@ void ConfigurationInput::HandleClick(
     poll_timer->start(200);     // Check for new inputs every 200ms
 }
 
-void ConfigurationInput::setPollingResult(const Common::ParamPackage& params, bool abort) {
+void ConfigurationInput::SetPollingResult(const Common::ParamPackage& params, bool abort) {
     releaseKeyboard();
     releaseMouse();
     timeout_timer->stop();
@@ -333,16 +354,24 @@ void ConfigurationInput::setPollingResult(const Common::ParamPackage& params, bo
 void ConfigurationInput::keyPressEvent(QKeyEvent* event) {
     if (!input_setter || !event)
         return;
-    if (event->key() != Qt::Key_Escape) {
-        if (want_keyboard_keys)
-            setPollingResult(Common::ParamPackage{InputCommon::GenerateKeyboardParam(event->key())},
+    if (event->key() != Qt::Key_Escape && event->key() != previous_key_code) {
+        if (want_keyboard_keys) {
+            // Check if key is already bound
+            if (hotkey_list.contains(QKeySequence(event->key())) ||
+                GetUsedKeyboardKeys().contains(QKeySequence(event->key()))) {
+                SetPollingResult({}, true);
+                QMessageBox::critical(this, "Error!", "You're using a key that's already bound.");
+                return;
+            }
+            SetPollingResult(Common::ParamPackage{InputCommon::GenerateKeyboardParam(event->key())},
                              false);
-        else
+        } else
             // Escape key wasn't pressed and we don't want any keyboard keys, so don't stop
             // polling
             return;
     }
-    setPollingResult({}, true);
+    SetPollingResult({}, true);
+    previous_key_code = 0;
 }
 
 void ConfigurationInput::OnNewProfile() {
