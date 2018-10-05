@@ -122,7 +122,7 @@ void FileBackend::Write(const Entry& entry) {
 
 void DebuggerBackend::Write(const Entry& entry) {
 #ifdef _WIN32
-    ::OutputDebugStringA(FormatLogMessage(entry).append(1, '\n').c_str());
+    ::OutputDebugStringW(Common::UTF8ToUTF16W(FormatLogMessage(entry).append(1, '\n')).c_str());
 #endif
 }
 

@@ -1631,6 +1631,9 @@ int main(int argc, char* argv[]) {
     Log::SetGlobalFilter(log_filter);
     Log::AddBackend(std::make_unique<Log::FileBackend>(
         FileUtil::GetUserPath(FileUtil::UserPath::UserDir) + LOG_FILE));
+#ifdef _WIN32
+    Log::AddBackend(std::make_unique<Log::DebuggerBackend>());
+#endif
     ToggleConsole();
     config.LogErrors();
     Settings::LogSettings();
