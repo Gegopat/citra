@@ -103,7 +103,11 @@ private:
     static const std::array<std::string, ANALOG_SUB_BUTTONS_NUM> analog_sub_buttons;
     std::vector<std::unique_ptr<InputCommon::Polling::DevicePoller>> device_pollers;
 
-    /// Keys currently registered as hotkeys
+    /**
+     * List of keys currently registered to hotkeys.
+     * These can't be bound to any input key.
+     * Synchronised with ConfigureHotkeys via signal-slot.
+     */
     QList<QKeySequence> hotkey_list;
 
     bool want_keyboard_keys{}; ///< A flag to indicate if keyboard keys are okay when configuring an

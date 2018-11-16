@@ -29,6 +29,7 @@ ConfigurationDialog::ConfigurationDialog(QWidget* parent, const HotkeyRegistry& 
     ui->systemTab->LoadConfiguration(system);
     ui->hacksTab->LoadConfiguration(system);
     ui->lleTab->LoadConfiguration(system);
+    // Set up used key list synchronisation
     connect(ui->inputTab, &ConfigurationInput::InputKeysChanged, ui->hotkeysTab,
             &ConfigurationHotkeys::OnInputKeysChanged);
     connect(ui->hotkeysTab, &ConfigurationHotkeys::HotkeysChanged, ui->inputTab,
