@@ -17,6 +17,10 @@ namespace Network {
 constexpr u32 ConnectionTimeoutMs{5000};
 
 struct RoomMember::RoomMemberImpl {
+    explicit RoomMemberImpl(RoomMember& parent) : parent{parent} {}
+
+    RoomMember& parent;
+
     ENetHost* client; ///< ENet network interface.
     ENetPeer* server; ///< The server peer the client is connected to
 
@@ -215,11 +219,11 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
                     SetError(Error::LostConnection);
                     break;
                 case IdHostKicked:
-                    Leave();
+                    parent.Leave();
                     SetError(Error::HostKicked);
                     return;
                 case IdHostBanned:
-                    Leave();
+                    parent.Leave();
                     SetError(Error::HostBanned);
                     return;
                 case IdModPermissionDenied:
@@ -442,7 +446,7 @@ RoomMember::CallbackHandle<T> RoomMember::RoomMemberImpl::Bind(
 }
 
 // RoomMember
-RoomMember::RoomMember() : room_member_impl{std::make_unique<RoomMemberImpl>()} {}
+RoomMember::RoomMember() : room_member_impl{std::make_unique<RoomMemberImpl>(*this)} {}
 
 RoomMember::~RoomMember() {
     ASSERT_MSG(!IsConnected(), "RoomMember is being destroyed while connected");
