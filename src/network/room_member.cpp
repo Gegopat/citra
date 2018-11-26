@@ -215,13 +215,13 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
                     SetError(Error::LostConnection);
                     break;
                 case IdHostKicked:
-                    SetState(State::Idle);
+                    Leave();
                     SetError(Error::HostKicked);
-                    break;
+                    return;
                 case IdHostBanned:
-                    SetState(State::Idle);
+                    Leave();
                     SetError(Error::HostBanned);
-                    break;
+                    return;
                 case IdModPermissionDenied:
                     SetError(Error::PermissionDenied);
                     break;
@@ -232,8 +232,7 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
                 enet_packet_destroy(event.packet);
                 break;
             case ENET_EVENT_TYPE_DISCONNECT:
-                if (state == State::Joined && error != Error::HostKicked &&
-                    error != Error::HostBanned) {
+                if (state == State::Joined) {
                     SetState(State::Idle);
                     SetError(Error::LostConnection);
                 }
