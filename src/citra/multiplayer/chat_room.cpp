@@ -167,6 +167,8 @@ void ChatRoom::HandleNewMessage(const QString& msg) {
     auto itr{replies.find(msg.toStdString())};
     if (itr != replies.end())
         Send(QString::fromStdString(itr->second));
+    if (msg.contains(QString("@%1").arg(QString::fromStdString(system.RoomMember().GetNickname()))))
+        QApplication::alert(this);
 }
 
 void ChatRoom::AppendChatMessage(const QString& msg) {
