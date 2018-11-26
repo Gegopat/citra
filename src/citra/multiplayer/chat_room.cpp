@@ -17,7 +17,6 @@
 #include <QtConcurrent/QtConcurrentRun>
 #include "citra/multiplayer/chat_room.h"
 #include "citra/multiplayer/client_room.h"
-#include "citra/multiplayer/emojis.h"
 #include "citra/multiplayer/message.h"
 #include "citra/multiplayer/moderation_dialog.h"
 #include "citra/multiplayer/state.h"
@@ -104,12 +103,6 @@ ChatRoom::ChatRoom(QWidget* parent)
     });
     connect(this, &ChatRoom::ChatReceived, this, &ChatRoom::OnChatReceive);
     connect(this, &ChatRoom::StatusMessageReceived, this, &ChatRoom::OnStatusMessageReceive);
-    // Load emoji list
-    QStringList emoji_list;
-    for (const auto& emoji : EmojiMap)
-        emoji_list.append(QString(":%1:").arg(QString::fromStdString(emoji.first)));
-    completer = new DelimitedCompleter(ui->chat_message, ' ', std::move(emoji_list));
-    completer->setCaseSensitivity(Qt::CaseInsensitive);
     // Connect all the widgets to the appropriate events
     connect(ui->member_view, &QTreeView::customContextMenuRequested, this,
             &ChatRoom::PopupContextMenu);
@@ -138,10 +131,6 @@ bool ChatRoom::Send(QString msg) {
     auto& member{system.RoomMember()};
     if (member.GetState() != Network::RoomMember::State::Joined)
         return false;
-    // Replace emojis
-    for (const auto& emoji : EmojiMap)
-        msg.replace(QString(":%1:").arg(QString::fromStdString(emoji.first)),
-                    QString::fromStdString(emoji.second));
     // Validate and send message
     auto message{std::move(msg).toStdString()};
     if (!ValidateMessage(message))
@@ -167,8 +156,6 @@ void ChatRoom::HandleNewMessage(const QString& msg) {
     auto itr{replies.find(msg.toStdString())};
     if (itr != replies.end())
         Send(QString::fromStdString(itr->second));
-    if (msg.contains(QString("@%1").arg(QString::fromStdString(system.RoomMember().GetNickname()))))
-        QApplication::alert(this);
 }
 
 void ChatRoom::AppendChatMessage(const QString& msg) {

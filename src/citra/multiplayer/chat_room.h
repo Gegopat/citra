@@ -10,7 +10,6 @@
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 #include <QVariant>
-#include "citra/multiplayer/delimited_completer.h"
 #include "network/room.h"
 #include "network/room_member.h"
 
@@ -65,7 +64,6 @@ private:
     QStandardItemModel* member_list;
     std::unique_ptr<Ui::ChatRoom> ui;
     std::unordered_set<std::string> block_list;
-    DelimitedCompleter* completer;
     Core::System& system;
 };
 

@@ -48,13 +48,10 @@ add_executable(citra
     configuration/configure_system.h
     configuration/configure_ui.cpp
     configuration/configure_ui.h
-    multiplayer/emojis.h
     multiplayer/chat_room.cpp
     multiplayer/chat_room.h
     multiplayer/client_room.cpp
     multiplayer/client_room.h
-    multiplayer/delimited_completer.cpp
-    multiplayer/delimited_completer.h
     multiplayer/direct_connect.cpp
     multiplayer/direct_connect.h
     multiplayer/host_room.cpp
