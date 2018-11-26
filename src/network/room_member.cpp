@@ -212,12 +212,10 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
                     SetError(Error::LostConnection);
                     break;
                 case IdHostKicked:
-                    kicked = true;
                     SetState(State::Idle);
                     SetError(Error::HostKicked);
                     break;
                 case IdHostBanned:
-                    kicked = true;
                     SetState(State::Idle);
                     SetError(Error::HostBanned);
                     break;
@@ -231,15 +229,13 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
                 enet_packet_destroy(event.packet);
                 break;
             case ENET_EVENT_TYPE_DISCONNECT:
-                if (state == State::Joined && !kicked) {
+                if (state == State::Joined) {
                     SetState(State::Idle);
                     SetError(Error::LostConnection);
                 }
                 break;
             }
         }
-        if (kicked)
-            break;
         {
             std::lock_guard lock{send_list_mutex};
             for (const auto& packet : send_list) {
