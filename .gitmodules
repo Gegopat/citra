@@ -32,8 +32,8 @@
     path = externals/discord-rpc
     url = https://github.com/discordapp/discord-rpc.git
 [submodule "libzmq"]
-	path = externals/libzmq
-	url = https://github.com/zeromq/libzmq
+    path = externals/libzmq
+    url = https://github.com/zeromq/libzmq
 [submodule "cppzmq"]
-	path = externals/cppzmq
-	url = https://github.com/zeromq/cppzmq
+    path = externals/cppzmq
+    url = https://github.com/zeromq/cppzmq

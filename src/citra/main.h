@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <array>
 #include <QLabel>
 #include <QMainWindow>
 #include <QTimer>
@@ -211,7 +212,7 @@ private:
 
     std::shared_ptr<ControlPanel> control_panel;
 
-    QAction* actions_recent_files[MaxRecentFiles];
+    std::array<QAction*, MaxRecentFiles> actions_recent_files;
 
     // Stores default icon theme search paths for the platform
     QStringList default_theme_paths;

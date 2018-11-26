@@ -167,8 +167,8 @@ void GMainWindow::InitializeWidgets() {
 }
 
 void GMainWindow::InitializeRecentFileMenuActions() {
+    actions_recent_files.fill(new QAction(this));
     for (int i{}; i < MaxRecentFiles; ++i) {
-        actions_recent_files[i] = new QAction(this);
         actions_recent_files[i]->setVisible(false);
         connect(actions_recent_files[i], &QAction::triggered, this, &GMainWindow::OnMenuRecentFile);
         ui.menu_recent_files->addAction(actions_recent_files[i]);
