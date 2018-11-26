@@ -91,6 +91,9 @@ void MultiplayerState::OnNetworkError(const Network::RoomMember::Error& error) {
         break;
     case Network::RoomMember::Error::HostKicked:
         NetworkMessage::ShowError(NetworkMessage::HOST_KICKED);
+        system.RoomMember().Leave();
+        if (client_room)
+            client_room->close();
         break;
     case Network::RoomMember::Error::CouldNotConnect:
         NetworkMessage::ShowError(NetworkMessage::UNABLE_TO_CONNECT);
@@ -115,6 +118,9 @@ void MultiplayerState::OnNetworkError(const Network::RoomMember::Error& error) {
         break;
     case Network::RoomMember::Error::HostBanned:
         NetworkMessage::ShowError(NetworkMessage::HOST_BANNED);
+        system.RoomMember().Leave();
+        if (client_room)
+            client_room->close();
         break;
     case Network::RoomMember::Error::UnknownError:
         NetworkMessage::ShowError(NetworkMessage::UNABLE_TO_CONNECT);

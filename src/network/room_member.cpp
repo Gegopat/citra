@@ -232,7 +232,8 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
                 enet_packet_destroy(event.packet);
                 break;
             case ENET_EVENT_TYPE_DISCONNECT:
-                if (state == State::Joined && error != Error::HostBanned) {
+                if (state == State::Joined && error != Error::HostKicked &&
+                    error != Error::HostBanned) {
                     SetState(State::Idle);
                     SetError(Error::LostConnection);
                 }
