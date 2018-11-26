@@ -35,7 +35,8 @@ static std::chrono::seconds GetInitTime(Core::Movie& movie) {
     }
 }
 
-Handler::Handler(Core::System& system) : timing{system.CoreTiming()}, frontend{frontend} {
+Handler::Handler(Core::System& system)
+    : timing{system.CoreTiming()}, frontend{system.GetFrontend()} {
     std::memset(&shared_page, 0, sizeof(shared_page));
     shared_page.running_hw = 0x1; // Product
     // Some games wait until this value becomes 0x1, before asking running_hw
