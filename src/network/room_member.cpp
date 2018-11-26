@@ -17,10 +17,6 @@ namespace Network {
 constexpr u32 ConnectionTimeoutMs{5000};
 
 struct RoomMember::RoomMemberImpl {
-    explicit RoomMemberImpl(RoomMember& parent) : parent{parent} {}
-
-    RoomMember& parent;
-
     ENetHost* client; ///< ENet network interface.
     ENetPeer* server; ///< The server peer the client is connected to
 
@@ -33,8 +29,7 @@ struct RoomMember::RoomMemberImpl {
     /// The current program
     std::string current_program;
 
-    std::atomic<State> state{State::Idle};         ///< Current state of the RoomMember.
-    std::atomic<Error> error{Error::UnknownError}; ///< Current state of the RoomMember.
+    std::atomic<State> state{State::Idle}; ///< Current state of the RoomMember.
 
     void SetState(const State new_state);
     void SetError(const Error new_error);
@@ -148,10 +143,7 @@ void RoomMember::RoomMemberImpl::SetState(const State new_state) {
 }
 
 void RoomMember::RoomMemberImpl::SetError(const Error new_error) {
-    if (error != new_error) {
-        error = new_error;
-        Invoke<Error>(error);
-    }
+    Invoke<Error>(new_error);
 }
 
 bool RoomMember::RoomMemberImpl::IsConnected() const {
@@ -160,6 +152,7 @@ bool RoomMember::RoomMemberImpl::IsConnected() const {
 
 void RoomMember::RoomMemberImpl::MemberLoop() {
     // Receive packets while the connection is open
+    bool kicked{};
     while (IsConnected()) {
         std::lock_guard lock{network_mutex};
         ENetEvent event;
@@ -219,13 +212,15 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
                     SetError(Error::LostConnection);
                     break;
                 case IdHostKicked:
-                    parent.Leave();
+                    kicked = true;
+                    SetState(State::Idle);
                     SetError(Error::HostKicked);
-                    return;
+                    break;
                 case IdHostBanned:
-                    parent.Leave();
+                    kicked = true;
+                    SetState(State::Idle);
                     SetError(Error::HostBanned);
-                    return;
+                    break;
                 case IdModPermissionDenied:
                     SetError(Error::PermissionDenied);
                     break;
@@ -236,26 +231,28 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
                 enet_packet_destroy(event.packet);
                 break;
             case ENET_EVENT_TYPE_DISCONNECT:
-                if (state == State::Joined) {
+                if (state == State::Joined && !kicked) {
                     SetState(State::Idle);
                     SetError(Error::LostConnection);
                 }
                 break;
             }
         }
+        if (kicked)
+            break;
         {
             std::lock_guard lock{send_list_mutex};
             for (const auto& packet : send_list) {
-                ENetPacket* enetPacket{enet_packet_create(packet.GetData(), packet.GetDataSize(),
-                                                          ENET_PACKET_FLAG_RELIABLE)};
-                enet_peer_send(server, 0, enetPacket);
+                auto enet_packet{enet_packet_create(packet.GetData(), packet.GetDataSize(),
+                                                    ENET_PACKET_FLAG_RELIABLE)};
+                enet_peer_send(server, 0, enet_packet);
             }
             enet_host_flush(client);
             send_list.clear();
         }
     }
     Disconnect();
-};
+}
 
 void RoomMember::RoomMemberImpl::StartLoop() {
     loop_thread = std::make_unique<std::thread>(&RoomMember::RoomMemberImpl::MemberLoop, this);
@@ -446,7 +443,7 @@ RoomMember::CallbackHandle<T> RoomMember::RoomMemberImpl::Bind(
 }
 
 // RoomMember
-RoomMember::RoomMember() : room_member_impl{std::make_unique<RoomMemberImpl>(*this)} {}
+RoomMember::RoomMember() : room_member_impl{std::make_unique<RoomMemberImpl>()} {}
 
 RoomMember::~RoomMember() {
     ASSERT_MSG(!IsConnected(), "RoomMember is being destroyed while connected");
