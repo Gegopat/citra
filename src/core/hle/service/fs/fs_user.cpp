@@ -394,8 +394,7 @@ void FS_USER::GetCardType(Kernel::HLERequestContext& ctx) {
 void FS_USER::DeleteSdmcRoot(Kernel::HLERequestContext& ctx) {
     FileUtil::DeleteDirRecursively(fmt::format(
         "{}Nintendo 3DS/{}/",
-        FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir + "/"),
-        SYSTEM_CID));
+        FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir), SYSTEM_CID));
     IPC::ResponseBuilder rb{ctx, 0x841, 1, 0};
     rb.Push(RESULT_SUCCESS);
 }
@@ -633,7 +632,7 @@ void FS_USER::CheckUpdatedDat(Kernel::HLERequestContext& ctx) {
     rb.Push(FileUtil::Exists(fmt::format(
         "{}updated.dat",
         FileSys::ArchiveSource_SDSaveData::GetSaveDataPathFor(
-            FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir + "/"),
+            FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir),
             program_id))));
 }
 
@@ -698,16 +697,15 @@ void FS_USER::EnumerateExtSaveData(Kernel::HLERequestContext& ctx) {
     u32 count{};
     u32 offset{};
     FileUtil::FSTEntry parent_entry{};
-    FileUtil::ScanDirectoryTree(shared == 1
-                                    ? FileSys::GetExtDataContainerPath(
-                                          FileUtil::GetUserPath(FileUtil::UserPath::NANDDir,
-                                                                Settings::values.nand_dir + "/"),
-                                          true)
-                                    : FileSys::GetExtDataContainerPath(
-                                          FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir,
-                                                                Settings::values.sdmc_dir + "/"),
-                                          false),
-                                parent_entry, 1);
+    FileUtil::ScanDirectoryTree(
+        shared == 1
+            ? FileSys::GetExtDataContainerPath(
+                  FileUtil::GetUserPath(FileUtil::UserPath::NANDDir, Settings::values.nand_dir),
+                  true)
+            : FileSys::GetExtDataContainerPath(
+                  FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir),
+                  false),
+        parent_entry, 1);
     for (const FileUtil::FSTEntry& high : parent_entry.children) {
         for (const FileUtil::FSTEntry& low : high.children) {
             if (count < buffer_size / sizeof(u64)) {
@@ -736,7 +734,7 @@ void FS_USER::EnumerateSystemSaveData(Kernel::HLERequestContext& ctx) {
     u32 offset{};
     FileUtil::FSTEntry parent_entry{};
     FileUtil::ScanDirectoryTree(FileSys::GetSystemSaveDataContainerPath(FileUtil::GetUserPath(
-                                    FileUtil::UserPath::NANDDir, Settings::values.nand_dir + "/")),
+                                    FileUtil::UserPath::NANDDir, Settings::values.nand_dir)),
                                 parent_entry, 1);
     for (const FileUtil::FSTEntry& high : parent_entry.children) {
         for (const FileUtil::FSTEntry& low : high.children) {
@@ -763,12 +761,11 @@ void FS_USER::ReadExtSaveDataIcon(Kernel::HLERequestContext& ctx) {
     u32 smdh_size{rp.Pop<u32>()};
     auto smdh_buffer{rp.PopStaticBuffer()};
     FileUtil::IOFile file{
-        FileSys::GetExtDataPathFromId(info.media_type == static_cast<u8>(MediaType::NAND)
-                                          ? FileUtil::GetUserPath(FileUtil::UserPath::NANDDir,
-                                                                  Settings::values.nand_dir + "/")
-                                          : FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir,
-                                                                  Settings::values.sdmc_dir + "/"),
-                                      info.save_id),
+        FileSys::GetExtDataPathFromId(
+            info.media_type == static_cast<u8>(MediaType::NAND)
+                ? FileUtil::GetUserPath(FileUtil::UserPath::NANDDir, Settings::values.nand_dir)
+                : FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir),
+            info.save_id),
         "rb"};
     u32 read_size{};
     if (file) {

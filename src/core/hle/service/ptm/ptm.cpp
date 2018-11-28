@@ -106,7 +106,7 @@ void Module::Interface::CheckNew3DS(Kernel::HLERequestContext& ctx) {
 
 Module::Module(Core::System& system) : system{system} {
     auto nand_directory{
-        FileUtil::GetUserPath(FileUtil::UserPath::NANDDir, Settings::values.nand_dir + "/")};
+        FileUtil::GetUserPath(FileUtil::UserPath::NANDDir, Settings::values.nand_dir)};
     FileSys::ArchiveFactory_ExtSaveData extdata_archive_factory{nand_directory, true};
     // Open the SharedExtSaveData archive 0xF000000B and create the gamecoin.dat file if it doesn't
     // exist
@@ -137,7 +137,7 @@ Module::Module(Core::System& system) : system{system} {
 
 void SetPlayCoins(u16 play_coins) {
     auto nand_directory{
-        FileUtil::GetUserPath(FileUtil::UserPath::NANDDir, Settings::values.nand_dir + "/")};
+        FileUtil::GetUserPath(FileUtil::UserPath::NANDDir, Settings::values.nand_dir)};
     FileSys::ArchiveFactory_ExtSaveData extdata_archive_factory{nand_directory, true};
     FileSys::Path archive_path{ptm_shared_extdata_id};
     auto archive_result{extdata_archive_factory.Open(archive_path)};

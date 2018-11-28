@@ -84,12 +84,11 @@ void ProgramListWorker::run() {
         if (program_dir.path == "INSTALLED") {
             // Add normal programs
             {
-                auto path{
-                    QString::fromStdString(FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir,
-                                                                 Settings::values.sdmc_dir + "/") +
-                                           "Nintendo "
-                                           "3DS/00000000000000000000000000000000/"
-                                           "00000000000000000000000000000000/title/00040000")};
+                auto path{QString::fromStdString(
+                    FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir) +
+                    "Nintendo "
+                    "3DS/00000000000000000000000000000000/"
+                    "00000000000000000000000000000000/title/00040000")};
                 watch_list.append(path);
                 auto program_list_dir{
                     new ProgramListDir(program_dir, ProgramListItemType::InstalledDir)};
@@ -98,12 +97,11 @@ void ProgramListWorker::run() {
             }
             // Add demos
             {
-                auto path{
-                    QString::fromStdString(FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir,
-                                                                 Settings::values.sdmc_dir + "/") +
-                                           "Nintendo "
-                                           "3DS/00000000000000000000000000000000/"
-                                           "00000000000000000000000000000000/title/00040002")};
+                auto path{QString::fromStdString(
+                    FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir) +
+                    "Nintendo "
+                    "3DS/00000000000000000000000000000000/"
+                    "00000000000000000000000000000000/title/00040002")};
                 watch_list.append(path);
                 auto program_list_dir{
                     new ProgramListDir(program_dir, ProgramListItemType::InstalledDir)};
@@ -111,8 +109,8 @@ void ProgramListWorker::run() {
                 AddFstEntriesToProgramList(path.toStdString(), 2, program_list_dir);
             }
         } else if (program_dir.path == "SYSTEM") {
-            auto path{QString::fromStdString(FileUtil::GetUserPath(
-                          FileUtil::UserPath::NANDDir, Settings::values.nand_dir + "/")) +
+            auto path{QString::fromStdString(FileUtil::GetUserPath(FileUtil::UserPath::NANDDir,
+                                                                   Settings::values.nand_dir)) +
                       "00000000000000000000000000000000/title/00040010"};
             watch_list.append(path);
             auto program_list_dir{new ProgramListDir(program_dir, ProgramListItemType::SystemDir)};

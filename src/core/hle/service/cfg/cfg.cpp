@@ -576,7 +576,7 @@ ResultCode Module::FormatConfig() {
 
 ResultCode Module::LoadConfigNANDSaveFile() {
     auto nand_directory{
-        FileUtil::GetUserPath(FileUtil::UserPath::NANDDir, Settings::values.nand_dir + "/")};
+        FileUtil::GetUserPath(FileUtil::UserPath::NANDDir, Settings::values.nand_dir)};
     FileSys::ArchiveFactory_SystemSaveData systemsavedata_factory{nand_directory};
     // Open the SystemSaveData archive 0x00010017
     FileSys::Path archive_path{cfg_system_savedata_id};

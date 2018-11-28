@@ -716,14 +716,12 @@ void GMainWindow::OnProgramListOpenFolder(u64 data_id, ProgramListOpenTarget tar
     case ProgramListOpenTarget::SaveData:
         open_target = "Save Data";
         path = FileSys::ArchiveSource_SDSaveData::GetSaveDataPathFor(
-            FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir + "/"),
-            data_id);
+            FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir), data_id);
         break;
     case ProgramListOpenTarget::ExtData:
         open_target = "Extra Data";
         path = FileSys::GetExtDataPathFromId(
-            FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir + "/"),
-            data_id);
+            FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir), data_id);
         break;
     case ProgramListOpenTarget::Program:
         open_target = "Program";
@@ -755,13 +753,12 @@ void GMainWindow::OnProgramListOpenDirectory(const QString& directory) {
     QString path;
     if (directory == "INSTALLED")
         path = QString::fromStdString(
-            FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir + "/") +
+            FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir) +
             "Nintendo "
             "3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/00040000");
     else if (directory == "SYSTEM")
         path = QString::fromStdString(
-            FileUtil::GetUserPath(FileUtil::UserPath::NANDDir, Settings::values.nand_dir + "/")
-                .c_str() +
+            FileUtil::GetUserPath(FileUtil::UserPath::NANDDir, Settings::values.nand_dir).c_str() +
             std::string("00000000000000000000000000000000/title/00040010"));
     else
         path = directory;

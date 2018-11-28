@@ -30,7 +30,7 @@ enum class UserPath {
     UserDir,
 };
 
-// FileSystem tree node/
+// FileSystem tree node
 struct FSTEntry {
     bool isDirectory;
     u64 size;                 // file length or number of entries from children
@@ -120,12 +120,8 @@ void CopyDir(const std::string& source_path, const std::string& dest_path);
 // Set the current directory to given directory
 bool SetCurrentDir(const std::string& directory);
 
-// Returns a pointer to a string with a Citra data dir in the user's home
-// directory.
-const std::string& GetUserPath(UserPath path, const std::string& settings_dir = "");
-
-// Returns the path to where the sys file are
-std::string GetSysDirectory();
+// Returns a path in the Citra user directory.
+const std::string GetUserPath(UserPath path, const std::string& settings_dir = "");
 
 #ifdef _WIN32
 const std::string& GetExeDirectory();
@@ -145,7 +141,7 @@ std::size_t ReadFileToString(bool text_file, const char* filename, std::string& 
 void SplitFilename83(const std::string& filename, std::array<char, 9>& short_name,
                      std::array<char, 4>& extension);
 
-// simple wrapper for cstdlib file functions to
+// Simple wrapper for cstdlib file functions to
 // hopefully will make error checking easier
 // and make forgetting an fclose() harder
 class IOFile : public NonCopyable {
@@ -153,13 +149,13 @@ public:
     IOFile();
 
     // flags is used for windows specific file open mode flags, which
-    // allows citra to open the logs in shared write mode, so that the file
-    // isn't considered "locked" while citra is open and people can open the log file and view it
-    IOFile(const std::string& filename, const char openmode[], int flags = 0);
+    // allows Citra to open the logs in shared write mode, so that the file
+    // isn't considered "locked" while Citra is open and people can open the log file and view it
+    explicit IOFile(const std::string& filename, const char openmode[], int flags = 0);
 
     ~IOFile();
 
-    IOFile(IOFile&& other);
+    explicit IOFile(IOFile&& other);
     IOFile& operator=(IOFile&& other);
 
     void Swap(IOFile& other);
@@ -236,7 +232,7 @@ public:
     bool Resize(u64 size);
     bool Flush();
 
-    // clear error state
+    // Clear error state
     void Clear() {
         m_good = true;
         std::clearerr(m_file);

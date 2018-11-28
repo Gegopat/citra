@@ -448,8 +448,7 @@ void ProgramList::AddAppPopup(QMenu& context_menu, QStandardItem* child) {
     open_save_location->setVisible(0x0004000000000000 <= program_id &&
                                    program_id <= 0x00040000FFFFFFFF);
     uninstall->setVisible(child->parent()->text() == "Installed");
-    auto sdmc_dir{
-        FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir + "/")};
+    auto sdmc_dir{FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir)};
     open_save_location->setVisible(FileUtil::Exists(
         FileSys::ArchiveSource_SDSaveData::GetSaveDataPathFor(sdmc_dir, program_id)));
     if (extdata_id)

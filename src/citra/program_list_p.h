@@ -183,8 +183,8 @@ public:
     QVariant data(int role) const override {
         if (role == Qt::DisplayRole) {
             std::string path, filename, extension;
-            auto sdmc_dir{FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir,
-                                                Settings::values.sdmc_dir + "/")};
+            auto sdmc_dir{
+                FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir)};
             Common::SplitPath(data(FullPathRole).toString().toStdString(), &path, &filename,
                               &extension);
             const std::unordered_map<UISettings::ProgramListText, QString> display_texts{

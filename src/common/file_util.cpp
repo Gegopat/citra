@@ -194,7 +194,7 @@ bool CreateFullPath(const std::string& full_path) {
         if (position == full_path.npos)
             return true;
         // Include the '/' so the first call is CreateDir("/") rather than CreateDir("")
-        std::string const subPath(full_path.substr(0, position + 1));
+        const auto subPath(full_path.substr(0, position + 1));
         if (!IsDirectory(subPath) && !CreateDir(subPath)) {
             LOG_ERROR(Common_Filesystem, "CreateFullPath: directory creation failed");
             return false;
@@ -371,14 +371,14 @@ bool ForeachDirectoryEntry(u64* num_entries_out, const std::string& directory,
     }
     // Windows loop
     do {
-        const std::string virtual_name{Common::UTF16ToUTF8(ffd.cFileName)};
+        const auto virtual_name{Common::UTF16ToUTF8(ffd.cFileName)};
 #else
     DIR* dirp{opendir(directory.c_str())};
     if (!dirp)
         return false;
     // Non Windows loop
     while (struct dirent * result{readdir(dirp)}) {
-        const std::string virtual_name{result->d_name};
+        const auto virtual_name{result->d_name};
 #endif
         if (virtual_name == "." || virtual_name == "..")
             continue;
@@ -464,7 +464,7 @@ void CopyDir(const std::string& source_path, const std::string& dest_path) {
     if (!dirp)
         return;
     while (struct dirent * result{readdir(dirp)}) {
-        const std::string virtualName{result->d_name};
+        const auto virtualName{result->d_name};
         // Check for "." and ".."
         if (((virtualName[0] == '.') && (virtualName[1] == '\0')) ||
             ((virtualName[0] == '.') && (virtualName[1] == '.') && (virtualName[2] == '\0')))
@@ -567,9 +567,9 @@ static const std::string GetDataDirectory() {
 
 // Returns a string with a Citra data dir or file in the user's home
 // directory.
-const std::string& GetUserPath(UserPath path, const std::string& settings_dir) {
+const std::string GetUserPath(UserPath path, const std::string& settings_dir) {
     if ((path == UserPath::NANDDir || path == UserPath::SDMCDir) && settings_dir.length() > 1)
-        return settings_dir;
+        return settings_dir + DIR_SEP;
     static std::unordered_map<UserPath, std::string> paths;
     auto& user_path{paths[UserPath::UserDir]};
     // Set up all paths and files on the first run
