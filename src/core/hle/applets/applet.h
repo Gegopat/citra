@@ -6,7 +6,7 @@
 
 #include <memory>
 #include "core/hle/result.h"
-#include "core/hle/service/apt/applet_manager.h"
+#include "core/hle/service/ns/applet_manager.h"
 
 namespace HLE::Applets {
 

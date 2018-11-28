@@ -12,9 +12,9 @@
 #include "core/hle/applets/mint.h"
 #include "core/hle/applets/swkbd.h"
 #include "core/hle/kernel/handle_table.h"
-#include "core/hle/service/apt/applet_manager.h"
-#include "core/hle/service/apt/errors.h"
 #include "core/hle/service/cfg/cfg.h"
+#include "core/hle/service/ns/applet_manager.h"
+#include "core/hle/service/ns/errors.h"
 #include "core/hle/service/ns/ns.h"
 #include "core/settings.h"
 

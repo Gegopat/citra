@@ -2,7 +2,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include "core/hle/service/apt/apt_a.h"
+#include "core/hle/service/ns/apt_a.h"
 
 namespace Service::APT {
 

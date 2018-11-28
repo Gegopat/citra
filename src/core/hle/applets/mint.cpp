@@ -5,7 +5,7 @@
 #include "common/string_util.h"
 #include "core/core.h"
 #include "core/hle/applets/mint.h"
-#include "core/hle/service/apt/apt.h"
+#include "core/hle/service/ns/ns.h"
 
 namespace HLE::Applets {
 

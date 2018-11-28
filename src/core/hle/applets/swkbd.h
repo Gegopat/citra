@@ -12,7 +12,7 @@
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/kernel/shared_memory.h"
 #include "core/hle/result.h"
-#include "core/hle/service/apt/apt.h"
+#include "core/hle/service/ns/ns.h"
 
 namespace HLE::Applets {
 
