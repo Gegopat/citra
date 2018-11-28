@@ -4,6 +4,8 @@ Citra
 ==============
 [![Travis CI Build Status](https://travis-ci.org/valentinvanelslande/citra.svg?branch=master)](https://travis-ci.org/valentinvanelslande/citra)
 [![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/n7d0qlt7fp428cyp?svg=true)](https://ci.appveyor.com/project/valentinvanelslande/citra)
+![Discord Server](https://img.shields.io/discord/512844204414599178.svg)
+![Downloads](https://img.shields.io/github/downloads/valentinvanelslande/citra/total.svg)
 
 Citra is an open-source Nintendo 2DS/3DS/New 3DS/New 3DS XL/New 2DS XL emulator written in C++. It is written with portability in mind, with builds actively maintained for Windows, Linux and macOS.
 
@@ -11,7 +13,7 @@ Citra emulates a subset of the hardware and therefore is useful for running/debu
 
 Citra is licensed under the GPLv2 (or any later version). Refer to the license.txt file included.
 
-Discord: https://discord.gg/AuPnHPG
+Discord Server: https://discord.gg/AuPnHPG
 
 ### Development
 
