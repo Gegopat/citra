@@ -21,6 +21,7 @@ using Shortcut = std::pair<QString, ContextualShortcut>;
 
 using Themes = std::array<std::pair<const char*, const char*>, 4>;
 extern const Themes themes;
+extern const QStringList resolutions;
 
 struct AppDir {
     QString path;

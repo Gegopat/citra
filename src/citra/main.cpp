@@ -415,6 +415,16 @@ void GMainWindow::ConnectMenuEvents() {
             &GMainWindow::OnStopRecordingPlayback);
     connect(ui.action_Capture_Screenshot, &QAction::triggered, this,
             &GMainWindow::OnCaptureScreenshot);
+    connect(ui.action_Set_Screenshot_Resolution, &QAction::triggered, this, [&] {
+        bool ok{};
+        auto text{QInputDialog::getItem(
+            this, "Set Screenshot Resolution",
+            QString("Current: %1")
+                .arg(UISettings::resolutions[UISettings::values.screenshot_resolution_factor]),
+            UISettings::resolutions, 0, false, &ok)};
+        if (ok)
+            UISettings::values.screenshot_resolution_factor = UISettings::resolutions.indexOf(text);
+    });
     connect(ui.action_Set_Play_Coins, &QAction::triggered, this, &GMainWindow::OnSetPlayCoins);
     connect(ui.action_Enable_Frame_Advancing, &QAction::triggered, this, [this] {
         if (system.IsPoweredOn()) {

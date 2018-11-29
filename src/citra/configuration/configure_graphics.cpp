@@ -7,6 +7,7 @@
 #endif
 #include <QColorDialog>
 #include "citra/configuration/configure_graphics.h"
+#include "citra/ui_settings.h"
 #include "core/core.h"
 #include "core/settings.h"
 #include "ui_configure_graphics.h"
@@ -16,6 +17,7 @@
 ConfigureGraphics::ConfigureGraphics(QWidget* parent)
     : QWidget{parent}, ui{std::make_unique<Ui::ConfigureGraphics>()} {
     ui->setupUi(this);
+    ui->resolution_factor_combobox->addItems(UISettings::resolutions);
 }
 
 ConfigureGraphics::~ConfigureGraphics() {}
