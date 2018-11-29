@@ -93,7 +93,7 @@ public:
      * Run the CPU
      * This function runs the core for the specified number of CPU instructions before trying to
      * update hardware.
-     * @return Result status, indicating whethor or not the operation succeeded.
+     * @return Result status, indicating whether or not the operation succeeded.
      */
     ResultStatus Run();
 
