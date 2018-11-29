@@ -38,7 +38,7 @@ void ConfigurationDialog::ApplyConfiguration() {
     ui->systemTab->ApplyConfiguration();
     ui->inputTab->ApplyConfiguration();
     ui->inputTab->ApplyProfile();
-    ui->graphicsTab->ApplyConfiguration(system);
+    ui->graphicsTab->ApplyConfiguration();
     ui->audioTab->ApplyConfiguration();
     ui->cameraTab->ApplyConfiguration();
     ui->hacksTab->ApplyConfiguration(system);

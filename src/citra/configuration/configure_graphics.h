@@ -23,7 +23,7 @@ public:
     ~ConfigureGraphics();
 
     void LoadConfiguration(Core::System& system);
-    void ApplyConfiguration(Core::System& system);
+    void ApplyConfiguration();
 
 private:
     QColor bg_color;
