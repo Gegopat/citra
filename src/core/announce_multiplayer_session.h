@@ -46,16 +46,16 @@ public:
      */
     void UnbindErrorCallback(CallbackHandle handle);
 
-    /// Starts the announce of a room to web services
+    /// Starts the announce of a room to API
     void Start();
 
-    /// Stops the announce to web services
+    /// Stops the announce to API
     void Stop();
 
     /**
      * Returns a list of all room information the backend got
      * @param func A function that gets executed when the async get finished, e.g. a signal
-     * @return a list of rooms received from the web service
+     * @return a list of rooms received from the API
      */
     AnnounceMultiplayerRoom::RoomList GetRoomList();
 
