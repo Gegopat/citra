@@ -19,9 +19,6 @@
 #include <QtConcurrent/QtConcurrentRun>
 #include <QtGui>
 #include <QtWidgets>
-#ifdef ENABLE_DISCORD_RPC
-#include <discord_rpc.h>
-#endif
 #include <fmt/format.h>
 #include "citra/aboutdialog.h"
 #include "citra/bootmanager.h"
@@ -74,16 +71,6 @@ __declspec(dllexport) unsigned long NvOptimusEnablement{0x00000001};
 }
 #endif
 
-#ifdef ENABLE_DISCORD_RPC
-static void HandleDiscordDisconnected(int error_code, const char* message) {
-    LOG_ERROR(Frontend, "Discord RPC disconnected ({} {})", error_code, message);
-}
-
-static void HandleDiscordError(int error_code, const char* message) {
-    LOG_ERROR(Frontend, "Discord RPC error ({} {})", error_code, message);
-}
-#endif
-
 GMainWindow::GMainWindow(Config& config, Core::System& system) : config{config}, system{system} {
     setAcceptDrops(true);
     ui.setupUi(this);
@@ -102,18 +89,12 @@ GMainWindow::GMainWindow(Config& config, Core::System& system) : config{config},
     auto args{QApplication::arguments()};
     if (args.length() >= 2)
         BootProgram(args[1].toStdString());
-    if (UISettings::values.enable_discord_rpc)
-        InitializeDiscordRPC();
 }
 
 GMainWindow::~GMainWindow() {
     // Will get automatically deleted otherwise
     if (!screens->parent())
         delete screens;
-#ifdef ENABLE_DISCORD_RPC
-    if (UISettings::values.enable_discord_rpc)
-        ShutdownDiscordRPC();
-#endif
 }
 
 void GMainWindow::InitializeWidgets() {
@@ -594,10 +575,6 @@ void GMainWindow::BootProgram(const std::string& filename) {
         movie_record_path.clear();
     }
     connect(emu_thread.get(), &EmuThread::ErrorThrown, this, &GMainWindow::OnCoreError);
-    // Update Discord RPC
-    auto& member{system.RoomMember()};
-    if (!member.IsConnected())
-        UpdateDiscordRPC(member.GetRoomInformation());
 }
 
 void GMainWindow::ShutdownProgram() {
@@ -648,10 +625,6 @@ void GMainWindow::ShutdownProgram() {
 
     short_title.clear();
     UpdateTitle();
-    // Update Discord RPC
-    auto& member{system.RoomMember()};
-    if (!member.IsConnected())
-        UpdateDiscordRPC(member.GetRoomInformation());
 }
 
 void GMainWindow::StoreRecentFile(const QString& filename) {
@@ -1047,7 +1020,6 @@ void GMainWindow::OnOpenConfiguration() {
     auto old_profile{Settings::values.profile};
     auto old_profiles{Settings::values.profiles};
     auto old_disable_mh_2xmsaa{Settings::values.disable_mh_2xmsaa};
-    auto old_enable_discord_rpc{UISettings::values.enable_discord_rpc};
     auto result{configuration_dialog.exec()};
     if (result == QDialog::Accepted) {
         if (configuration_dialog.restore_defaults_requested) {
@@ -1069,13 +1041,6 @@ void GMainWindow::OnOpenConfiguration() {
             config.Save();
             UISettings::values.configuration_geometry = configuration_dialog.saveGeometry();
         }
-#ifdef ENABLE_DISCORD_RPC
-        if (old_enable_discord_rpc != UISettings::values.enable_discord_rpc)
-            if (UISettings::values.enable_discord_rpc)
-                InitializeDiscordRPC();
-            else
-                ShutdownDiscordRPC();
-#endif
     } else {
         Settings::values.profiles = old_profiles;
         Settings::LoadProfile(old_profile);
@@ -1569,53 +1534,6 @@ void GMainWindow::SyncMenuUISettings() {
                                                      Settings::LayoutOption::SideScreen);
     ui.action_Screen_Layout_Swap_Screens->setChecked(Settings::values.swap_screens);
     ui.action_Screen_Layout_Custom_Layout->setChecked(Settings::values.custom_layout);
-}
-
-void GMainWindow::InitializeDiscordRPC() {
-#ifdef ENABLE_DISCORD_RPC
-    DiscordEventHandlers handlers{};
-    handlers.disconnected = HandleDiscordDisconnected;
-    handlers.errored = HandleDiscordError;
-    Discord_Initialize("512801235930447874", &handlers, 0, NULL);
-    discord_rpc_start_time = std::chrono::duration_cast<std::chrono::seconds>(
-                                 std::chrono::system_clock::now().time_since_epoch())
-                                 .count();
-    auto& member{system.RoomMember()};
-    callback_handle = member.BindOnRoomInformationChanged(
-        [this](const Network::RoomInformation& info) { UpdateDiscordRPC(info); });
-    UpdateDiscordRPC(member.GetRoomInformation());
-#endif
-}
-
-void GMainWindow::ShutdownDiscordRPC() {
-#ifdef ENABLE_DISCORD_RPC
-    system.RoomMember().Unbind(callback_handle);
-    Discord_ClearPresence();
-    Discord_Shutdown();
-#endif
-}
-
-void GMainWindow::UpdateDiscordRPC(const Network::RoomInformation& info) {
-#ifdef ENABLE_DISCORD_RPC
-    if (UISettings::values.enable_discord_rpc) {
-        DiscordRichPresence presence{};
-        auto& member{system.RoomMember()};
-        if (member.IsConnected()) {
-            const auto& member_info{member.GetMemberInformation()};
-            presence.partySize = member_info.size();
-            presence.partyMax = info.member_slots;
-            presence.state = info.name.c_str();
-        }
-        auto details{
-            !short_title.empty()
-                ? fmt::format("{} | {}-{}", short_title, Common::g_scm_branch, Common::g_scm_desc)
-                : fmt::format("{}-{}", Common::g_scm_branch, Common::g_scm_desc)};
-        presence.details = details.c_str();
-        presence.startTimestamp = discord_rpc_start_time;
-        presence.largeImageKey = "icon";
-        Discord_UpdatePresence(&presence);
-    }
-#endif
 }
 
 #ifdef main

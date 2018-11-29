@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>269</width>
-    <height>300</height>
+    <width>263</width>
+    <height>271</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,13 +22,6 @@
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QCheckBox" name="enable_discord_rpc">
-          <property name="text">
-           <string>Enable Discord Rich Presence</string>
-          </property>
-         </widget>
-        </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
