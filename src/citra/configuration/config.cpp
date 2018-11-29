@@ -75,7 +75,7 @@ void Config::Load() {
     int size{qt_config->beginReadArray("profiles")};
     for (int p{}; p < size; ++p) {
         qt_config->setArrayIndex(p);
-        Settings::ControllerProfile profile{};
+        Settings::ControllerProfile profile;
         profile.name = qt_config->value("name", "default").toString().toStdString();
         for (int i{}; i < Settings::NativeButton::NumButtons; ++i) {
             std::string default_param{InputCommon::GenerateKeyboardParam(default_buttons[i])};
@@ -178,9 +178,19 @@ void Config::Load() {
     }
     Settings::values.use_lle_applets = qt_config->value("use_lle_applets", false).toBool();
     qt_config->endGroup();
-    qt_config->beginGroup("Renderer");
+    qt_config->beginGroup("Graphics");
+    Settings::values.enable_shadows = qt_config->value("enable_shadows", true).toBool();
+    Settings::values.use_frame_limit = qt_config->value("use_frame_limit", true).toBool();
+    Settings::values.frame_limit = qt_config->value("frame_limit", 100).toInt();
+    Settings::values.screen_refresh_rate = qt_config->value("screen_refresh_rate", 60).toInt();
+    Settings::values.min_vertices_per_thread =
+        qt_config->value("min_vertices_per_thread", 10).toInt();
+    u16 resolution_factor{static_cast<u16>(qt_config->value("resolution_factor", 1).toInt())};
+    if (resolution_factor == 0)
+        resolution_factor = 1;
+    Settings::values.resolution_factor = resolution_factor;
 #ifdef __APPLE__
-    // Hardware shaders is broken on macOS thanks to poor drivers.
+    // Hardware shaders are broken on macOS thanks to poor drivers.
     // We still want to provide this option for test/development purposes, but disable it by
     // default.
     Settings::values.use_hw_shaders = qt_config->value("use_hw_shaders", false).toBool();
@@ -190,19 +200,9 @@ void Config::Load() {
     Settings::values.shaders_accurate_gs = qt_config->value("shaders_accurate_gs", true).toBool();
     Settings::values.shaders_accurate_mul =
         qt_config->value("shaders_accurate_mul", false).toBool();
-    u16 resolution_factor{static_cast<u16>(qt_config->value("resolution_factor", 1).toInt())};
-    if (resolution_factor == 0)
-        resolution_factor = 1;
-    Settings::values.resolution_factor = resolution_factor;
-    Settings::values.use_frame_limit = qt_config->value("use_frame_limit", true).toBool();
-    Settings::values.frame_limit = qt_config->value("frame_limit", 100).toInt();
     Settings::values.bg_red = qt_config->value("bg_red", 0.0).toFloat();
     Settings::values.bg_green = qt_config->value("bg_green", 0.0).toFloat();
     Settings::values.bg_blue = qt_config->value("bg_blue", 0.0).toFloat();
-    Settings::values.enable_shadows = qt_config->value("enable_shadows", true).toBool();
-    Settings::values.screen_refresh_rate = qt_config->value("screen_refresh_rate", 60).toInt();
-    Settings::values.min_vertices_per_thread =
-        qt_config->value("min_vertices_per_thread", 10).toInt();
     Settings::values.enable_cache_clear = qt_config->value("enable_cache_clear", false).toBool();
     qt_config->endGroup();
     qt_config->beginGroup("Layout");
@@ -422,20 +422,20 @@ void Config::Save() {
         qt_config->setValue(QString::fromStdString(service_module.first), service_module.second);
     qt_config->setValue("use_lle_applets", Settings::values.use_lle_applets);
     qt_config->endGroup();
-    qt_config->beginGroup("Renderer");
+    qt_config->beginGroup("Graphics");
+    qt_config->setValue("enable_shadows", Settings::values.enable_shadows);
+    qt_config->setValue("use_frame_limit", Settings::values.use_frame_limit);
+    qt_config->setValue("frame_limit", Settings::values.frame_limit);
+    qt_config->setValue("screen_refresh_rate", Settings::values.screen_refresh_rate);
+    qt_config->setValue("min_vertices_per_thread", Settings::values.min_vertices_per_thread);
+    qt_config->setValue("resolution_factor", Settings::values.resolution_factor);
     qt_config->setValue("use_hw_shaders", Settings::values.use_hw_shaders);
     qt_config->setValue("shaders_accurate_gs", Settings::values.shaders_accurate_gs);
     qt_config->setValue("shaders_accurate_mul", Settings::values.shaders_accurate_mul);
-    qt_config->setValue("resolution_factor", Settings::values.resolution_factor);
-    qt_config->setValue("use_frame_limit", Settings::values.use_frame_limit);
-    qt_config->setValue("frame_limit", Settings::values.frame_limit);
     // Cast to double because Qt's written float values aren't human-readable
     qt_config->setValue("bg_red", (double)Settings::values.bg_red);
     qt_config->setValue("bg_green", (double)Settings::values.bg_green);
     qt_config->setValue("bg_blue", (double)Settings::values.bg_blue);
-    qt_config->setValue("enable_shadows", Settings::values.enable_shadows);
-    qt_config->setValue("screen_refresh_rate", Settings::values.screen_refresh_rate);
-    qt_config->setValue("min_vertices_per_thread", Settings::values.min_vertices_per_thread);
     qt_config->setValue("enable_cache_clear", Settings::values.enable_cache_clear);
     qt_config->endGroup();
     qt_config->beginGroup("Layout");
