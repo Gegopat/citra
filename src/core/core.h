@@ -90,16 +90,12 @@ public:
     };
 
     /**
-     * Run the core CPU loop
+     * Run the CPU
      * This function runs the core for the specified number of CPU instructions before trying to
-     * update hardware. This is much faster than SingleStep (and should be equivalent), as the CPU
-     * isn't required to do a full dispatch with each instruction. NOTE: the number of instructions
-     * requested isn't guaranteed to run, as this will be interrupted preemptively if a hardware
-     * update is requested (e.g. on a thread switch).
-     * @param tight_loop If false, the CPU single-steps.
+     * update hardware.
      * @return Result status, indicating whethor or not the operation succeeded.
      */
-    ResultStatus RunLoop();
+    ResultStatus Run();
 
     /// Shutdown the emulated system.
     void Shutdown();

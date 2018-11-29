@@ -62,7 +62,7 @@ System::~System() {
     movie.reset();
 }
 
-System::ResultStatus System::RunLoop() {
+System::ResultStatus System::Run() {
     status = ResultStatus::Success;
     if (!cpu_core)
         return ResultStatus::ErrorNotInitialized;

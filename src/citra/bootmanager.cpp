@@ -33,7 +33,7 @@ void EmuThread::run() {
     screens->MakeCurrent();
     stop_run = false;
     while (!stop_run) {
-        auto result{system.RunLoop()};
+        auto result{system.Run()};
         if (result == Core::System::ResultStatus::ShutdownRequested) {
             // Notify frontend we shutdown
             emit ErrorThrown(result, "");
