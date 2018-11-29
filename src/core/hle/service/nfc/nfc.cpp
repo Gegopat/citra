@@ -312,22 +312,6 @@ void Module::Interface::CommunicationGetStatus(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_NFC, "status={}", static_cast<int>(nfc->status));
 }
 
-void Module::Interface::UpdateStoredAmiiboData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp{ctx, 0x9, 0, 2};
-    u32 pid{rp.PopPID()};
-    auto rb{rp.MakeBuilder(1, 0)};
-    if (nfc->tag_state != TagState::TagDataLoaded) {
-        LOG_ERROR(Service_NFC, "Invalid TagState {}", static_cast<int>(nfc->tag_state.load()));
-        rb.Push(ResultCode(ErrCodes::CommandInvalidForState, ErrorModule::NFC,
-                           ErrorSummary::InvalidState, ErrorLevel::Status));
-        return;
-    }
-    auto process{nfc->system.Kernel().GetProcessById(pid)};
-    nfc->UpdateAmiiboData();
-    rb.Push(RESULT_SUCCESS);
-    LOG_WARNING(Service_NFC, "(stubbed) pid={}", pid);
-}
-
 void Module::Interface::Unknown0x1A(Kernel::HLERequestContext& ctx) {
     auto result{RESULT_SUCCESS};
     if (nfc->tag_state != TagState::TagInRange) {

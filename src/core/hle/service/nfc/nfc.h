@@ -85,7 +85,6 @@ public:
         void Unknown1(Kernel::HLERequestContext& ctx);
         void Unknown0x1A(Kernel::HLERequestContext& ctx);
         void GetIdentificationBlock(Kernel::HLERequestContext& ctx);
-        void UpdateStoredAmiiboData(Kernel::HLERequestContext& ctx);
         void SetAmiiboSettings(Kernel::HLERequestContext& ctx);
         void CommunicationGetResult(Kernel::HLERequestContext& ctx);
         void GetTagInfo2(Kernel::HLERequestContext& ctx);
