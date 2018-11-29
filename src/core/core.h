@@ -92,7 +92,8 @@ public:
     /**
      * Run the CPU
      * This function runs the core for the specified number of CPU instructions before trying to
-     * update hardware.
+     * update hardware. NOTE: the number of instructions requested isn't guaranteed to run, as this
+     * will be interrupted preemptively if a hardware update is requested (e.g. on a thread switch)
      * @return Result status, indicating whether or not the operation succeeded.
      */
     ResultStatus Run();
