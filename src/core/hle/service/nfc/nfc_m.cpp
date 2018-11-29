@@ -25,17 +25,17 @@ NFC_M::NFC_M(std::shared_ptr<Module> nfc) : Module::Interface{std::move(nfc), "n
         {0x00100000, &NFC_M::GetTagInfo2, "GetTagInfo2"},
         {0x00110000, &NFC_M::GetTagInfo, "GetTagInfo"},
         {0x00120000, &NFC_M::CommunicationGetResult, "CommunicationGetResult"},
-        {0x00130040, &NFC_M::OpenAppData, "OpenAppData"},
-        {0x00140384, &NFC_M::InitializeWriteAppData, "InitializeWriteAppData"},
-        {0x00150040, &NFC_M::ReadAppData, "ReadAppData"},
-        {0x00160242, &NFC_M::WriteAppData, "WriteAppData"},
+        {0x00130040, nullptr, "OpenAppData"},
+        {0x00140384, nullptr, "InitializeWriteAppData"},
+        {0x00150040, nullptr, "ReadAppData"},
+        {0x00160242, nullptr, "WriteAppData"},
         {0x00170000, &NFC_M::GetAmiiboSettings, "GetAmiiboSettings"},
         {0x00180000, &NFC_M::GetAmiiboConfig, "GetAmiiboConfig"},
-        {0x00190000, &NFC_M::GetAppDataInitStruct, "GetAppDataInitStruct"},
+        {0x00190000, nullptr, "GetAppDataInitStruct"},
         {0x001A0000, &NFC_M::Unknown0x1A, "Unknown0x1A"},
         {0x001B0000, &NFC_M::GetIdentificationBlock, "Unknown0x1B"},
         // nfc:m
-        {0x04040A40, /* &NFC_M::SetAmiiboSettings */ nullptr, "SetAmiiboSettings"},
+        {0x04040A40, nullptr, "SetAmiiboSettings"},
     };
     RegisterHandlers(functions);
 }

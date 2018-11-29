@@ -22,9 +22,11 @@ namespace Service::NFC {
 using AmiiboData = std::array<u8, AMIIBO_MAX_SIZE>;
 
 namespace ErrCodes {
+
 enum {
     CommandInvalidForState = 512,
 };
+
 } // namespace ErrCodes
 
 enum class TagState : u8 {
@@ -80,15 +82,10 @@ public:
         void GetTagInfo(Kernel::HLERequestContext& ctx);
         void GetAmiiboSettings(Kernel::HLERequestContext& ctx);
         void GetAmiiboConfig(Kernel::HLERequestContext& ctx);
-        void OpenAppData(Kernel::HLERequestContext& ctx);
-        void ReadAppData(Kernel::HLERequestContext& ctx);
-        void WriteAppData(Kernel::HLERequestContext& ctx);
         void Unknown1(Kernel::HLERequestContext& ctx);
         void Unknown0x1A(Kernel::HLERequestContext& ctx);
         void GetIdentificationBlock(Kernel::HLERequestContext& ctx);
-        void InitializeWriteAppData(Kernel::HLERequestContext& ctx);
         void UpdateStoredAmiiboData(Kernel::HLERequestContext& ctx);
-        void GetAppDataInitStruct(Kernel::HLERequestContext& ctx);
         void SetAmiiboSettings(Kernel::HLERequestContext& ctx);
         void CommunicationGetResult(Kernel::HLERequestContext& ctx);
         void GetTagInfo2(Kernel::HLERequestContext& ctx);
@@ -103,7 +100,6 @@ private:
     CommunicationStatus status{CommunicationStatus::NfcInitialized};
     AmiiboData encrypted_data{}, decrypted_data{};
     std::string amiibo_file;
-    std::atomic_bool appdata_initialized{};
     Type type;
     Core::System& system;
 };
