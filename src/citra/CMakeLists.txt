@@ -149,10 +149,6 @@ create_target_directory_groups(citra)
 
 target_link_libraries(citra PRIVATE audio_core common core input_common network video_core)
 target_link_libraries(citra PRIVATE Boost::boost Qt5::OpenGL Qt5::Widgets Qt5::Multimedia)
-if (ENABLE_DISCORD_RPC)
-    target_link_libraries(citra PRIVATE discord-rpc)
-    target_compile_definitions(citra PRIVATE -DENABLE_DISCORD_RPC)
-endif()
 target_link_libraries(citra PRIVATE ${PLATFORM_LIBRARIES} Threads::Threads)
 
 if (MSVC)

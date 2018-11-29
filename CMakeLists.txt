@@ -13,8 +13,6 @@ CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_SDL2 "Download bundled SDL2 binaries" O
 
 CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_QT "Download bundled Qt binaries" ON "MSVC" OFF)
 
-option(ENABLE_DISCORD_RPC "Enable Discord Rich Presence integration" OFF)
-
 option(ENABLE_SCRIPTING "Enable scripting support" OFF)
 
 # Sanity check : Check that all submodules are present

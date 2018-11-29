@@ -82,7 +82,6 @@ struct Values {
     QStringList recent_files;
 
     bool confirm_close;
-    bool enable_discord_rpc;
 
     QString theme;
 

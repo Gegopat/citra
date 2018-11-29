@@ -9,9 +9,6 @@
 ConfigureUi::ConfigureUi(QWidget* parent)
     : QWidget(parent), ui{std::make_unique<Ui::ConfigureUi>()} {
     ui->setupUi(this);
-#ifndef ENABLE_DISCORD_RPC
-    ui->enable_discord_rpc->hide();
-#endif
     for (const auto& theme : UISettings::themes)
         ui->theme_combobox->addItem(theme.first, theme.second);
     LoadConfiguration();
@@ -20,7 +17,6 @@ ConfigureUi::ConfigureUi(QWidget* parent)
 ConfigureUi::~ConfigureUi() = default;
 
 void ConfigureUi::LoadConfiguration() {
-    ui->enable_discord_rpc->setChecked(UISettings::values.enable_discord_rpc);
     ui->theme_combobox->setCurrentIndex(ui->theme_combobox->findData(UISettings::values.theme));
     ui->icon_size_combobox->setCurrentIndex(
         static_cast<int>(UISettings::values.program_list_icon_size));
@@ -32,7 +28,6 @@ void ConfigureUi::LoadConfiguration() {
 }
 
 void ConfigureUi::ApplyConfiguration() {
-    UISettings::values.enable_discord_rpc = ui->enable_discord_rpc->isChecked();
     UISettings::values.theme =
         ui->theme_combobox->itemData(ui->theme_combobox->currentIndex()).toString();
     UISettings::values.program_list_icon_size =
