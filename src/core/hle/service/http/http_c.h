@@ -249,7 +249,7 @@ private:
     void DecryptClCertA(Core::System& system);
     void LoadDefaultCerts(Core::System& system);
 
-    Kernel::SharedPtr<Kernel::SharedMemory> shared_memory{};
+    Kernel::SharedPtr<Kernel::SharedMemory> shared_memory;
 
     /// The next number to use when a new HTTP session is initalized.
     u32 session_counter{};

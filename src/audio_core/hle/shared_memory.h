@@ -514,13 +514,13 @@ struct SharedMemory {
 ASSERT_DSP_STRUCT(SharedMemory, 0x8000);
 
 union DspMemory {
-    std::array<u8, 0x80000> raw_memory{};
+    std::array<u8, 0x80000> raw_memory;
     struct {
-        u8 unused_0[0x50000];
+        std::array<u8, 0x50000> unused_0;
         SharedMemory region_0;
-        u8 unused_1[0x18000];
+        std::array<u8, 0x18000> unused_1;
         SharedMemory region_1;
-        u8 unused_2[0x8000];
+        std::array<u8, 0x8000> unused_2;
     };
 };
 static_assert(offsetof(DspMemory, region_0) == region0_offset,

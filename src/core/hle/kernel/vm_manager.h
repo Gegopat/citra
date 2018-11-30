@@ -65,7 +65,7 @@ struct VirtualMemoryArea {
 
     // Settings for type BackingMemory
     u8* backing_memory{}; ///< Pointer backing this VMA. It will not be destroyed or freed when the
-                          ///< VMA is removed.
+                          /// VMA is removed.
 
     // Settings for type MMIO
     PAddr paddr{}; ///< Physical address of the register area this VMA maps to.
