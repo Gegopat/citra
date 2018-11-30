@@ -63,12 +63,9 @@ const ResultCode RESULT_DOWNLOADPENDING{
     ResultCode(43, ErrorModule::HTTP, ErrorSummary::WouldBlock, ErrorLevel::Permanent)};
 
 u32 Context::GetResponseContentLength() const {
-    try {
-        const auto length{response->get_header_value("Content-Length")};
-        return std::stoi(length);
-    } catch (...) {
-        return 0;
-    }
+    if (response.HasHeader("Content-Length"))
+        return std::stoi(response.GetHeader("Content-Length"));
+    return 0;
 }
 
 void Context::Send() {
@@ -88,15 +85,9 @@ void Context::Send() {
                                               (timeout == 0) ? 300 : (timeout * std::pow(10, -9)));
     } else
         UNREACHABLE_MSG("Invalid scheme!");
-    if (ssl_config.enable_client_cert)
-        cli->add_client_cert_ASN1(ssl_config.client_cert_ctx.certificate,
-                                  ssl_config.client_cert_ctx.private_key);
-    if (ssl_config.enable_root_cert_chain)
-        for (const auto& cert : ssl_config.root_ca_chain.certificates)
-            cli->add_cert(cert.certificate);
     if ((ssl_config.options & 0x200) == 0x200)
         cli->set_verify(hl::SSLVerifyMode::None);
-    hl::Request request;
+    hl::Request req;
     static const std::unordered_map<RequestMethod, std::string> method_string_map{{
         {RequestMethod::Get, "GET"},
         {RequestMethod::Post, "POST"},
@@ -115,51 +106,59 @@ void Context::Send() {
         {RequestMethod::PostEmpty, false},
         {RequestMethod::PutEmpty, false},
     }};
-    request.method = method_string_map.find(method)->second;
-    request.path = '/' + parsed_url.m_Path;
-    request.headers = *headers;
+    req.method = method_string_map.find(method)->second;
+    req.path = '/' + parsed_url.m_Path;
+    for (const auto& header : headers)
+        req.headers.emplace(header.first, header.second);
     if (method_body_map.find(method)->second) {
+        bool first{true};
         for (const auto& item : post_data) {
             switch (item.type) {
-            case PostData::Type::Ascii: {
-                request.body += fmt::format("{}={}\n", item.ascii.name, item.ascii.value);
+            case PostData::Type::Ascii:
+                if (!first)
+                    req.body += '&';
+                req.body += fmt::format("{}={}", httplib::detail::encode_url(item.ascii.name),
+                                        httplib::detail::encode_url(item.ascii.value));
+                break;
+            case PostData::Type::Binary:
+                if (!first)
+                    req.body += '&';
+                req.body +=
+                    fmt::format("{}={}", httplib::detail::encode_url(item.binary.name),
+                                httplib::detail::encode_url(std::string(
+                                    reinterpret_cast<const char*>(item.binary.data.data()))));
+                break;
+            case PostData::Type::Raw:
+                req.body += item.raw.data;
                 break;
             }
-            case PostData::Type::Binary: {
-                request.body += fmt::format(
-                    "{}={}\n", item.binary.name,
-                    std::string(reinterpret_cast<const char*>(item.binary.data.data())));
-                break;
-            }
-            case PostData::Type::Raw: {
-                request.body += fmt::format("{}\n", item.raw.data);
-                break;
-            }
-            }
+            first = false;
         }
-        if (!post_data.empty())
-            request.body.pop_back();
     }
-    hl::detail::parse_query_text(parsed_url.m_Query, request.params);
-    response = std::make_shared<hl::Response>();
-    cli->send(request, *response);
-    if (response)
-        LOG_DEBUG(Service_HTTP, "Raw response: {}",
-                  GetRawResponseWithoutBody().append(1, '\n').append(response->body));
+    httplib::Response res;
+    if (cli->send(req, res)) {
+        response.status_code = static_cast<u32>(res.status);
+        response.body = res.body;
+        response.raw = GetRawResponseWithoutBody();
+        response.headers.clear();
+        for (const auto& header : res.headers)
+            response.headers[header.first] = header.second;
+        LOG_DEBUG(Service_HTTP, "Raw response: {}", response.raw.append(1, '\n').append(res.body));
+    } else {
+        response.status_code = 500;
+        response.body.clear();
+        response.raw.clear();
+        response.headers.clear();
+    }
 }
 
 void Context::SetKeepAlive(bool enable) {
-    auto itr{headers->headers.find("Connection")};
-    bool header_keep_alive{(itr != headers->headers.end()) && (itr->second == "Keep-Alive")};
-    if (enable && !header_keep_alive)
-        headers->headers.emplace("Connection", "Keep-Alive");
-    else if (!enable && header_keep_alive)
-        headers->headers.erase("Connection");
+    headers["Connection"] = enable ? "keep-alive" : "close";
 }
 
 std::string Context::GetRawResponseWithoutBody() const {
-    std::string str{fmt::format("HTTP/1.1 {} ", response->status)};
-    switch (response->status) {
+    std::string str{fmt::format("HTTP/1.1 {} ", response.status_code)};
+    switch (response.status_code) {
     case 100:
         str += "Continue";
         break;
@@ -285,7 +284,7 @@ std::string Context::GetRawResponseWithoutBody() const {
         break;
     }
     str += "\r\n";
-    for (const auto& header : response->headers.headers) {
+    for (const auto& header : response.headers) {
         str += header.first;
         str += ": ";
         str += header.second;
@@ -397,7 +396,6 @@ void HTTP_C::CreateContext(Kernel::HLERequestContext& ctx) {
     context.socket_buffer_size = 0;
     context.handle = context_counter;
     context.session_id = session_data->session_id;
-    context.headers = std::make_unique<httplib::Headers>();
     ++session_data->num_http_contexts;
     auto rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
@@ -488,9 +486,7 @@ void HTTP_C::AddRequestHeader(Kernel::HLERequestContext& ctx) {
         rb.PushMappedBuffer(value_buffer);
         return;
     }
-    if (itr->second.headers->headers.find(name) != itr->second.headers->headers.end())
-        itr->second.headers->headers.erase(name);
-    itr->second.headers->headers.emplace(name, value);
+    itr->second.headers[name] = value;
     auto rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(value_buffer);
@@ -769,8 +765,8 @@ void HTTP_C::GetResponseHeader(Kernel::HLERequestContext& ctx) {
     const std::string name(name_buffer.begin(), name_buffer.end() - 1);
     auto itr{contexts.find(context_id)};
     ASSERT(itr != contexts.end());
-    if (itr->second.response->has_header(name.c_str())) {
-        std::string value{itr->second.response->get_header_value(name.c_str())};
+    if (itr->second.response.HasHeader(name)) {
+        auto value{itr->second.response.GetHeader(name)};
         if (value.length() > value_max_size)
             value.resize(value_max_size);
         value_buffer.Write(value.c_str(), 0, value.length());
@@ -801,8 +797,8 @@ void HTTP_C::GetResponseHeaderTimeout(Kernel::HLERequestContext& ctx) {
     auto itr{contexts.find(context_id)};
     ASSERT(itr != contexts.end());
     itr->second.timeout = timeout;
-    if (itr->second.response->has_header(name.c_str())) {
-        std::string value{itr->second.response->get_header_value(name.c_str())};
+    if (itr->second.response.HasHeader(name)) {
+        auto value{itr->second.response.GetHeader(name)};
         if (value.length() > value_max_size)
             value.resize(value_max_size);
         value_buffer.Write(value.c_str(), 0, value.length());
@@ -869,8 +865,9 @@ void HTTP_C::GetResponseStatusCode(Kernel::HLERequestContext& ctx) {
     ASSERT(itr != contexts.end());
     auto rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
-    rb.Push(static_cast<u32>(itr->second.response->status));
-    LOG_DEBUG(Service_HTTP, "context_id={}, status={}", context_id, itr->second.response->status);
+    rb.Push(itr->second.response.status_code);
+    LOG_DEBUG(Service_HTTP, "context_id={}, status_code={}", context_id,
+              itr->second.response.status_code);
 }
 
 void HTTP_C::GetResponseStatusCodeTimeout(Kernel::HLERequestContext& ctx) {
@@ -882,9 +879,9 @@ void HTTP_C::GetResponseStatusCodeTimeout(Kernel::HLERequestContext& ctx) {
     itr->second.timeout = timeout;
     auto rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(static_cast<u32>(itr->second.response->status));
-    LOG_DEBUG(Service_HTTP, "context_id={}, timeout={}, status={}", context_id, timeout,
-              itr->second.response->status);
+    rb.Push(itr->second.response.status_code);
+    LOG_DEBUG(Service_HTTP, "context_id={}, timeout={}, status_code={}", context_id, timeout,
+              itr->second.response.status_code);
 }
 
 void HTTP_C::AddTrustedRootCA(Kernel::HLERequestContext& ctx) {
@@ -903,9 +900,8 @@ void HTTP_C::AddTrustedRootCA(Kernel::HLERequestContext& ctx) {
     cert.certificate.resize(buffer_size);
     buffer.Read(cert.certificate.data(), 0, buffer_size);
     itr->second.ssl_config.root_ca_chain.certificates.push_back(cert);
-    auto rb{rp.MakeBuilder(2, 0)};
+    auto rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(static_cast<u32>(itr->second.response->status));
     LOG_DEBUG(Service_HTTP, "context_id={}, buffer_size={}", context_id, buffer_size);
 }
 
@@ -1059,7 +1055,7 @@ void HTTP_C::ReceiveData(Kernel::HLERequestContext& ctx) {
     ASSERT(itr != contexts.end());
     const u32 size{
         std::min(buffer_size, itr->second.GetResponseContentLength() - itr->second.current_offset)};
-    buffer.Write(&itr->second.response->body[itr->second.current_offset], 0, size);
+    buffer.Write(&itr->second.response.body[itr->second.current_offset], 0, size);
     itr->second.current_offset += size;
     auto rb{rp.MakeBuilder(1, 2)};
     rb.Push(itr->second.current_offset < itr->second.GetResponseContentLength()
@@ -1080,7 +1076,7 @@ void HTTP_C::ReceiveDataTimeout(Kernel::HLERequestContext& ctx) {
     itr->second.timeout = timeout;
     const u32 size{
         std::min(buffer_size, itr->second.GetResponseContentLength() - itr->second.current_offset)};
-    buffer.Write(&itr->second.response->body[itr->second.current_offset], 0, size);
+    buffer.Write(&itr->second.response.body[itr->second.current_offset], 0, size);
     itr->second.current_offset += size;
     auto rb{rp.MakeBuilder(1, 2)};
     rb.Push(itr->second.current_offset < itr->second.GetResponseContentLength()
@@ -1143,7 +1139,7 @@ void HTTP_C::GetSSLError(Kernel::HLERequestContext& ctx) {
     ASSERT(itr != contexts.end());
     auto rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(itr->second.ssl_error);
+    rb.Push(itr->second.ssl_error);
     LOG_DEBUG(Service_HTTP, "ssl_error={}", itr->second.ssl_error);
 }
 
@@ -1157,7 +1153,7 @@ void HTTP_C::CreateRootCertChain(Kernel::HLERequestContext& ctx) {
     root_cert_chains.emplace(chain.handle, chain);
     IPC::ResponseBuilder rb{ctx, 0x2D, 2, 0};
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(root_cert_chains_counter);
+    rb.Push(root_cert_chains_counter);
 }
 
 void HTTP_C::DestroyRootCertChain(Kernel::HLERequestContext& ctx) {

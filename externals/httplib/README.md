@@ -23,5 +23,4 @@ Add the functions to Client:
 - void add_client_cert_ASN1(std::vector<unsigned char> cert, std::vector<unsigned char> key)
 - void add_cert(std::vector<unsigned char> cert)
 Add SSLVerifyMode enum
-Change Headers to a struct
 File formatted using clang-format

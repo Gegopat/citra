@@ -17,12 +17,23 @@ namespace Core {
 class System;
 } // namespace Core
 
-namespace httplib {
-struct Response;
-struct Headers;
-} // namespace httplib
-
 namespace Service::HTTP {
+
+using Headers = std::unordered_map<std::string, std::string>;
+
+struct Response {
+    std::string raw, body;
+    Headers headers;
+    u32 status_code;
+
+    bool HasHeader(const std::string& name) const {
+        return headers.find(name) != headers.end();
+    }
+
+    std::string GetHeader(const std::string& name) const {
+        return headers.find(name)->second;
+    }
+};
 
 enum class RequestMethod : u8 {
     None = 0x0,
@@ -148,10 +159,10 @@ public:
     std::optional<BasicAuth> basic_auth;
     SSLConfig ssl_config{};
     u32 socket_buffer_size;
-    std::unique_ptr<httplib::Headers> headers;
+    Headers headers;
     std::vector<PostData> post_data;
     u32 current_offset{};
-    std::shared_ptr<httplib::Response> response;
+    Response response;
     u64 timeout;
     bool proxy_default;
     u32 ssl_error{};

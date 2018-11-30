@@ -87,7 +87,7 @@ Common::WebResult LobbyAPI::MakeRequest(const std::string& method, const std::st
     using namespace httplib;
     Headers headers;
     if (method != "GET")
-        headers.headers.emplace("Content-Type", "application/json");
+        headers.emplace("Content-Type", "application/json");
     Request request;
     request.method = method;
     request.path = "/lobby";
@@ -103,8 +103,8 @@ Common::WebResult LobbyAPI::MakeRequest(const std::string& method, const std::st
         return Common::WebResult{Common::WebResult::Code::HttpError,
                                  std::to_string(response.status)};
     }
-    auto content_type{response.headers.headers.find("Content-Type")};
-    if (content_type == response.headers.headers.end()) {
+    auto content_type{response.headers.find("Content-Type")};
+    if (content_type == response.headers.end()) {
         LOG_ERROR(Network, "{} returned no content", method);
         return Common::WebResult{Common::WebResult::Code::WrongContent, ""};
     }
