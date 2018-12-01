@@ -25,11 +25,5 @@ cp -rv "${QT_PLATFORM_DLL_PATH}/../mediaservice/" package/
 cp -rv "${QT_PLATFORM_DLL_PATH}/../imageformats/" package/
 rm -f package/mediaservice/*d.dll
 
-for i in package/*.exe; do
-  # We need to process pdb here, however, cv2pdb
-  # does not work here, so we just simply strip all the debug symbols
-  x86_64-w64-mingw32-strip "${i}"
-done
-
 pip3 install pefile
 python3 .travis/linux-mingw/scan_dll.py package/*.exe package/imageformats/*.dll "package/"
