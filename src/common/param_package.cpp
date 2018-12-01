@@ -51,7 +51,7 @@ std::string ParamPackage::Serialize() const {
     std::string result;
     for (const auto& pair : data) {
         std::array<std::string, 2> key_value{{pair.first, pair.second}};
-        for (std::string& part : key_value) {
+        for (auto& part : key_value) {
             part = Common::ReplaceAll(part, {ESCAPE_CHARACTER}, ESCAPE_CHARACTER_ESCAPE);
             part = Common::ReplaceAll(part, {PARAM_SEPARATOR}, PARAM_SEPARATOR_ESCAPE);
             part = Common::ReplaceAll(part, {KEY_VALUE_SEPARATOR}, KEY_VALUE_SEPARATOR_ESCAPE);

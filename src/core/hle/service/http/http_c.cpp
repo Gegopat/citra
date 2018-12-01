@@ -4,7 +4,9 @@
 
 #include <LUrlParser.h>
 #include <cryptopp/aes.h>
+#include <cryptopp/base64.h>
 #include <cryptopp/modes.h>
+#include <fmt/format.h>
 #include <httplib.h>
 #include "core/core.h"
 #include "core/file_sys/archive_ncch.h"
@@ -69,25 +71,8 @@ u32 Context::GetResponseContentLength() const {
 }
 
 void Context::Send() {
-    namespace hl = httplib;
-    auto parsed_url{LUrlParser::clParseURL::ParseURL(url)};
-    std::unique_ptr<hl::Client> cli;
-    int port;
-    if (parsed_url.m_Scheme == "http") {
-        if (!parsed_url.GetPort(&port))
-            port = 80;
-        cli = std::make_unique<hl::Client>(parsed_url.m_Host.c_str(), port,
-                                           (timeout == 0) ? 300 : (timeout * std::pow(10, -9)));
-    } else if (parsed_url.m_Scheme == "https") {
-        if (!parsed_url.GetPort(&port))
-            port = 443;
-        cli = std::make_unique<hl::SSLClient>(parsed_url.m_Host.c_str(), port,
-                                              (timeout == 0) ? 300 : (timeout * std::pow(10, -9)));
-    } else
-        UNREACHABLE_MSG("Invalid scheme!");
-    if ((ssl_config.options & 0x200) == 0x200)
-        cli->set_verify(hl::SSLVerifyMode::None);
-    hl::Request req;
+    client->set_verify(!((ssl_config.options & 0x200) == 0x200));
+    httplib::Request req;
     static const std::unordered_map<RequestMethod, std::string> method_string_map{{
         {RequestMethod::Get, "GET"},
         {RequestMethod::Post, "POST"},
@@ -107,7 +92,7 @@ void Context::Send() {
         {RequestMethod::PutEmpty, false},
     }};
     req.method = method_string_map.find(method)->second;
-    req.path = '/' + parsed_url.m_Path;
+    req.path = /*'/' + */ path;
     for (const auto& header : headers)
         req.headers.emplace(header.first, header.second);
     if (method_body_map.find(method)->second) {
@@ -136,7 +121,7 @@ void Context::Send() {
         }
     }
     httplib::Response res;
-    if (cli->send(req, res)) {
+    if (client->send(req, res)) {
         response.status_code = static_cast<u32>(res.status);
         response.body = res.body;
         response.raw = GetRawResponseWithoutBody();
@@ -157,7 +142,7 @@ void Context::SetKeepAlive(bool enable) {
 }
 
 std::string Context::GetRawResponseWithoutBody() const {
-    std::string str{fmt::format("HTTP/1.1 {} ", response.status_code)};
+    auto str{fmt::format("HTTP/1.1 {} ", response.status_code)};
     switch (response.status_code) {
     case 100:
         str += "Continue";
@@ -389,7 +374,19 @@ void HTTP_C::CreateContext(Kernel::HLERequestContext& ctx) {
         return;
     }
     auto& context{contexts.emplace(++context_counter, Context{}).first->second};
-    context.url = url;
+    auto parsed_url{LUrlParser::clParseURL::ParseURL(url)};
+    int port;
+    if (parsed_url.m_Scheme == "http") {
+        if (!parsed_url.GetPort(&port))
+            port = 80;
+        context.client = std::make_unique<httplib::Client>(parsed_url.m_Host.c_str(), port);
+    } else if (parsed_url.m_Scheme == "https") {
+        if (!parsed_url.GetPort(&port))
+            port = 443;
+        context.client = std::make_unique<httplib::SSLClient>(parsed_url.m_Host.c_str(), port);
+    } else
+        UNREACHABLE_MSG("Invalid scheme!");
+    context.path = parsed_url.m_Path;
     context.method = method;
     context.state = RequestState::NotStarted;
     // TODO: Find a correct default value for this field.
@@ -732,7 +729,6 @@ void HTTP_C::SendPOSTDataRawTimeout(Kernel::HLERequestContext& ctx) {
     ASSERT(itr != contexts.end());
     std::string data(buffer_size, '\0');
     buffer.Read(&data[0], 0, buffer_size);
-    itr->second.timeout = timeout;
     using PostData = Context::PostData;
     PostData post_data;
     post_data.type = PostData::Type::Raw;
@@ -796,7 +792,6 @@ void HTTP_C::GetResponseHeaderTimeout(Kernel::HLERequestContext& ctx) {
     const std::string name(name_buffer.begin(), name_buffer.end() - 1);
     auto itr{contexts.find(context_id)};
     ASSERT(itr != contexts.end());
-    itr->second.timeout = timeout;
     if (itr->second.response.HasHeader(name)) {
         auto value{itr->second.response.GetHeader(name)};
         if (value.length() > value_max_size)
@@ -826,7 +821,7 @@ void HTTP_C::GetResponseData(Kernel::HLERequestContext& ctx) {
     auto& buffer{rp.PopMappedBuffer()};
     auto itr{contexts.find(context_id)};
     ASSERT(itr != contexts.end());
-    std::string raw{itr->second.GetRawResponseWithoutBody()};
+    auto raw{itr->second.GetRawResponseWithoutBody()};
     if (raw.length() > max_buffer_size)
         raw.resize(max_buffer_size);
     buffer.Write(raw.c_str(), 0, raw.length());
@@ -845,8 +840,7 @@ void HTTP_C::GetResponseDataTimeout(Kernel::HLERequestContext& ctx) {
     auto& buffer{rp.PopMappedBuffer()};
     auto itr{contexts.find(context_id)};
     ASSERT(itr != contexts.end());
-    itr->second.timeout = timeout;
-    std::string raw{itr->second.GetRawResponseWithoutBody()};
+    auto raw{itr->second.GetRawResponseWithoutBody()};
     if (raw.length() > max_buffer_size)
         raw.resize(max_buffer_size);
     buffer.Write(raw.c_str(), 0, raw.length());
@@ -876,7 +870,6 @@ void HTTP_C::GetResponseStatusCodeTimeout(Kernel::HLERequestContext& ctx) {
     const u64 timeout{rp.Pop<u64>()};
     auto itr{contexts.find(context_id)};
     ASSERT(itr != contexts.end());
-    itr->second.timeout = timeout;
     auto rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(itr->second.response.status_code);
@@ -1073,7 +1066,6 @@ void HTTP_C::ReceiveDataTimeout(Kernel::HLERequestContext& ctx) {
     auto& buffer{rp.PopMappedBuffer()};
     auto itr{contexts.find(context_id)};
     ASSERT(itr != contexts.end());
-    itr->second.timeout = timeout;
     const u32 size{
         std::min(buffer_size, itr->second.GetResponseContentLength() - itr->second.current_offset)};
     buffer.Write(&itr->second.response.body[itr->second.current_offset], 0, size);
@@ -1260,9 +1252,19 @@ void HTTP_C::SetBasicAuthorization(Kernel::HLERequestContext& ctx) {
     std::memcpy(&password[0], password_buffer.data(), password_length);
     auto itr{contexts.find(context_id)};
     ASSERT(itr != contexts.end());
-    itr->second.basic_auth = Context::BasicAuth{};
-    itr->second.basic_auth->username = username;
-    itr->second.basic_auth->password = password;
+    using namespace CryptoPP;
+    using Name::EncodingLookupArray;
+    using Name::InsertLineBreaks;
+    using Name::Pad;
+    auto in{fmt::format("{}:{}", username, password)};
+    std::string out;
+    Base64Encoder encoder;
+    AlgorithmParameters params{MakeParameters(InsertLineBreaks(), false)(Pad(), false)};
+    encoder.IsolatedInitialize(params);
+    encoder.Attach(new StringSink(out));
+    encoder.Put((byte*)in.data(), in.length());
+    encoder.MessageEnd();
+    itr->second.headers["Authorization"] = fmt::format("Basic {}", out);
     auto rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
     LOG_WARNING(Service_HTTP, "(stubbed) username={}, password={}", username, password);

@@ -303,7 +303,7 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
         std::lock_guard lock{ban_list_mutex};
         // Check IP ban
         char ip_raw[256];
-        enet_address_get_host_ip(&event->peer->address, ip_raw, 256);
+        enet_address_get_host_ip(&event->peer->address, ip_raw, sizeof(ip_raw) - 1);
         std::string ip{ip_raw};
         if (std::find(ban_list.begin(), ban_list.end(), ip) != ban_list.end()) {
             SendUserBanned(event->peer);

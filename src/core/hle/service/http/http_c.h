@@ -17,6 +17,10 @@ namespace Core {
 class System;
 } // namespace Core
 
+namespace httplib {
+class Client;
+} // namespace httplib
+
 namespace Service::HTTP {
 
 using Headers = std::unordered_map<std::string, std::string>;
@@ -152,20 +156,19 @@ public:
 
     Handle handle;
     u32 session_id;
-    std::string url;
+    std::string path;
     RequestMethod method;
     RequestState state{RequestState::NotStarted};
     std::optional<Proxy> proxy;
-    std::optional<BasicAuth> basic_auth;
     SSLConfig ssl_config{};
     u32 socket_buffer_size;
     Headers headers;
     std::vector<PostData> post_data;
     u32 current_offset{};
     Response response;
-    u64 timeout;
     bool proxy_default;
     u32 ssl_error{};
+    std::unique_ptr<httplib::Client> client;
 
     u32 GetResponseContentLength() const;
     void Send();

@@ -50,7 +50,6 @@ typedef SOCKET socket_t;
 #include <sys/socket.h>
 #include <unistd.h>
 
-
 typedef int socket_t;
 #define INVALID_SOCKET (-1)
 #endif
@@ -66,7 +65,6 @@ typedef int socket_t;
 #include <string>
 #include <sys/stat.h>
 #include <thread>
-
 
 #ifdef CPPHTTPLIB_OPENSSL_SUPPORT
 #include <openssl/ssl.h>
@@ -97,15 +95,6 @@ struct ci {
 } // namespace detail
 
 enum class HttpVersion { v1_0 = 0, v1_1 };
-
-enum class SSLVerifyMode {
-#ifdef CPPHTTPLIB_OPENSSL_SUPPORT
-  None = SSL_VERIFY_NONE,
-  Peer = SSL_VERIFY_PEER,
-  FailNoPeerCert = SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
-  VerifyOnce = SSL_VERIFY_CLIENT_ONCE
-#endif
-};
 
 typedef std::multimap<std::string, std::string, detail::ci> Headers;
 
@@ -274,7 +263,7 @@ public:
 
   virtual bool is_valid() const;
 
-  virtual void set_verify(SSLVerifyMode mode);
+  virtual void set_verify(bool enable);
 
   virtual void add_client_cert_ASN1(std::vector<unsigned char> cert,
                                     std::vector<unsigned char> key);
@@ -369,7 +358,7 @@ public:
 
   virtual bool is_valid() const;
 
-  virtual void set_verify(SSLVerifyMode mode);
+  virtual void set_verify(bool enable);
 
   virtual void add_client_cert_ASN1(std::vector<unsigned char> cert,
                                     std::vector<unsigned char> key);
@@ -1872,13 +1861,15 @@ inline Client::~Client() {}
 
 inline bool Client::is_valid() const { return true; }
 
-inline void Client::set_verify(SSLVerifyMode mode) {
+inline void Client::set_verify(bool enable) {
   // nothing to do here
 }
+
 inline void Client::add_client_cert_ASN1(std::vector<unsigned char> cert,
                                          std::vector<unsigned char> key) {
   // nothing to do here
 }
+
 inline void Client::add_cert(std::vector<unsigned char> cert) {
   // nothing to do here
 }
@@ -2315,9 +2306,9 @@ inline SSLClient::~SSLClient() {
 
 inline bool SSLClient::is_valid() const { return ctx_; }
 
-inline void SSLClient::set_verify(SSLVerifyMode mode) {
+inline void SSLClient::set_verify(bool enable) {
   if (is_valid()) {
-    SSL_CTX_set_verify(ctx_, static_cast<int>(mode), NULL);
+    SSL_CTX_set_verify(ctx_, enable ? SSL_VERIFY_PEER : SSL_VERIFY_NONE, NULL);
   }
 }
 
