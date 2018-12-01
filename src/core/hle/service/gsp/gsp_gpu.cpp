@@ -26,12 +26,14 @@ namespace Service::GSP {
 const u32 REGS_BEGIN{0x1EB00000};
 
 namespace ErrCodes {
+
 enum {
     // TODO: Check if this name fits its actual usage
     OutofRangeOrMisalignedAddress = 513,
     FirstInitialization = 519,
 };
-}
+
+} // namespace ErrCodes
 
 constexpr ResultCode RESULT_FIRST_INITIALIZATION(ErrCodes::FirstInitialization, ErrorModule::GX,
                                                  ErrorSummary::Success, ErrorLevel::Success);

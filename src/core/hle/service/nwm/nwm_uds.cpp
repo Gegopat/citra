@@ -25,10 +25,12 @@
 namespace Service::NWM {
 
 namespace ErrCodes {
+
 enum {
     NotInitialized = 2,
     WrongStatus = 490,
 };
+
 } // namespace ErrCodes
 
 // Number of beacons to store before we start dropping the old ones.

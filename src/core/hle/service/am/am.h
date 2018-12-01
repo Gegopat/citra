@@ -27,6 +27,7 @@ enum class MediaType : u32;
 namespace Service::AM {
 
 namespace ErrCodes {
+
 enum {
     CIACurrentlyInstalling = 4,
     InvalidTID = 31,
@@ -35,6 +36,7 @@ enum {
     InvalidTIDInList = 60,
     InvalidCIAHeader = 104,
 };
+
 } // namespace ErrCodes
 
 enum class CIAInstallState : u32 {

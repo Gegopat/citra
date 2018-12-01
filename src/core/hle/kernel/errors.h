@@ -7,7 +7,9 @@
 #include "core/hle/result.h"
 
 namespace Kernel {
+
 namespace ErrCodes {
+
 enum {
     OutOfHandles = 19,
     SessionClosedByRemote = 26,
@@ -19,6 +21,7 @@ enum {
     MaxConnectionsReached = 52,
     CommandTooLarge = 54,
 };
+
 } // namespace ErrCodes
 
 // WARNING: The kernel is quite inconsistent in it's usage of errors code. Make sure to always

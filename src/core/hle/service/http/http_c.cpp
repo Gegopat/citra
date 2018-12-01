@@ -22,6 +22,7 @@
 namespace Service::HTTP {
 
 namespace ErrCodes {
+
 enum {
     InvalidRequestState = 22,
     TooManyContexts = 26,
@@ -37,6 +38,7 @@ enum {
     TooManyClientCerts = 203,
     NotImplemented = 1012,
 };
+
 } // namespace ErrCodes
 
 const ResultCode ERROR_STATE_ERROR{// 0xD8A0A066
