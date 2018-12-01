@@ -247,9 +247,9 @@ bool Source::DequeueBuffer() {
         state.adpcm_state.yn1 = buf.adpcm_yn[0];
         state.adpcm_state.yn2 = buf.adpcm_yn[1];
     }
-    const u8* memory{Memory::GetPhysicalPointer(buf.physical_address)};
+    const u8* memory{Memory::GetPhysicalPointer(buf.physical_address & 0xFFFFFFFE)};
     if (memory) {
-        const unsigned num_channels{
+        const auto num_channels{
             static_cast<unsigned>(buf.mono_or_stereo == MonoOrStereo::Stereo ? 2 : 1)};
         switch (buf.format) {
         case Format::PCM8:
