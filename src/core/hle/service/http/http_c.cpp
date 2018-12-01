@@ -92,7 +92,7 @@ void Context::Send() {
         {RequestMethod::PutEmpty, false},
     }};
     req.method = method_string_map.find(method)->second;
-    req.path = /*'/' + */ path;
+    req.path = '/' + path;
     for (const auto& header : headers)
         req.headers.emplace(header.first, header.second);
     if (method_body_map.find(method)->second) {
