@@ -59,7 +59,7 @@ void from_json(const nlohmann::json& json, Room& room) {
 } // namespace AnnounceMultiplayerRoom
 
 LobbyAPI::LobbyAPI()
-    : client{std::make_shared<httplib::SSLClient>("citra-valentin-api.herokuapp.com", 443)} {}
+    : client{std::make_shared<httplib::SSLClient>("citra-valentin-api.glitch.me", 443)} {}
 
 void LobbyAPI::SetRoomInformation(const std::string& name, const u16 port,
                                   const std::string& creator, const std::string& description,
