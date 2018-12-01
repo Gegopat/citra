@@ -45,7 +45,7 @@ void EmuThread::run() {
             emit ErrorThrown(result, system.GetStatusDetails());
         }
     }
-    // Shutdown the core emulation
+    // Shutdown the system
     system.Shutdown();
     screens->moveContext();
 }
@@ -114,9 +114,9 @@ void Screens::DoneCurrent() {
 void Screens::OnFramebufferSizeChanged() {
     // Screen changes potentially incur a change in screen DPI, hence we should update the
     // framebuffer size
-    qreal pixel_ratio{windowPixelRatio()};
-    unsigned width{static_cast<unsigned>(child->QPaintDevice::width() * pixel_ratio)};
-    unsigned height{static_cast<unsigned>(child->QPaintDevice::height() * pixel_ratio)};
+    auto pixel_ratio{WindowPixelRatio()};
+    auto width{static_cast<unsigned>(child->QPaintDevice::width() * pixel_ratio)};
+    auto height{static_cast<unsigned>(child->QPaintDevice::height() * pixel_ratio)};
     UpdateCurrentFramebufferLayout(width, height);
 }
 
@@ -144,13 +144,13 @@ QByteArray Screens::saveGeometry() {
         return geometry;
 }
 
-qreal Screens::windowPixelRatio() const {
+qreal Screens::WindowPixelRatio() const {
     // windowHandle() might not be accessible until the window is displayed to screen.
     return windowHandle() ? windowHandle()->screen()->devicePixelRatio() : 1.0f;
 }
 
 std::pair<unsigned, unsigned> Screens::ScaleTouch(const QPointF pos) const {
-    const qreal pixel_ratio{windowPixelRatio()};
+    const auto pixel_ratio{WindowPixelRatio()};
     return {static_cast<unsigned>(std::max(std::round(pos.x() * pixel_ratio), qreal{0.0})),
             static_cast<unsigned>(std::max(std::round(pos.y() * pixel_ratio), qreal{0.0}))};
 }
@@ -267,10 +267,8 @@ void Screens::InitRenderTarget() {
     BackupGeometry();
 }
 
-void Screens::CaptureScreenshot(u16 res_scale, const QString& screenshot_path) {
-    if (!res_scale)
-        res_scale = Settings::values.resolution_factor;
-    const auto layout{Layout::FrameLayoutFromResolutionScale(res_scale)};
+void Screens::CaptureScreenshot(const QString& screenshot_path) {
+    const auto layout{Layout::FrameLayoutFromResolutionScale(Settings::values.resolution_factor)};
     screenshot_image = QImage(QSize(layout.width, layout.height), QImage::Format_RGB32);
     VideoCore::RequestScreenshot(screenshot_image.bits(),
                                  [=] {

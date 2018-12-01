@@ -273,11 +273,6 @@ void Config::Load() {
     qt_config->beginGroup("UI");
     UISettings::values.confirm_close = qt_config->value("confirm_close", true).toBool();
     UISettings::values.theme = qt_config->value("theme", UISettings::themes[0].second).toString();
-    u16 screenshot_resolution_factor{
-        static_cast<u16>(qt_config->value("screenshot_resolution_factor", 1).toInt())};
-    if (screenshot_resolution_factor == 0)
-        screenshot_resolution_factor = 1;
-    UISettings::values.screenshot_resolution_factor = screenshot_resolution_factor;
     qt_config->beginGroup("UILayout");
     UISettings::values.geometry = qt_config->value("geometry").toByteArray();
     UISettings::values.state = qt_config->value("state").toByteArray();
@@ -497,8 +492,6 @@ void Config::Save() {
     qt_config->beginGroup("UI");
     qt_config->setValue("confirm_close", UISettings::values.confirm_close);
     qt_config->setValue("theme", UISettings::values.theme);
-    qt_config->setValue("screenshot_resolution_factor",
-                        UISettings::values.screenshot_resolution_factor);
     qt_config->beginGroup("UILayout");
     qt_config->setValue("geometry", UISettings::values.geometry);
     qt_config->setValue("state", UISettings::values.state);

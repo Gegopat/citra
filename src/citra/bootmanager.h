@@ -8,7 +8,6 @@
 #include <QGLWidget>
 #include <QImage>
 #include <QThread>
-#include "common/common_types.h"
 #include "core/core.h"
 #include "core/frontend.h"
 
@@ -64,7 +63,7 @@ public:
     void restoreGeometry(const QByteArray& geometry); // overridden
     QByteArray saveGeometry();                        // overridden
 
-    qreal windowPixelRatio() const;
+    qreal WindowPixelRatio() const;
 
     void closeEvent(QCloseEvent* event) override;
 
@@ -81,7 +80,7 @@ public:
 
     void InitRenderTarget();
 
-    void CaptureScreenshot(u16 res_scale, const QString& screenshot_path);
+    void CaptureScreenshot(const QString& screenshot_path);
 
     Q_INVOKABLE void LaunchSoftwareKeyboardImpl(HLE::Applets::SoftwareKeyboardConfig& config,
                                                 std::u16string& text, bool& is_running);

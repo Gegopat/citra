@@ -77,8 +77,6 @@ struct Values {
     ProgramListText program_list_row_2;
     bool program_list_hide_no_icon;
 
-    u16 screenshot_resolution_factor;
-
     QList<UISettings::AppDir> program_dirs;
     QStringList recent_files;
 

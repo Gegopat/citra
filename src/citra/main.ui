@@ -172,7 +172,6 @@
     <addaction name="menu_Frame_Advancing"/>
     <addaction name="separator"/>
     <addaction name="action_Capture_Screenshot"/>
-    <addaction name="action_Set_Screenshot_Resolution"/>
     <addaction name="action_Set_Play_Coins"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
@@ -506,11 +505,6 @@
    </property>
    <property name="text">
     <string>Custom Layout</string>
-   </property>
-  </action>
-  <action name="action_Set_Screenshot_Resolution">
-   <property name="text">
-    <string>Set Screenshot Resolution</string>
    </property>
   </action>
  </widget>
