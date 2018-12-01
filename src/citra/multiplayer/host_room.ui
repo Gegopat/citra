@@ -41,7 +41,7 @@
         <item row="0" column="1">
          <widget class="QLineEdit" name="room_name">
           <property name="maxLength">
-           <number>50</number>
+           <number>100</number>
           </property>
          </widget>
         </item>
@@ -55,10 +55,7 @@
         <item row="1" column="1">
          <widget class="QSpinBox" name="max_members">
           <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>16</number>
+           <number>2</number>
           </property>
           <property name="value">
            <number>8</number>

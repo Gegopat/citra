@@ -31,6 +31,7 @@ HostRoomWindow::HostRoomWindow(QWidget* parent,
     : QDialog{parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint},
       ui{std::make_unique<Ui::HostRoom>()}, announce_multiplayer_session{session}, system{system} {
     ui->setupUi(this);
+    ui->max_members->setMaximum(Network::MaxConcurrentConnections);
     // Set up validation for all of the fields
     ui->room_name->setValidator(validation.GetRoomName());
     ui->nickname->setValidator(validation.GetNickname());
