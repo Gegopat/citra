@@ -89,15 +89,12 @@ private:
 
     /// Merges exit method of two parallel branches.
     static ExitMethod ParallelExit(ExitMethod a, ExitMethod b) {
-        if (a == ExitMethod::Undetermined) {
+        if (a == ExitMethod::Undetermined)
             return b;
-        }
-        if (b == ExitMethod::Undetermined) {
+        else if (b == ExitMethod::Undetermined)
             return a;
-        }
-        if (a == b) {
+        else if (a == b)
             return a;
-        }
         return ExitMethod::Conditional;
     }
 
@@ -105,19 +102,12 @@ private:
     static ExitMethod SeriesExit(ExitMethod a, ExitMethod b) {
         // This should be handled before evaluating b.
         DEBUG_ASSERT(a != ExitMethod::AlwaysEnd);
-
-        if (a == ExitMethod::Undetermined) {
+        if (a == ExitMethod::Undetermined)
             return ExitMethod::Undetermined;
-        }
-
-        if (a == ExitMethod::AlwaysReturn) {
+        else if (a == ExitMethod::AlwaysReturn)
             return b;
-        }
-
-        if (b == ExitMethod::Undetermined || b == ExitMethod::AlwaysEnd) {
+        else if (b == ExitMethod::Undetermined || b == ExitMethod::AlwaysEnd)
             return ExitMethod::AlwaysEnd;
-        }
-
         return ExitMethod::Conditional;
     }
 
@@ -125,39 +115,35 @@ private:
     ExitMethod Scan(u32 begin, u32 end, std::set<u32>& labels) {
         auto [iter, inserted]{
             exit_method_map.emplace(std::make_pair(begin, end), ExitMethod::Undetermined)};
-        ExitMethod& exit_method{iter->second};
+        auto& exit_method{iter->second};
         if (!inserted)
             return exit_method;
-
         for (u32 offset{begin}; offset != end && offset != PROGRAM_END; ++offset) {
             const Instruction instr{program_code[offset]};
             switch (instr.opcode.Value()) {
-            case OpCode::Id::END: {
+            case OpCode::Id::END:
                 return exit_method = ExitMethod::AlwaysEnd;
-            }
             case OpCode::Id::JMPC:
             case OpCode::Id::JMPU: {
                 labels.insert(instr.flow_control.dest_offset);
-                ExitMethod no_jmp{Scan(offset + 1, end, labels)};
-                ExitMethod jmp{Scan(instr.flow_control.dest_offset, end, labels)};
+                auto no_jmp{Scan(offset + 1, end, labels)};
+                auto jmp{Scan(instr.flow_control.dest_offset, end, labels)};
                 return exit_method = ParallelExit(no_jmp, jmp);
             }
             case OpCode::Id::CALL: {
                 auto& call{AddSubroutine(instr.flow_control.dest_offset,
                                          instr.flow_control.dest_offset +
                                              instr.flow_control.num_instructions)};
-                if (call.exit_method == ExitMethod::AlwaysEnd) {
+                if (call.exit_method == ExitMethod::AlwaysEnd)
                     return exit_method = ExitMethod::AlwaysEnd;
-                }
-                ExitMethod after_call{Scan(offset + 1, end, labels)};
+                auto after_call{Scan(offset + 1, end, labels)};
                 return exit_method = SeriesExit(call.exit_method, after_call);
             }
             case OpCode::Id::LOOP: {
                 auto& loop{AddSubroutine(offset + 1, instr.flow_control.dest_offset + 1)};
-                if (loop.exit_method == ExitMethod::AlwaysEnd) {
+                if (loop.exit_method == ExitMethod::AlwaysEnd)
                     return exit_method = ExitMethod::AlwaysEnd;
-                }
-                ExitMethod after_loop{Scan(instr.flow_control.dest_offset + 1, end, labels)};
+                auto after_loop{Scan(instr.flow_control.dest_offset + 1, end, labels)};
                 return exit_method = SeriesExit(loop.exit_method, after_loop);
             }
             case OpCode::Id::CALLC:
@@ -165,7 +151,7 @@ private:
                 auto& call{AddSubroutine(instr.flow_control.dest_offset,
                                          instr.flow_control.dest_offset +
                                              instr.flow_control.num_instructions)};
-                ExitMethod after_call{Scan(offset + 1, end, labels)};
+                auto after_call{Scan(offset + 1, end, labels)};
                 return exit_method = SeriesExit(
                            ParallelExit(call.exit_method, ExitMethod::AlwaysReturn), after_call);
             }
@@ -178,15 +164,12 @@ private:
                                                  instr.flow_control.dest_offset +
                                                      instr.flow_control.num_instructions)};
                     else_method = else_sub.exit_method;
-                } else {
+                } else
                     else_method = ExitMethod::AlwaysReturn;
-                }
-
-                ExitMethod both{ParallelExit(if_sub.exit_method, else_method)};
-                if (both == ExitMethod::AlwaysEnd) {
+                auto both{ParallelExit(if_sub.exit_method, else_method)};
+                if (both == ExitMethod::AlwaysEnd)
                     return exit_method = ExitMethod::AlwaysEnd;
-                }
-                ExitMethod after_call{
+                auto after_call{
                     Scan(instr.flow_control.dest_offset + instr.flow_control.num_instructions, end,
                          labels)};
                 return exit_method = SeriesExit(both, after_call);
@@ -201,9 +184,8 @@ class ShaderWriter {
 public:
     void AddLine(const std::string& text) {
         DEBUG_ASSERT(scope >= 0);
-        if (!text.empty()) {
+        if (!text.empty())
             shader_source += std::string(static_cast<std::size_t>(scope) * 4, ' ');
-        }
         shader_source += text + '\n';
     }
 
@@ -256,7 +238,6 @@ public:
         : subroutines{subroutines}, program_code{program_code}, swizzle_data{swizzle_data},
           main_offset{main_offset}, inputreg_getter{inputreg_getter},
           outputreg_getter{outputreg_getter}, sanitize_mul{sanitize_mul}, is_gs{is_gs} {
-
         Generate();
     }
 
@@ -275,12 +256,10 @@ private:
     /// Generates condition evaluation code for the flow control instruction.
     static std::string EvaluateCondition(Instruction::FlowControlType flow_control) {
         using Op = Instruction::FlowControlType::Op;
-
         std::string result_x{flow_control.refx.Value() ? "conditional_code.x"
                                                        : "!conditional_code.x"};
         std::string result_y{flow_control.refy.Value() ? "conditional_code.y"
                                                        : "!conditional_code.y"};
-
         switch (flow_control.op) {
         case Op::JustX:
             return result_x;
@@ -290,13 +269,12 @@ private:
         case Op::And: {
             std::string and_or{flow_control.op == Op::Or ? "any" : "all"};
             std::string bvec{};
-            if (flow_control.refx.Value() && flow_control.refy.Value()) {
+            if (flow_control.refx.Value() && flow_control.refy.Value())
                 bvec = "conditional_code";
-            } else if (!flow_control.refx.Value() && !flow_control.refy.Value()) {
+            else if (!flow_control.refx.Value() && !flow_control.refy.Value())
                 bvec = "not(conditional_code)";
-            } else {
+            else
                 bvec = "bvec2(" + result_x + ", " + result_y + ")";
-            }
             return and_or + "(" + bvec + ")";
         }
         default:
@@ -309,18 +287,16 @@ private:
     std::string GetSourceRegister(const SourceRegister& source_reg,
                                   u32 address_register_index) const {
         u32 index{static_cast<u32>(source_reg.GetIndex())};
-        std::string index_str{std::to_string(index)};
-
+        auto index_str{std::to_string(index)};
         switch (source_reg.GetRegisterType()) {
         case RegisterType::Input:
             return inputreg_getter(index);
         case RegisterType::Temporary:
             return "reg_tmp" + index_str;
         case RegisterType::FloatUniform:
-            if (address_register_index != 0) {
+            if (address_register_index != 0)
                 index_str +=
                     std::string(" + address_registers.") + "xyz"[address_register_index - 1];
-            }
             return "uniforms.f[" + index_str + "]";
         default:
             UNREACHABLE();
@@ -331,7 +307,6 @@ private:
     /// Generates code representing a destination register.
     std::string GetDestRegister(const DestRegister& dest_reg) const {
         u32 index{static_cast<u32>(dest_reg.GetIndex())};
-
         switch (dest_reg.GetRegisterType()) {
         case RegisterType::Output:
             return outputreg_getter(index);
@@ -345,13 +320,12 @@ private:
 
     /// Generates code representing a bool uniform
     std::string GetUniformBool(u32 index) const {
-        if (is_gs && index == 15) {
+        if (is_gs && index == 15)
             // In PICA geometry shader, b15 is set to true after every geometry shader invocation.
             // Accessing b15 usually indicates that the program relies on register value
             // preservation across invocation (and therefore it uses b15 to determine whether to
             // initialize the registers), which cannot be implemented in GL shaders.
             throw DecompileFail("b15 access in geometry shader");
-        }
         return "uniforms.b[" + std::to_string(index) + "]";
     }
 
@@ -363,11 +337,10 @@ private:
         if (subroutine.exit_method == ExitMethod::AlwaysEnd) {
             shader.AddLine(subroutine.GetName() + "();");
             shader.AddLine("return true;");
-        } else if (subroutine.exit_method == ExitMethod::Conditional) {
+        } else if (subroutine.exit_method == ExitMethod::Conditional)
             shader.AddLine("if (" + subroutine.GetName() + "()) { return true; }");
-        } else {
+        else
             shader.AddLine(subroutine.GetName() + "();");
-        }
     }
 
     /**
@@ -382,30 +355,21 @@ private:
                  u32 dest_num_components, u32 value_num_components) {
         u32 dest_mask_num_components{};
         std::string dest_mask_swizzle{"."};
-
-        for (u32 i{}; i < dest_num_components; ++i) {
+        for (u32 i{}; i < dest_num_components; ++i)
             if (swizzle.DestComponentEnabled(static_cast<int>(i))) {
                 dest_mask_swizzle += "xyzw"[i];
                 ++dest_mask_num_components;
             }
-        }
-
-        if (reg.empty() || dest_mask_num_components == 0) {
+        if (reg.empty() || dest_mask_num_components == 0)
             return;
-        }
         DEBUG_ASSERT(value_num_components >= dest_num_components || value_num_components == 1);
-
-        std::string dest{reg + (dest_num_components != 1 ? dest_mask_swizzle : "")};
-
-        std::string src{value};
+        auto dest{reg + (dest_num_components != 1 ? dest_mask_swizzle : "")};
+        auto src{value};
         if (value_num_components == 1) {
-            if (dest_mask_num_components != 1) {
+            if (dest_mask_num_components != 1)
                 src = "vec" + std::to_string(dest_mask_num_components) + "(" + value + ")";
-            }
-        } else if (value_num_components != dest_mask_num_components) {
+        } else if (value_num_components != dest_mask_num_components)
             src = "(" + value + ")" + dest_mask_swizzle;
-        }
-
         shader.AddLine(dest + " = " + src + ";");
     }
 
@@ -418,121 +382,84 @@ private:
      */
     u32 CompileInstr(u32 offset) {
         const Instruction instr{program_code[offset]};
-
         std::size_t swizzle_offset{instr.opcode.Value().GetInfo().type == OpCode::Type::MultiplyAdd
                                        ? instr.mad.operand_desc_id
                                        : instr.common.operand_desc_id};
         const SwizzlePattern swizzle{swizzle_data[swizzle_offset]};
-
         shader.AddLine("// " + std::to_string(offset) + ": " + instr.opcode.Value().GetInfo().name);
-
         switch (instr.opcode.Value().GetInfo().type) {
         case OpCode::Type::Arithmetic: {
             const bool is_inverted{
                 (0 != (instr.opcode.Value().GetInfo().subtype & OpCode::Info::SrcInversed))};
-
             std::string src1{swizzle.negate_src1 ? "-" : ""};
             src1 += GetSourceRegister(instr.common.GetSrc1(is_inverted),
                                       !is_inverted * instr.common.address_register_index);
             src1 += "." + GetSelectorSrc1(swizzle);
-
             std::string src2{swizzle.negate_src2 ? "-" : ""};
             src2 += GetSourceRegister(instr.common.GetSrc2(is_inverted),
                                       is_inverted * instr.common.address_register_index);
             src2 += "." + GetSelectorSrc2(swizzle);
-
-            std::string dest_reg{GetDestRegister(instr.common.dest.Value())};
-
+            auto dest_reg{GetDestRegister(instr.common.dest.Value())};
             switch (instr.opcode.Value().EffectiveOpCode()) {
-            case OpCode::Id::ADD: {
+            case OpCode::Id::ADD:
                 SetDest(swizzle, dest_reg, src1 + " + " + src2, 4, 4);
                 break;
-            }
-
-            case OpCode::Id::MUL: {
-                if (sanitize_mul) {
+            case OpCode::Id::MUL:
+                if (sanitize_mul)
                     SetDest(swizzle, dest_reg, "sanitize_mul(" + src1 + ", " + src2 + ")", 4, 4);
-                } else {
+                else
                     SetDest(swizzle, dest_reg, src1 + " * " + src2, 4, 4);
-                }
                 break;
-            }
-
-            case OpCode::Id::FLR: {
+            case OpCode::Id::FLR:
                 SetDest(swizzle, dest_reg, "floor(" + src1 + ")", 4, 4);
                 break;
-            }
-
-            case OpCode::Id::MAX: {
+            case OpCode::Id::MAX:
                 SetDest(swizzle, dest_reg, "max(" + src1 + ", " + src2 + ")", 4, 4);
                 break;
-            }
-
-            case OpCode::Id::MIN: {
+            case OpCode::Id::MIN:
                 SetDest(swizzle, dest_reg, "min(" + src1 + ", " + src2 + ")", 4, 4);
                 break;
-            }
-
             case OpCode::Id::DP3:
             case OpCode::Id::DP4:
             case OpCode::Id::DPH:
             case OpCode::Id::DPHI: {
-                OpCode::Id opcode{instr.opcode.Value().EffectiveOpCode()};
-                std::string dot{};
-                if (opcode == OpCode::Id::DP3) {
-                    if (sanitize_mul) {
-                        dot = "dot(vec3(sanitize_mul(" + src1 + ", " + src2 + ")), vec3(1.0))";
-                    } else {
-                        dot = "dot(vec3(" + src1 + "), vec3(" + src2 + "))";
-                    }
-                } else {
-                    std::string src1_{(opcode == OpCode::Id::DPH || opcode == OpCode::Id::DPHI)
-                                          ? "vec4(" + src1 + ".xyz, 1.0)"
-                                          : src1};
-                    if (sanitize_mul) {
-                        dot = "dot(sanitize_mul(" + src1_ + ", " + src2 + "), vec4(1.0))";
-                    } else {
-                        dot = "dot(" + src1 + ", " + src2 + ")";
-                    }
+                auto opcode{instr.opcode.Value().EffectiveOpCode()};
+                std::string dot;
+                if (opcode == OpCode::Id::DP3)
+                    dot = sanitize_mul
+                              ? "dot(vec3(sanitize_mul(" + src1 + ", " + src2 + ")), vec3(1.0))"
+                              : "dot(vec3(" + src1 + "), vec3(" + src2 + "))";
+                else {
+                    auto src1_{(opcode == OpCode::Id::DPH || opcode == OpCode::Id::DPHI)
+                                   ? "vec4(" + src1 + ".xyz, 1.0)"
+                                   : src1};
+                    dot = sanitize_mul ? "dot(sanitize_mul(" + src1_ + ", " + src2 + "), vec4(1.0))"
+                                       : "dot(" + src1 + ", " + src2 + ")";
                 }
-
                 SetDest(swizzle, dest_reg, dot, 4, 1);
                 break;
             }
-
-            case OpCode::Id::RCP: {
+            case OpCode::Id::RCP:
                 SetDest(swizzle, dest_reg, "(1.0 / " + src1 + ".x)", 4, 1);
                 break;
-            }
-
-            case OpCode::Id::RSQ: {
+            case OpCode::Id::RSQ:
                 SetDest(swizzle, dest_reg, "inversesqrt(" + src1 + ".x)", 4, 1);
                 break;
-            }
-
-            case OpCode::Id::MOVA: {
+            case OpCode::Id::MOVA:
                 SetDest(swizzle, "address_registers", "ivec2(" + src1 + ")", 2, 2);
                 break;
-            }
-
-            case OpCode::Id::MOV: {
+            case OpCode::Id::MOV:
                 SetDest(swizzle, dest_reg, src1, 4, 4);
                 break;
-            }
-
             case OpCode::Id::SGE:
-            case OpCode::Id::SGEI: {
+            case OpCode::Id::SGEI:
                 SetDest(swizzle, dest_reg, "vec4(greaterThanEqual(" + src1 + "," + src2 + "))", 4,
                         4);
                 break;
-            }
-
             case OpCode::Id::SLT:
-            case OpCode::Id::SLTI: {
+            case OpCode::Id::SLTI:
                 SetDest(swizzle, dest_reg, "vec4(lessThan(" + src1 + "," + src2 + "))", 4, 4);
                 break;
-            }
-
             case OpCode::Id::CMP: {
                 using CompareOp = Instruction::Common::CompareOpType::Op;
                 const std::map<CompareOp, std::pair<std::string, std::string>> cmp_ops{
@@ -542,36 +469,28 @@ private:
                     {CompareOp::LessEqual, {"<=", "lessThanEqual"}},
                     {CompareOp::GreaterThan, {">", "greaterThan"}},
                     {CompareOp::GreaterEqual, {">=", "greaterThanEqual"}}};
-
-                const CompareOp op_x{instr.common.compare_op.x.Value()};
-                const CompareOp op_y{instr.common.compare_op.y.Value()};
-
-                if (cmp_ops.find(op_x) == cmp_ops.end()) {
+                const auto op_x{instr.common.compare_op.x.Value()};
+                const auto op_y{instr.common.compare_op.y.Value()};
+                if (cmp_ops.find(op_x) == cmp_ops.end())
                     LOG_ERROR(HW_GPU, "Unknown compare mode {:x}", static_cast<int>(op_x));
-                } else if (cmp_ops.find(op_y) == cmp_ops.end()) {
+                else if (cmp_ops.find(op_y) == cmp_ops.end())
                     LOG_ERROR(HW_GPU, "Unknown compare mode {:x}", static_cast<int>(op_y));
-                } else if (op_x != op_y) {
+                else if (op_x != op_y) {
                     shader.AddLine("conditional_code.x = " + src1 + ".x " +
                                    cmp_ops.find(op_x)->second.first + " " + src2 + ".x;");
                     shader.AddLine("conditional_code.y = " + src1 + ".y " +
                                    cmp_ops.find(op_y)->second.first + " " + src2 + ".y;");
-                } else {
+                } else
                     shader.AddLine("conditional_code = " + cmp_ops.find(op_x)->second.second +
                                    "(vec2(" + src1 + "), vec2(" + src2 + "));");
-                }
                 break;
             }
-
-            case OpCode::Id::EX2: {
+            case OpCode::Id::EX2:
                 SetDest(swizzle, dest_reg, "exp2(" + src1 + ".x)", 4, 1);
                 break;
-            }
-
-            case OpCode::Id::LG2: {
+            case OpCode::Id::LG2:
                 SetDest(swizzle, dest_reg, "log2(" + src1 + ".x)", 4, 1);
                 break;
-            }
-
             default: {
                 LOG_ERROR(HW_GPU, "Unhandled arithmetic instruction: 0x{:02x} ({}): 0x{:08x}",
                           (int)instr.opcode.Value().EffectiveOpCode(),
@@ -580,42 +499,33 @@ private:
                 break;
             }
             }
-
             break;
         }
-
         case OpCode::Type::MultiplyAdd: {
             if ((instr.opcode.Value().EffectiveOpCode() == OpCode::Id::MAD) ||
                 (instr.opcode.Value().EffectiveOpCode() == OpCode::Id::MADI)) {
                 bool is_inverted{(instr.opcode.Value().EffectiveOpCode() == OpCode::Id::MADI)};
-
                 std::string src1{swizzle.negate_src1 ? "-" : ""};
                 src1 += GetSourceRegister(instr.mad.GetSrc1(is_inverted), 0);
                 src1 += "." + GetSelectorSrc1(swizzle);
-
                 std::string src2{swizzle.negate_src2 ? "-" : ""};
                 src2 += GetSourceRegister(instr.mad.GetSrc2(is_inverted),
                                           !is_inverted * instr.mad.address_register_index);
                 src2 += "." + GetSelectorSrc2(swizzle);
-
                 std::string src3{swizzle.negate_src3 ? "-" : ""};
                 src3 += GetSourceRegister(instr.mad.GetSrc3(is_inverted),
                                           is_inverted * instr.mad.address_register_index);
                 src3 += "." + GetSelectorSrc3(swizzle);
-
-                std::string dest_reg{
+                auto dest_reg{
                     (instr.mad.dest.Value() < 0x10)
                         ? outputreg_getter(static_cast<u32>(instr.mad.dest.Value().GetIndex()))
                         : (instr.mad.dest.Value() < 0x20)
                               ? "reg_tmp" + std::to_string(instr.mad.dest.Value().GetIndex())
                               : ""};
-
-                if (sanitize_mul) {
-                    SetDest(swizzle, dest_reg, "sanitize_mul(" + src1 + ", " + src2 + ") + " + src3,
-                            4, 4);
-                } else {
-                    SetDest(swizzle, dest_reg, src1 + " * " + src2 + " + " + src3, 4, 4);
-                }
+                SetDest(swizzle, dest_reg,
+                        sanitize_mul ? "sanitize_mul(" + src1 + ", " + src2 + ") + " + src3
+                                     : src1 + " * " + src2 + " + " + src3,
+                        4, 4);
             } else {
                 LOG_ERROR(HW_GPU, "Unhandled multiply-add instruction: 0x{:02x} ({}): 0x{:08x}",
                           (int)instr.opcode.Value().EffectiveOpCode(),
@@ -624,143 +534,106 @@ private:
             }
             break;
         }
-
         default: {
             switch (instr.opcode.Value()) {
-            case OpCode::Id::END: {
+            case OpCode::Id::END:
                 shader.AddLine("return true;");
                 offset = PROGRAM_END - 1;
                 break;
-            }
-
             case OpCode::Id::JMPC:
             case OpCode::Id::JMPU: {
-                std::string condition{};
-                if (instr.opcode.Value() == OpCode::Id::JMPC) {
+                std::string condition;
+                if (instr.opcode.Value() == OpCode::Id::JMPC)
                     condition = EvaluateCondition(instr.flow_control);
-                } else {
+                else {
                     bool invert_test{static_cast<bool>(instr.flow_control.num_instructions & 1)};
                     condition = (invert_test ? "!" : "") +
                                 GetUniformBool(instr.flow_control.bool_uniform_id);
                 }
-
                 shader.AddLine("if (" + condition + ") {");
                 ++shader.scope;
                 shader.AddLine("{ jmp_to = " + std::to_string(instr.flow_control.dest_offset) +
                                "u; break; }");
-
                 --shader.scope;
                 shader.AddLine("}");
                 break;
             }
-
             case OpCode::Id::CALL:
             case OpCode::Id::CALLC:
             case OpCode::Id::CALLU: {
-                std::string condition{};
-                if (instr.opcode.Value() == OpCode::Id::CALLC) {
+                std::string condition;
+                if (instr.opcode.Value() == OpCode::Id::CALLC)
                     condition = EvaluateCondition(instr.flow_control);
-                } else if (instr.opcode.Value() == OpCode::Id::CALLU) {
+                else if (instr.opcode.Value() == OpCode::Id::CALLU)
                     condition = GetUniformBool(instr.flow_control.bool_uniform_id);
-                }
-
                 shader.AddLine(condition.empty() ? "{" : "if (" + condition + ") {");
                 ++shader.scope;
-
                 auto& call_sub{GetSubroutine(instr.flow_control.dest_offset,
                                              instr.flow_control.dest_offset +
                                                  instr.flow_control.num_instructions)};
-
                 CallSubroutine(call_sub);
                 if (instr.opcode.Value() == OpCode::Id::CALL &&
                     call_sub.exit_method == ExitMethod::AlwaysEnd) {
                     offset = PROGRAM_END - 1;
                 }
-
                 --shader.scope;
                 shader.AddLine("}");
                 break;
             }
-
-            case OpCode::Id::NOP: {
+            case OpCode::Id::NOP:
                 break;
-            }
-
             case OpCode::Id::IFC:
             case OpCode::Id::IFU: {
-                std::string condition{};
-                if (instr.opcode.Value() == OpCode::Id::IFC) {
-                    condition = EvaluateCondition(instr.flow_control);
-                } else {
-                    condition = GetUniformBool(instr.flow_control.bool_uniform_id);
-                }
-
+                auto condition{instr.opcode.Value() == OpCode::Id::IFC
+                                   ? EvaluateCondition(instr.flow_control)
+                                   : GetUniformBool(instr.flow_control.bool_uniform_id)};
                 const u32 if_offset{offset + 1};
                 const u32 else_offset{instr.flow_control.dest_offset};
                 const u32 endif_offset{instr.flow_control.dest_offset +
                                        instr.flow_control.num_instructions};
-
                 shader.AddLine("if (" + condition + ") {");
                 ++shader.scope;
-
                 auto& if_sub{GetSubroutine(if_offset, else_offset)};
                 CallSubroutine(if_sub);
                 offset = else_offset - 1;
-
                 if (instr.flow_control.num_instructions != 0) {
                     --shader.scope;
                     shader.AddLine("} else {");
                     ++shader.scope;
-
                     auto& else_sub{GetSubroutine(else_offset, endif_offset)};
                     CallSubroutine(else_sub);
                     offset = endif_offset - 1;
-
                     if (if_sub.exit_method == ExitMethod::AlwaysEnd &&
-                        else_sub.exit_method == ExitMethod::AlwaysEnd) {
+                        else_sub.exit_method == ExitMethod::AlwaysEnd)
                         offset = PROGRAM_END - 1;
-                    }
                 }
-
                 --shader.scope;
                 shader.AddLine("}");
                 break;
             }
-
             case OpCode::Id::LOOP: {
-                std::string int_uniform{"uniforms.i[" +
-                                        std::to_string(instr.flow_control.int_uniform_id) + "]"};
-
+                auto int_uniform{"uniforms.i[" + std::to_string(instr.flow_control.int_uniform_id) +
+                                 "]"};
                 shader.AddLine("address_registers.z = int(" + int_uniform + ".y);");
-
-                std::string loop_var{"loop" + std::to_string(offset)};
+                auto loop_var{"loop" + std::to_string(offset)};
                 shader.AddLine("for (uint " + loop_var + " = 0u; " + loop_var +
                                " <= " + int_uniform + ".x; address_registers.z += int(" +
                                int_uniform + ".z), ++" + loop_var + ") {");
                 ++shader.scope;
-
                 auto& loop_sub{GetSubroutine(offset + 1, instr.flow_control.dest_offset + 1)};
                 CallSubroutine(loop_sub);
                 offset = instr.flow_control.dest_offset;
-
                 --shader.scope;
                 shader.AddLine("}");
-
-                if (loop_sub.exit_method == ExitMethod::AlwaysEnd) {
+                if (loop_sub.exit_method == ExitMethod::AlwaysEnd)
                     offset = PROGRAM_END - 1;
-                }
-
                 break;
             }
-
-            case OpCode::Id::EMIT: {
-                if (is_gs) {
+            case OpCode::Id::EMIT:
+                if (is_gs)
                     shader.AddLine("emit();");
-                }
                 break;
-            }
-
-            case OpCode::Id::SETEMIT: {
+            case OpCode::Id::SETEMIT:
                 if (is_gs) {
                     ASSERT(instr.setemit.vertex_id < 3);
                     shader.AddLine("setemit(" + std::to_string(instr.setemit.vertex_id) + "u, " +
@@ -768,17 +641,13 @@ private:
                                    ((instr.setemit.winding != 0) ? "true" : "false") + ");");
                 }
                 break;
-            }
-
-            default: {
+            default:
                 LOG_ERROR(HW_GPU, "Unhandled instruction: 0x{:02x} ({}): 0x{:08x}",
                           (int)instr.opcode.Value().EffectiveOpCode(),
                           instr.opcode.Value().GetInfo().name, instr.hex);
                 throw DecompileFail("Unhandled instruction");
                 break;
             }
-            }
-
             break;
         }
         }
@@ -794,9 +663,8 @@ private:
      */
     u32 CompileRange(u32 begin, u32 end) {
         u32 program_counter;
-        for (program_counter = begin; program_counter < (begin > end ? PROGRAM_END : end);) {
+        for (program_counter = begin; program_counter < (begin > end ? PROGRAM_END : end);)
             program_counter = CompileInstr(program_counter);
-        }
         return program_counter;
     }
 
@@ -810,78 +678,59 @@ private:
             --shader.scope;
             shader.AddLine("}\n");
         }
-
         // Add declarations for registers
         shader.AddLine("bvec2 conditional_code = bvec2(false);");
         shader.AddLine("ivec3 address_registers = ivec3(0);");
-        for (int i{}; i < 16; ++i) {
+        for (int i{}; i < 16; ++i)
             shader.AddLine("vec4 reg_tmp" + std::to_string(i) + " = vec4(0.0, 0.0, 0.0, 1.0);");
-        }
         shader.AddLine("");
-
         // Add declarations for all subroutines
-        for (const auto& subroutine : subroutines) {
+        for (const auto& subroutine : subroutines)
             shader.AddLine("bool " + subroutine.GetName() + "();");
-        }
         shader.AddLine("");
-
         // Add the main entry point
         shader.AddLine("bool exec_shader() {");
         ++shader.scope;
         CallSubroutine(GetSubroutine(main_offset, PROGRAM_END));
         --shader.scope;
         shader.AddLine("}\n");
-
         // Add definitions for all subroutines
         for (const auto& subroutine : subroutines) {
             std::set<u32> labels{subroutine.labels};
-
             shader.AddLine("bool " + subroutine.GetName() + "() {");
             ++shader.scope;
-
             if (labels.empty()) {
-                if (CompileRange(subroutine.begin, subroutine.end) != PROGRAM_END) {
+                if (CompileRange(subroutine.begin, subroutine.end) != PROGRAM_END)
                     shader.AddLine("return false;");
-                }
             } else {
                 labels.insert(subroutine.begin);
                 shader.AddLine("uint jmp_to = " + std::to_string(subroutine.begin) + "u;");
                 // shader.AddLine("while (true) {");
                 shader.AddLine("for (;;) {");
                 ++shader.scope;
-
                 shader.AddLine("switch (jmp_to) {");
-
                 for (auto label : labels) {
                     shader.AddLine("case " + std::to_string(label) + "u: {");
                     ++shader.scope;
-
                     auto next_it{labels.lower_bound(label + 1)};
                     u32 next_label{next_it == labels.end() ? subroutine.end : *next_it};
-
                     u32 compile_end{CompileRange(label, next_label)};
                     if (compile_end > next_label && compile_end != PROGRAM_END) {
                         // This happens only when there is a label inside a IF/LOOP block
                         shader.AddLine("{ jmp_to = " + std::to_string(compile_end) + "u; break; }");
                         labels.emplace(compile_end);
                     }
-
                     --shader.scope;
                     shader.AddLine("}");
                 }
-
                 shader.AddLine("default: return false;");
                 shader.AddLine("}");
-
                 --shader.scope;
                 shader.AddLine("}");
-
                 shader.AddLine("return false;");
             }
-
             --shader.scope;
             shader.AddLine("}\n");
-
             DEBUG_ASSERT(shader.scope == 0);
         }
     }

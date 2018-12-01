@@ -352,7 +352,7 @@ ResultCode AppletManager::StartLibraryApplet(AppletId applet_id,
         AppletStartupParameter parameter;
         parameter.object = object;
         parameter.buffer = buffer;
-        return hle_applets.find(applet_id)->second->Start(parameter);
+        return hle_applets[applet_id]->Start(parameter);
     } else
         return RESULT_SUCCESS;
 }

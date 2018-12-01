@@ -33,14 +33,10 @@ ResultVal<Handle> HandleTable::Duplicate(Handle handle) {
 }
 
 ResultCode HandleTable::Close(Handle handle) {
-    if (!IsValid(handle))
+    if (objects.find(handle) == objects.end())
         return ERR_INVALID_HANDLE;
     objects.erase(handle);
     return RESULT_SUCCESS;
-}
-
-bool HandleTable::IsValid(Handle handle) const {
-    return objects.find(handle) != objects.end();
 }
 
 SharedPtr<Object> HandleTable::GetGeneric(Handle handle) const {
@@ -48,9 +44,8 @@ SharedPtr<Object> HandleTable::GetGeneric(Handle handle) const {
         return kernel.GetThreadManager().GetCurrentThread();
     else if (handle == CurrentProcess)
         return kernel.GetCurrentProcess();
-    if (!IsValid(handle))
-        return nullptr;
-    return objects.find(handle)->second;
+    auto itr{objects.find(handle)};
+    return itr == objects.end() ? nullptr : itr->second;
 }
 
 void HandleTable::Clear() {

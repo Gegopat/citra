@@ -1587,14 +1587,6 @@ int main(int argc, char* argv[]) {
     Camera::QtMultimediaCameraHandler::Init();
     // Log version
     LOG_INFO(Frontend, "Citra version: Valentin {}-{}", Common::g_scm_branch, Common::g_scm_desc);
-#ifdef _WIN32
-    WSADATA data;
-    WSAStartup(MAKEWORD(2, 2), &data);
-#endif
     window.show();
-    int result{app.exec()};
-#ifdef _WIN32
-    WSACleanup();
-#endif
-    return result;
+    return app.exec();
 }

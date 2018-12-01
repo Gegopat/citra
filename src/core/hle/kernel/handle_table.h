@@ -37,19 +37,16 @@ public:
     /**
      * Returns a new handle that points to the same object as the passed in handle.
      * @return The duplicated Handle or one of the following errors:
-     *           - `ERR_INVALID_HANDLE`: an invalid handle was passed in.
+     * - `ERR_INVALID_HANDLE`: an invalid handle was passed in.
      */
     ResultVal<Handle> Duplicate(Handle handle);
 
     /**
      * Closes a handle, removing it from the table and decreasing the object's ref-count.
      * @return `RESULT_SUCCESS` or one of the following errors:
-     *           - `ERR_INVALID_HANDLE`: an invalid handle was passed in.
+     * - `ERR_INVALID_HANDLE`: an invalid handle was passed in.
      */
     ResultCode Close(Handle handle);
-
-    /// Checks if a handle is valid and points to an existing object.
-    bool IsValid(Handle handle) const;
 
     /**
      * Looks up a handle.
@@ -59,8 +56,8 @@ public:
 
     /**
      * Looks up a handle while verifying its type.
-     * @return Pointer to the looked-up object, or `nullptr` if the handle isn't valid or its
-     *         type differs from the requested one.
+     * @return Pointer to the looked-up object, or `nullptr` if the handle isn't valid or its type
+     * differs from the requested one.
      */
     template <class T>
     SharedPtr<T> Get(Handle handle) const {
