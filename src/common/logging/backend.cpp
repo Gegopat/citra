@@ -68,15 +68,13 @@ private:
             Entry entry;
             auto write_logs{[&](Entry& e) {
                 std::lock_guard lock{writing_mutex};
-                for (const auto& backend : backends) {
+                for (const auto& backend : backends)
                     backend->Write(e);
-                }
             }};
             for (;;) {
                 entry = message_queue.PopWait();
-                if (entry.final_entry) {
+                if (entry.final_entry)
                     break;
-                }
                 write_logs(entry);
             }
         });
