@@ -12,7 +12,7 @@
 #include <vector>
 #ifdef _WIN32
 #include <share.h>   // For _SH_DENYWR
-#include <windows.h> // For OutputDebugStringA
+#include <windows.h> // For OutputDebugStringW
 #else
 #define _SH_DENYWR 0
 #endif
@@ -25,14 +25,12 @@
 
 namespace Log {
 
-/**
- * Static state as a singleton.
- */
+/// Static state as a singleton.
 class Impl {
 public:
     static Impl& Instance() {
-        static Impl backend;
-        return backend;
+        static Impl impl;
+        return impl;
     }
 
     Impl(Impl const&) = delete;
@@ -51,7 +49,6 @@ public:
         std::lock_guard lock{writing_mutex};
         const auto it{
             std::remove_if(backends.begin(), backends.end(), [&backend_name](const auto& i) {
-                LOG_CRITICAL(Log, "{}", i->GetName());
                 return backend_name == i->GetName();
             })};
         backends.erase(it, backends.end());
