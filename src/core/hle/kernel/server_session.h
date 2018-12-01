@@ -45,7 +45,7 @@ public:
         return "ServerSession";
     }
 
-    static const HandleType HANDLE_TYPE{HandleType::ServerSession};
+    static constexpr HandleType HANDLE_TYPE{HandleType::ServerSession};
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }

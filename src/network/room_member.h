@@ -72,7 +72,7 @@ public:
         WrongVersion,       ///< The room version isn't the same as for this RoomMember
         WrongPassword,      ///< The password doesn't match the one from the Room
         CouldNotConnect,    ///< The room isn't responding to a connection attempt
-        RoomIsFull,         ///< Room is already at the maximum number of players
+        RoomIsFull,         ///< Room is already at the maximum number of members
         HostBanned,         ///< The user is banned by the host
 
         // Reasons why moderation request failed

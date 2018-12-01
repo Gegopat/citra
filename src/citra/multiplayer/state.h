@@ -50,10 +50,12 @@ public slots:
     void OnViewLobby();
     void OnCreateRoom();
     bool OnCloseRoom();
-    void OnOpenNetworkRoom();
-    void OnDirectConnectToRoom();
+    void OnOpenRoom();
+    void OnDirectConnect();
     void OnAnnounceFailed(const Common::WebResult&);
     void UpdateThemedIcons();
+    void ShowNotification();
+    void HideNotification();
 
 signals:
     void NetworkStateChanged(const Network::RoomMember::State&);
@@ -70,7 +72,7 @@ private:
     QAction* show_room;
     std::shared_ptr<Core::AnnounceMultiplayerSession> announce_multiplayer_session;
     Network::RoomMember::State current_state{Network::RoomMember::State::Uninitialized};
-    bool has_mod_perms{};
+    bool has_mod_perms{}, show_notification{};
     Network::RoomMember::CallbackHandle<Network::RoomMember::State> state_callback_handle;
     Network::RoomMember::CallbackHandle<Network::RoomMember::Error> error_callback_handle;
     Replies replies;

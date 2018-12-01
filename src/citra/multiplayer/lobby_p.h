@@ -30,8 +30,8 @@ public:
 
 class LobbyItemName : public LobbyItem {
 public:
-    static const int NameRole{Qt::UserRole + 1};
-    static const int PasswordRole{Qt::UserRole + 2};
+    static constexpr int NameRole{Qt::UserRole + 1};
+    static constexpr int PasswordRole{Qt::UserRole + 2};
 
     LobbyItemName() = default;
 
@@ -78,7 +78,7 @@ public:
     }
 
 private:
-    static const int DescriptionRole{Qt::UserRole + 1};
+    static constexpr int DescriptionRole{Qt::UserRole + 1};
 };
 
 class LobbyItemHost : public LobbyItem {
@@ -103,9 +103,9 @@ public:
                    .localeAwareCompare(other.data(HostCreatorRole).toString()) < 0;
     }
 
-    static const int HostCreatorRole{Qt::UserRole + 1};
-    static const int HostIPRole{Qt::UserRole + 2};
-    static const int HostPortRole{Qt::UserRole + 3};
+    static constexpr int HostCreatorRole{Qt::UserRole + 1};
+    static constexpr int HostIPRole{Qt::UserRole + 2};
+    static constexpr int HostPortRole{Qt::UserRole + 3};
 };
 
 class LobbyMember {
@@ -157,8 +157,8 @@ public:
         return left_members < right_members;
     }
 
-    static const int MemberListRole{Qt::UserRole + 1};
-    static const int MaxMemberRole{Qt::UserRole + 2};
+    static constexpr int MemberListRole{Qt::UserRole + 1};
+    static constexpr int MaxMemberRole{Qt::UserRole + 2};
 };
 
 /// Member information for when a lobby is expanded in the UI
@@ -190,5 +190,5 @@ public:
         return out;
     }
 
-    static const int MemberListRole{Qt::UserRole + 1};
+    static constexpr int MemberListRole{Qt::UserRole + 1};
 };

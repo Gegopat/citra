@@ -37,6 +37,7 @@ ClientRoomWindow::ClientRoomWindow(QWidget* parent, Core::System& system)
     ui->disconnect->setDefault(false);
     ui->disconnect->setAutoDefault(false);
     UpdateView();
+    connect(ui->chat, &ChatRoom::Pinged, this, &ClientRoomWindow::ShowNotification);
 }
 
 ClientRoomWindow::~ClientRoomWindow() = default;

@@ -63,9 +63,9 @@ static u32 Fetch32(const char* p) {
 }
 
 // Some primes between 2^63 and 2^64 for various uses.
-static const u64 k0{0xc3a5c85c97cb3127ULL};
-static const u64 k1{0xb492b66fbe98f273ULL};
-static const u64 k2{0x9ae16a3b2f90404fULL};
+static constexpr u64 k0{0xc3a5c85c97cb3127ULL};
+static constexpr u64 k1{0xb492b66fbe98f273ULL};
+static constexpr u64 k2{0x9ae16a3b2f90404fULL};
 
 // Bitwise right rotate. Normally this will compile to a single
 // instruction, especially if the shift is a manifest constant.

@@ -28,19 +28,25 @@
 
 class ChatMessage {
 public:
-    explicit ChatMessage(const Network::ChatEntry& chat, QTime ts = {}) {
+    explicit ChatMessage(const Network::ChatEntry& chat, const QString& nickname, QTime ts = {}) {
         /// Convert the time to their default locale defined format
         QLocale locale;
         timestamp = locale.toString(ts.isValid() ? ts : QTime::currentTime(), QLocale::ShortFormat);
-        nickname = QString::fromStdString(chat.nickname);
+        this->nickname = QString::fromStdString(chat.nickname);
         message = QString::fromStdString(chat.message);
+        contains_ping = message.contains(QString('@').append(nickname));
+    }
+
+    bool ContainsPing() const {
+        return contains_ping;
     }
 
     /// Format the message using the member's color
     QString GetMemberChatMessage(u16 member) const {
         auto color{member_color[member % 16]};
-        return QString("[%1] <font color='%2'>&lt;%3&gt;</font> %4")
-            .arg(timestamp, color, nickname.toHtmlEscaped(), message.toHtmlEscaped());
+        return QString("[%1] <font color='%2'>&lt;%3&gt;</font> <font style='%4'>%5</font>")
+            .arg(timestamp, color, nickname.toHtmlEscaped(),
+                 contains_ping ? "background-color: #FFFF00" : "", message.toHtmlEscaped());
     }
 
 private:
@@ -51,6 +57,7 @@ private:
     QString timestamp;
     QString nickname;
     QString message;
+    bool contains_ping;
 };
 
 class StatusMessage {
@@ -135,8 +142,8 @@ bool ChatRoom::Send(QString msg) {
     auto message{std::move(msg).toStdString()};
     if (!ValidateMessage(message))
         return false;
-    auto nick{member.GetNickname()};
-    Network::ChatEntry chat{nick, message};
+    auto nickname{member.GetNickname()};
+    Network::ChatEntry chat{nickname, message};
     auto members{member.GetMemberInformation()};
     auto it{std::find_if(members.begin(), members.end(),
                          [&chat](const Network::RoomMember::MemberInformation& member) {
@@ -145,7 +152,7 @@ bool ChatRoom::Send(QString msg) {
     if (it == members.end())
         LOG_INFO(Network, "Cannot find self in the member list when sending a message.");
     auto member_id{std::distance(members.begin(), it)};
-    ChatMessage m{chat};
+    ChatMessage m{chat, QString::fromStdString(nickname)};
     member.SendChatMessage(message);
     AppendChatMessage(m.GetMemberChatMessage(member_id));
     return true;
@@ -209,8 +216,10 @@ void ChatRoom::OnChatReceive(const Network::ChatEntry& chat) {
         return;
     }
     auto member{std::distance(members.begin(), it)};
-    ChatMessage m{chat};
+    ChatMessage m{chat, QString::fromStdString(system.RoomMember().GetNickname())};
     AppendChatMessage(m.GetMemberChatMessage(member));
+    if (m.ContainsPing())
+        emit Pinged();
     auto message{QString::fromStdString(chat.message)};
     HandleNewMessage(message.remove(QChar('\0')));
 }
@@ -257,7 +266,7 @@ void ChatRoom::SetMemberList(const Network::RoomMember::MemberList& member_list)
         QList<QStandardItem*> l;
         std::vector<std::string> elements{member.nickname, member.program};
         for (const auto& item : elements) {
-            QStandardItem* child{new QStandardItem(QString::fromStdString(item))};
+            auto child{new QStandardItem(QString::fromStdString(item))};
             child->setEditable(false);
             l.append(child);
         }

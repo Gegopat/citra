@@ -207,11 +207,11 @@ public:
         }
     }
 
-    static const int FullPathRole{Qt::UserRole + 1};
-    static const int TitleRole{Qt::UserRole + 2};
-    static const int ProgramIdRole{Qt::UserRole + 3};
-    static const int ExtdataIdRole{Qt::UserRole + 4};
-    static const int PublisherRole{Qt::UserRole + 5};
+    static constexpr int FullPathRole{Qt::UserRole + 1};
+    static constexpr int TitleRole{Qt::UserRole + 2};
+    static constexpr int ProgramIdRole{Qt::UserRole + 3};
+    static constexpr int ExtdataIdRole{Qt::UserRole + 4};
+    static constexpr int PublisherRole{Qt::UserRole + 5};
 };
 
 class ProgramListItemIssues : public ProgramListItem {
@@ -284,7 +284,7 @@ public:
     }
 
 private:
-    static const int SizeRole{Qt::UserRole + 1};
+    static constexpr int SizeRole{Qt::UserRole + 1};
 };
 
 class ProgramListDir : public ProgramListItem {
@@ -318,7 +318,7 @@ public:
         return static_cast<int>(dir_type);
     }
 
-    static const int AppDirRole{Qt::UserRole + 1};
+    static constexpr int AppDirRole{Qt::UserRole + 1};
 
 private:
     ProgramListItemType dir_type;
@@ -338,7 +338,7 @@ public:
     }
 
 private:
-    static const int TypeRole{Qt::UserRole + 1};
+    static constexpr int TypeRole{Qt::UserRole + 1};
 };
 
 class ProgramList;

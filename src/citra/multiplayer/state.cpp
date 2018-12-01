@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <QAction>
+#include <QApplication>
 #include <QIcon>
 #include <QMessageBox>
 #include "citra/multiplayer/client_room.h"
@@ -43,7 +44,12 @@ MultiplayerState::MultiplayerState(QWidget* parent, QAction* leave_room, QAction
     connect(this, &MultiplayerState::AnnounceFailed, this, &MultiplayerState::OnAnnounceFailed);
     status_icon = new ClickableLabel(this);
     status_icon->setPixmap(QIcon::fromTheme("disconnected").pixmap(16));
-    connect(status_icon, &ClickableLabel::clicked, this, &MultiplayerState::OnOpenNetworkRoom);
+    connect(status_icon, &ClickableLabel::clicked, this, &MultiplayerState::OnOpenRoom);
+    connect(static_cast<QApplication*>(QApplication::instance()), &QApplication::focusChanged, this,
+            [this](QWidget*, QWidget* now) {
+                if (client_room && client_room->isAncestorOf(now))
+                    HideNotification();
+            });
 }
 
 MultiplayerState::~MultiplayerState() {
@@ -71,7 +77,7 @@ void MultiplayerState::OnNetworkStateChanged(const Network::RoomMember::State& s
         if (system.IsPoweredOn())
             system.Kernel().GetSharedPageHandler().SetMACAddress(
                 system.RoomMember().GetMACAddress());
-        OnOpenNetworkRoom();
+        OnOpenRoom();
         status_icon->setPixmap(QIcon::fromTheme("connected").pixmap(16));
         leave_room->setEnabled(true);
         show_room->setEnabled(true);
@@ -142,7 +148,9 @@ void MultiplayerState::OnAnnounceFailed(const Common::WebResult& result) {
 }
 
 void MultiplayerState::UpdateThemedIcons() {
-    if (current_state == Network::RoomMember::State::Joined)
+    if (show_notification)
+        status_icon->setPixmap(QIcon::fromTheme("connected_notification").pixmap(16));
+    else if (current_state == Network::RoomMember::State::Joined)
         status_icon->setPixmap(QIcon::fromTheme("connected").pixmap(16));
     else
         status_icon->setPixmap(QIcon::fromTheme("disconnected").pixmap(16));
@@ -186,12 +194,15 @@ bool MultiplayerState::OnCloseRoom() {
     return true;
 }
 
-void MultiplayerState::OnOpenNetworkRoom() {
+void MultiplayerState::OnOpenRoom() {
     auto& member{system.RoomMember()};
     if (member.IsConnected()) {
-        if (!client_room)
+        if (!client_room) {
             client_room = new ClientRoomWindow(this, system);
-        const std::string host{member.GetRoomInformation().creator};
+            connect(client_room, &ClientRoomWindow::ShowNotification, this,
+                    &MultiplayerState::ShowNotification);
+        }
+        const auto host{member.GetRoomInformation().creator};
         if (host.empty())
             client_room->SetModPerms(false);
         else
@@ -204,8 +215,21 @@ void MultiplayerState::OnOpenNetworkRoom() {
     OnViewLobby();
 }
 
-void MultiplayerState::OnDirectConnectToRoom() {
+void MultiplayerState::OnDirectConnect() {
     if (!direct_connect)
         direct_connect = new DirectConnectWindow(this, system);
     BringWidgetToFront(direct_connect);
+}
+
+void MultiplayerState::ShowNotification() {
+    if (client_room && client_room->isAncestorOf(QApplication::focusWidget()))
+        return; // Don't show notification if the chat window currently has focus
+    show_notification = true;
+    QApplication::alert(nullptr);
+    status_icon->setPixmap(QIcon::fromTheme("connected_notification").pixmap(16));
+}
+
+void MultiplayerState::HideNotification() {
+    show_notification = false;
+    status_icon->setPixmap(QIcon::fromTheme("connected").pixmap(16));
 }

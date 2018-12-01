@@ -18,8 +18,8 @@ namespace HW::Y2R {
 
 using namespace Service::Y2R;
 
-static const std::size_t MAX_TILES{1024 / 8};
-static const std::size_t TILE_SIZE{8 * 8};
+ constexpr std::size_t MAX_TILES{1024 / 8};
+ constexpr std::size_t TILE_SIZE{8 * 8};
 using ImageTile = std::array<u32, TILE_SIZE>;
 
 /// Converts a image strip from the source YUV format into individual 8x8 RGB32 tiles.

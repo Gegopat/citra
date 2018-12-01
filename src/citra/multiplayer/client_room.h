@@ -17,9 +17,9 @@ public:
     explicit ClientRoomWindow(QWidget* parent, Core::System& system);
     ~ClientRoomWindow();
 
-    Core::System& system;
-
     void SetModPerms(bool is_mod);
+
+    Core::System& system;
 
 public slots:
     void OnRoomUpdate(const Network::RoomInformation&);
@@ -28,6 +28,7 @@ public slots:
 signals:
     void RoomInformationChanged(const Network::RoomInformation&);
     void StateChanged(const Network::RoomMember::State&);
+    void ShowNotification();
 
 private:
     void Disconnect();

@@ -53,6 +53,7 @@ public slots:
 signals:
     void ChatReceived(const Network::ChatEntry&);
     void StatusMessageReceived(const Network::StatusMessageEntry&);
+    void Pinged();
 
 private:
     void AppendChatMessage(const QString&);

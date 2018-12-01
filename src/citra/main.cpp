@@ -448,9 +448,9 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Leave_Room, &QAction::triggered, multiplayer_state,
             &MultiplayerState::OnCloseRoom);
     connect(ui.action_Connect_To_Room, &QAction::triggered, multiplayer_state,
-            &MultiplayerState::OnDirectConnectToRoom);
+            &MultiplayerState::OnDirectConnect);
     connect(ui.action_Show_Room, &QAction::triggered, multiplayer_state,
-            &MultiplayerState::OnOpenNetworkRoom);
+            &MultiplayerState::OnOpenRoom);
 
     // Help
     connect(ui.action_About, &QAction::triggered, this, &GMainWindow::OnMenuAboutCitra);

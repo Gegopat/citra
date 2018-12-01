@@ -66,7 +66,7 @@ public:
         return name;
     }
 
-    static const HandleType HANDLE_TYPE{HandleType::CodeSet};
+    static constexpr HandleType HANDLE_TYPE{HandleType::CodeSet};
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }
@@ -119,7 +119,7 @@ public:
         return codeset->name;
     }
 
-    static const HandleType HANDLE_TYPE{HandleType::Process};
+    static constexpr HandleType HANDLE_TYPE{HandleType::Process};
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }
