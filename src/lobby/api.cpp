@@ -59,7 +59,8 @@ void from_json(const nlohmann::json& json, Room& room) {
 } // namespace AnnounceMultiplayerRoom
 
 LobbyAPI::LobbyAPI()
-    : client{std::make_shared<httplib::SSLClient>("citra-valentin-api.firebaseapp.com", 443)} {}
+    : client{std::make_shared<httplib::SSLClient>("us-central1-citra-valentin.cloudfunctions.net",
+                                                  443)} {}
 
 void LobbyAPI::SetRoomInformation(const std::string& name, const u16 port,
                                   const std::string& creator, const std::string& description,
@@ -90,7 +91,7 @@ Common::WebResult LobbyAPI::MakeRequest(const std::string& method, const std::st
         headers.emplace("Content-Type", "application/json");
     Request request;
     request.method = method;
-    request.path = "/lobby";
+    request.path = "/api/lobby";
     request.headers = headers;
     request.body = body;
     Response response;
