@@ -2,9 +2,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#ifdef _WIN32
-#include <winsock2.h>
-#endif
 #include <clocale>
 #include <memory>
 #include <thread>
