@@ -25,5 +25,4 @@ cp -rv "${QT_PLATFORM_DLL_PATH}/../mediaservice/" package/
 cp -rv "${QT_PLATFORM_DLL_PATH}/../imageformats/" package/
 rm -f package/mediaservice/*d.dll
 
-pip3 install pefile
 python3 .travis/linux-mingw/scan_dll.py package/*.exe package/imageformats/*.dll "package/"
