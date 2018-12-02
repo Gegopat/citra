@@ -199,7 +199,7 @@ void Thread::ResumeFromWait() {
         return;
     case ThreadStatus::Dead:
         // This should never happen, as threads must complete before being stopped.
-        DEBUG_ASSERT_MSG(false, "Thread with object id {} cannot be resumed because it's DEAD.",
+        DEBUG_ASSERT_MSG(false, "Thread with object id {} can't be resumed because it's DEAD.",
                          GetObjectId());
         return;
     }

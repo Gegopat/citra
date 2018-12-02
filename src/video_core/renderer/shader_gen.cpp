@@ -984,7 +984,7 @@ void AppendProcTexSampler(std::string& out, const PicaFSConfig& config) {
 float ProcTexLookupLUT(int offset, float coord) {
     coord *= 128;
     float index_i = clamp(floor(coord), 0.0, 127.0);
-    float index_f = coord - index_i; // fract() cannot be used here because 128.0 needs to be
+    float index_f = coord - index_i; // fract() can't be used here because 128.0 needs to be
                                      // extracted as index_i = 127.0 and index_f = 1.0
     vec2 entry = texelFetch(texture_buffer_lut_rg, int(index_i) + offset).rg;
     return clamp(entry.r + entry.g * index_f, 0.0, 1.0);

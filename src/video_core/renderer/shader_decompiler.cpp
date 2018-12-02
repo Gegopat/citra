@@ -324,7 +324,7 @@ private:
             // In PICA geometry shader, b15 is set to true after every geometry shader invocation.
             // Accessing b15 usually indicates that the program relies on register value
             // preservation across invocation (and therefore it uses b15 to determine whether to
-            // initialize the registers), which cannot be implemented in GL shaders.
+            // initialize the registers), which can't be implemented in GL shaders.
             throw DecompileFail("b15 access in geometry shader");
         return "uniforms.b[" + std::to_string(index) + "]";
     }

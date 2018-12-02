@@ -228,7 +228,7 @@ public:
         static_assert(std::is_enum<T>(), "T must be an enum type within a PopEnum call.");
         static_assert(!std::is_convertible<T, int>(),
                       "enum type in PopEnum must be a strongly typed enum.");
-        static_assert(sizeof(T) < sizeof(u64), "64-bit enums cannot be popped.");
+        static_assert(sizeof(T) < sizeof(u64), "64-bit enums can't be popped.");
         return static_cast<T>(Pop<std::underlying_type_t<T>>());
     }
 

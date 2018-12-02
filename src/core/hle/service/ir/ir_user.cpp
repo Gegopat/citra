@@ -195,7 +195,7 @@ void IR_USER::PutToReceive(const std::vector<u8>& payload) {
     // The highest bit of the first byte is unknown, which is set to zero here. The second highest
     // bit is a flag that determines whether the size info is in extended form. If the packet size
     // can be represent within 6 bits, the short form (1 byte) of size info is chosen, the size is
-    // put to the lower bits of this byte, and the flag is clear. If the packet size cannot be
+    // put to the lower bits of this byte, and the flag is clear. If the packet size can't be
     // represent within 6 bits, the extended form (2 bytes) is chosen, the lower 8 bits of the size
     // is put to the second byte, the higher bits of the size is put to the lower bits of the first
     // byte, and the flag is set. Note that the packet size must be within 14 bits due to this

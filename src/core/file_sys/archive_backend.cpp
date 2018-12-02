@@ -69,7 +69,7 @@ std::string Path::AsString() const {
     case LowPathType::Invalid:
     case LowPathType::Binary:
     default:
-        ASSERT_MSG(false, "LowPathType cannot be converted to string!");
+        ASSERT_MSG(false, "LowPathType can't be converted to string!");
     }
     return {};
 }
@@ -84,7 +84,7 @@ std::u16string Path::AsU16Str() const {
         return {};
     case LowPathType::Invalid:
     case LowPathType::Binary:
-        ASSERT_MSG(false, "LowPathType cannot be converted to u16string!");
+        ASSERT_MSG(false, "LowPathType can't be converted to u16string!");
     }
     return {};
 }
@@ -109,7 +109,7 @@ std::vector<u8> Path::AsBinary() const {
         return {};
     case LowPathType::Invalid:
     default:
-        ASSERT_MSG(false, "LowPathType cannot be converted to binary!");
+        ASSERT_MSG(false, "LowPathType can't be converted to binary!");
     }
     return {};
 }

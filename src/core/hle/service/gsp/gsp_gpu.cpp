@@ -337,7 +337,7 @@ void GSP_GPU::SignalInterruptForThread(InterruptId interrupt_id, u32 thread_id) 
         return;
     auto interrupt_event{session_data->interrupt_event};
     if (!interrupt_event) {
-        LOG_WARNING(Service_GSP, "cannot synchronize until GSP event has been created!");
+        LOG_WARNING(Service_GSP, "can't synchronize until GSP event has been created!");
         return;
     }
     auto interrupt_relay_queue{GetInterruptRelayQueue(shared_memory, thread_id)};
@@ -372,7 +372,7 @@ void GSP_GPU::SignalInterruptForThread(InterruptId interrupt_id, u32 thread_id) 
  */
 void GSP_GPU::SignalInterrupt(InterruptId interrupt_id) {
     if (!shared_memory) {
-        LOG_WARNING(Service_GSP, "cannot synchronize until GSP shared memory has been created!");
+        LOG_WARNING(Service_GSP, "can't synchronize until GSP shared memory has been created!");
         return;
     }
     // The PDC0 and PDC1 interrupts are fired even if the GPU right hasn't been acquired.

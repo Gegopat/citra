@@ -20,7 +20,7 @@ const ConnectionError NO_INTERNET{
     "Unable to find an internet connection. Check your internet settings."};
 const ConnectionError UNABLE_TO_CONNECT{
     "Unable to connect to the host. Verify that the connection settings are correct. If "
-    "you still cannot connect, contact the room host and verify that the host is "
+    "you still can't connect, contact the room host and verify that the host is "
     "properly configured with the external port forwarded."};
 const ConnectionError ROOM_IS_FULL{"Unable to connect to the room because it is already full."};
 const ConnectionError COULD_NOT_CREATE_ROOM{

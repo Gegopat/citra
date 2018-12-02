@@ -197,7 +197,7 @@ void Renderer::LoadFBToScreenInfo(const GPU::Regs::FramebufferConfig& framebuffe
         // TODO: Test what happens on hardware when you change the framebuffer dimensions so that
         //       they differ from the LCD resolution.
         // TODO: Programs could theoretically crash Citra here by specifying too large
-        //       framebuffer sizes. We should make sure that this cannot happen.
+        //       framebuffer sizes. We should make sure that this can't happen.
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, framebuffer.width, framebuffer.height,
                         screen_info.texture.gl_format, screen_info.texture.gl_type,
                         framebuffer_data);
