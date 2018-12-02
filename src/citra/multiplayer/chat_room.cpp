@@ -150,7 +150,7 @@ bool ChatRoom::Send(QString msg) {
                              return member.nickname == chat.nickname;
                          })};
     if (it == members.end())
-        LOG_INFO(Network, "can't find self in the member list when sending a message.");
+        LOG_INFO(Network, "Can't find self in the member list when sending a message.");
     auto member_id{std::distance(members.begin(), it)};
     ChatMessage m{chat, QString::fromStdString(nickname)};
     member.SendChatMessage(message);
