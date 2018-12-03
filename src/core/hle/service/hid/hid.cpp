@@ -97,7 +97,7 @@ void Module::UpdatePadCallback(u64 userdata, s64 cycles_late) {
         circle_pad_y = static_cast<s16>(circle_pad_y_f * MAX_CIRCLEPAD_POS);
     }
     system.MovieSystem().HandlePadAndCircleStatus(state, circle_pad_x, circle_pad_y);
-    const DirectionState direction{GetStickDirectionState(circle_pad_x, circle_pad_y)};
+    const auto direction{GetStickDirectionState(circle_pad_x, circle_pad_y)};
     state.circle_up.Assign(direction.up);
     state.circle_down.Assign(direction.down);
     state.circle_left.Assign(direction.left);
