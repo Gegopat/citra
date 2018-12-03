@@ -51,8 +51,8 @@ private slots:
     void OnExpandRoom(const QModelIndex&);
 
     /**
-     * Handler for double clicking on a room in the list. Gathers the host ip and port and attempts
-     * to connect. Will also prompt for a password in case one is required.
+     * Handler for double clicking on a room in the list. Gathers the host IP address and port and
+     * attempts to connect. Will also prompt for a password in case one is required.
      * @param index The row of the proxy model that the user wants to join.
      */
     void OnJoinRoom(const QModelIndex&);

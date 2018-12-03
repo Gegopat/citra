@@ -58,11 +58,11 @@ enum RoomMessageTypes : u8 {
 
 /// Types of system status messages
 enum StatusMessageTypes : u8 {
-    IDMemberJoin = 1,  ///< Member joining
-    IDMemberLeave,     ///< Member leaving
-    IDMemberKicked,    ///< A member is kicked from the room
-    IDMemberBanned,    ///< A member is banned from the room
-    IDAddressUnbanned, ///< A ip address is unbanned from the room
+    IDMemberJoined = 1, ///< Member joining
+    IDMemberLeft,       ///< Member leaving
+    IDMemberKicked,     ///< A member is kicked from the room
+    IDMemberBanned,     ///< A member is banned from the room
+    IDAddressUnbanned,  ///< A IP address is unbanned from the room
 };
 
 /// This is what a server [person creating a server] would use.

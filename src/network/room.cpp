@@ -311,7 +311,7 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
         }
     }
     // Notify everyone that the user has joined.
-    SendStatusMessage(IDMemberJoin, member.nickname);
+    SendStatusMessage(IDMemberJoined, member.nickname);
     {
         std::lock_guard lock{member_mutex};
         members.push_back(std::move(member));
@@ -745,7 +745,7 @@ void Room::RoomImpl::HandleClientDisconnection(ENetPeer* client) {
     // Announce the change to all clients.
     enet_peer_disconnect(client, 0);
     if (!nickname.empty())
-        SendStatusMessage(IDMemberLeave, nickname);
+        SendStatusMessage(IDMemberLeft, nickname);
     BroadcastRoomInformation();
 }
 

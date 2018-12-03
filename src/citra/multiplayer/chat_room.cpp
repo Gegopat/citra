@@ -226,11 +226,11 @@ void ChatRoom::OnChatReceive(const Network::ChatEntry& chat) {
 
 void ChatRoom::OnStatusMessageReceive(const Network::StatusMessageEntry& status_message) {
     switch (status_message.type) {
-    case Network::IDMemberJoin:
+    case Network::IDMemberJoined:
         AppendStatusMessage(
             QString("%1 has joined").arg(QString::fromStdString(status_message.nickname)));
         break;
-    case Network::IDMemberLeave:
+    case Network::IDMemberLeft:
         AppendStatusMessage(
             QString("%1 has left").arg(QString::fromStdString(status_message.nickname)));
         break;
