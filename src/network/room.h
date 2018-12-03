@@ -58,8 +58,8 @@ enum RoomMessageTypes : u8 {
 
 /// Types of system status messages
 enum StatusMessageTypes : u8 {
-    IDMemberJoined = 1, ///< Member joining
-    IDMemberLeft,       ///< Member leaving
+    IDMemberJoined = 1, ///< A member joined
+    IDMemberLeft,       ///< A member left
     IDMemberKicked,     ///< A member is kicked from the room
     IDMemberBanned,     ///< A member is banned from the room
     IDAddressUnbanned,  ///< A IP address is unbanned from the room
