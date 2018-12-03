@@ -86,7 +86,7 @@ void Module::UpdatePadCallback(u64 userdata, s64 cycles_late) {
     if (button_home->GetStatus())
         system.CloseProgram();
     // Get current circle pad position and update circle pad direction
-    s16 circle_pad_x, circle_pad_y;
+    s16 circle_pad_x{}, circle_pad_y{};
     if (use_override_circle_pad) {
         circle_pad_x = override_circle_x;
         circle_pad_y = override_circle_y;
