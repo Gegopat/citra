@@ -690,7 +690,7 @@ void GMainWindow::OnProgramListOpenFolder(u64 data_id, ProgramListOpenTarget tar
         break;
     case ProgramListOpenTarget::ExtData:
         open_target = "Extra Data";
-        path = FileSys::GetExtDataPathFromId(
+        path = FileSys::GetExtDataPathFromID(
             FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir), data_id);
         break;
     case ProgramListOpenTarget::Program:
@@ -1260,7 +1260,7 @@ void GMainWindow::OnPlayMovie() {
                     if (QFile::exists(path)) {
                         auto loader{Loader::GetLoader(system, action_path.toStdString())};
                         u64 program_id_file;
-                        if (loader->ReadProgramId(program_id_file) ==
+                        if (loader->ReadProgramID(program_id_file) ==
                                 Loader::ResultStatus::Success &&
                             program_id_file == program_id)
                             program_path = action_path;

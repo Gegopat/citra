@@ -73,7 +73,7 @@ public:
         MboxData = 100,      /// data:/CEC/<id>/MBoxData.0<i-100>
         MboxIcon = 101,      /// data:/CEC/<id>/MBoxData.001
         MboxTitle = 110,     /// data:/CEC/<id>/MBoxData.010
-        MboxProgramId = 150, /// data:/CEC/<id>/MBoxData.050
+        MboxProgramID = 150, /// data:/CEC/<id>/MBoxData.050
     };
 
     enum class CecState : u32 {

@@ -68,7 +68,7 @@ public:
         UnknownError,       ///< Some error [permissions to network device missing or something]
         NameCollision,      ///< Somebody is already using this name
         MACCollision,       ///< Somebody is already using that MAC address
-        ConsoleIdCollision, ///< Somebody in the room has the same Console ID
+        ConsoleIDCollision, ///< Somebody in the room has the same console ID
         WrongVersion,       ///< The room version isn't the same as for this RoomMember
         WrongPassword,      ///< The password doesn't match the one from the Room
         CouldNotConnect,    ///< The room isn't responding to a connection attempt
@@ -261,8 +261,8 @@ static const char* GetErrorStr(const RoomMember::Error& e) {
         return "NameCollision";
     case RoomMember::Error::MACCollision:
         return "MACCollision";
-    case RoomMember::Error::ConsoleIdCollision:
-        return "ConsoleIdCollision";
+    case RoomMember::Error::ConsoleIDCollision:
+        return "ConsoleIDCollision";
     case RoomMember::Error::WrongVersion:
         return "WrongVersion";
     case RoomMember::Error::WrongPassword:

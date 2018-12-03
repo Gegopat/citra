@@ -283,20 +283,20 @@ public:
      * console_id
      * @param console_id the randomly created console id
      */
-    void GenerateConsoleUniqueId(u32& random_number, u64& console_id);
+    void GenerateConsoleUniqueID(u32& random_number, u64& console_id);
 
     /**
      * Sets the random_number and the  console unique id in the config savegame.
      * @param random_number the random_number to set
      * @param console_id the console id to set
      */
-    ResultCode SetConsoleUniqueId(u32 random_number, u64 console_id);
+    ResultCode SetConsoleUniqueID(u32 random_number, u64 console_id);
 
     /**
      * Gets the console unique id from config savegame.
      * @returns the console unique id
      */
-    u64 GetConsoleUniqueId();
+    u64 GetConsoleUniqueID();
 
     /**
      * Writes the config savegame memory buffer to the config savegame file in the filesystem
@@ -317,6 +317,6 @@ private:
 void InstallInterfaces(Core::System& system);
 
 /// Convenience function for getting the console ID
-u64 GetConsoleId(Core::System& system);
+u64 GetConsoleID(Core::System& system);
 
 } // namespace Service::CFG

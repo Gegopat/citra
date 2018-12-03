@@ -36,9 +36,9 @@ void ProgramListWorker::AddFstEntriesToProgramList(const std::string& dir_path,
             if (!loader)
                 return true;
             u64 program_id;
-            loader->ReadProgramId(program_id);
+            loader->ReadProgramID(program_id);
             u64 extdata_id;
-            loader->ReadExtdataId(extdata_id);
+            loader->ReadExtdataID(extdata_id);
             auto smdh{[this, program_id, &loader]() -> std::vector<u8> {
                 std::vector<u8> original_smdh;
                 loader->ReadIcon(original_smdh);

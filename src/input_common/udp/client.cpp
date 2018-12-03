@@ -92,7 +92,7 @@ private:
         std::memcpy(&send_buffer1, &port_message, PORT_INFO_SIZE);
         std::size_t len{socket.send_to(boost::asio::buffer(send_buffer1), send_endpoint)};
         // Send a request for getting pad data for the pad
-        Request::PadData pad_data{Request::PadData::Flags::Id, pad_index, EMPTY_MAC_ADDRESS};
+        Request::PadData pad_data{Request::PadData::Flags::ID, pad_index, EMPTY_MAC_ADDRESS};
         auto pad_message{Request::Create(pad_data, client_id)};
         std::memcpy(send_buffer2.data(), &pad_message, PAD_DATA_SIZE);
         std::size_t len2{socket.send_to(boost::asio::buffer(send_buffer2), send_endpoint)};

@@ -500,7 +500,7 @@ ResultCode Module::FormatConfig() {
         return res;
     u32 random_number;
     u64 console_id;
-    GenerateConsoleUniqueId(random_number, console_id);
+    GenerateConsoleUniqueID(random_number, console_id);
     u64_le console_id_le{console_id};
     res = CreateConfigInfoBlk(ConsoleUniqueID1BlockID, sizeof(console_id_le), 0xE, &console_id_le);
     if (!res.IsSuccess())
@@ -736,7 +736,7 @@ u8 Module::GetCountryCode() {
     return block.country_code;
 }
 
-void Module::GenerateConsoleUniqueId(u32& random_number, u64& console_id) {
+void Module::GenerateConsoleUniqueID(u32& random_number, u64& console_id) {
     CryptoPP::AutoSeededRandomPool rng;
     random_number = rng.GenerateWord32(0, 0xFFFF);
     u64_le local_friend_code_seed;
@@ -745,7 +745,7 @@ void Module::GenerateConsoleUniqueId(u32& random_number, u64& console_id) {
     console_id = (local_friend_code_seed & 0x3FFFFFFFF) | (static_cast<u64>(random_number) << 48);
 }
 
-ResultCode Module::SetConsoleUniqueId(u32 random_number, u64 console_id) {
+ResultCode Module::SetConsoleUniqueID(u32 random_number, u64 console_id) {
     u64_le console_id_le{console_id};
     ResultCode res{
         SetConfigInfoBlock(ConsoleUniqueID1BlockID, sizeof(console_id_le), 0xE, &console_id_le)};
@@ -762,7 +762,7 @@ ResultCode Module::SetConsoleUniqueId(u32 random_number, u64 console_id) {
     return RESULT_SUCCESS;
 }
 
-u64 Module::GetConsoleUniqueId() {
+u64 Module::GetConsoleUniqueID() {
     u64_le console_id_le;
     GetConfigInfoBlock(ConsoleUniqueID2BlockID, sizeof(console_id_le), 0xE, &console_id_le);
     return console_id_le;
@@ -777,13 +777,13 @@ void InstallInterfaces(Core::System& system) {
     std::make_shared<CFG_NOR>()->InstallAsService(service_manager);
 }
 
-u64 GetConsoleId(Core::System& system) {
+u64 GetConsoleID(Core::System& system) {
     if (system.IsPoweredOn()) {
         auto cfg{system.ServiceManager().GetService<Module::Interface>("cfg:u")};
         ASSERT_MSG(cfg, "CFG module missing!");
-        return cfg->GetModule()->GetConsoleUniqueId();
+        return cfg->GetModule()->GetConsoleUniqueID();
     } else
-        return std::make_unique<Service::CFG::Module>()->GetConsoleUniqueId();
+        return std::make_unique<Service::CFG::Module>()->GetConsoleUniqueID();
 }
 
 } // namespace Service::CFG

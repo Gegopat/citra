@@ -101,7 +101,7 @@ public:
         }
         case Settings::TicksMode::Auto: {
             u64 program_id{};
-            system.GetProgramLoader().ReadProgramId(program_id);
+            system.GetProgramLoader().ReadProgramID(program_id);
             auto itr{custom_ticks_map.find(program_id)};
             if (itr != custom_ticks_map.end()) {
                 custom_ticks = itr->second;

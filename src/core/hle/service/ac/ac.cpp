@@ -30,7 +30,7 @@ void Module::Interface::CreateDefaultConfig(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::ConnectAsync(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x4, 0, 6};
-    rp.Skip(2, false); // ProcessId descriptor
+    rp.Skip(2, false); // ProcessID descriptor
     ac->connect_event = rp.PopObject<Kernel::Event>();
     if (ac->connect_event) {
         ac->connect_event->SetName("AC:connect_event");
@@ -44,14 +44,14 @@ void Module::Interface::ConnectAsync(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GetConnectResult(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x5, 0, 2};
-    rp.Skip(2, false); // ProcessId descriptor
+    rp.Skip(2, false); // ProcessID descriptor
     auto rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
 void Module::Interface::CloseAsync(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x8, 0, 4};
-    rp.Skip(2, false); // ProcessId descriptor
+    rp.Skip(2, false); // ProcessID descriptor
     ac->close_event = rp.PopObject<Kernel::Event>();
     if (ac->ac_connected && ac->disconnect_event)
         ac->disconnect_event->Signal();
@@ -66,7 +66,7 @@ void Module::Interface::CloseAsync(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GetCloseResult(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x9, 0, 2};
-    rp.Skip(2, false); // ProcessId descriptor
+    rp.Skip(2, false); // ProcessID descriptor
     auto rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
     LOG_WARNING(Service_AC, "stubbed");
@@ -101,7 +101,7 @@ void Module::Interface::SetRequestEulaVersion(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::RegisterDisconnectEvent(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x30, 0, 4};
-    rp.Skip(2, false); // ProcessId descriptor
+    rp.Skip(2, false); // ProcessID descriptor
     ac->disconnect_event = rp.PopObject<Kernel::Event>();
     if (ac->disconnect_event)
         ac->disconnect_event->SetName("AC:disconnect_event");
@@ -132,7 +132,7 @@ void Module::Interface::IsConnected(Kernel::HLERequestContext& ctx) {
 void Module::Interface::SetClientVersion(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x40, 1, 2};
     u32 version{rp.Pop<u32>()};
-    rp.Skip(2, false); // ProcessId descriptor
+    rp.Skip(2, false); // ProcessID descriptor
     auto rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
     LOG_WARNING(Service_AC, "(stubbed) version: 0x{:08X}", version);

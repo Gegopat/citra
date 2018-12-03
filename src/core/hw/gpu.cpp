@@ -33,7 +33,7 @@ inline void Read(T& var, const u32 raw_addr) {
     u32 addr{raw_addr - HW::VADDR_GPU};
     u32 index{addr / 4};
     // Reads other than u32 are untested, so I'd rather have them abort than silently fail
-    if (index >= Regs::NumIds() || !std::is_same<T, u32>::value) {
+    if (index >= Regs::NumIDs() || !std::is_same<T, u32>::value) {
         LOG_ERROR(HW_GPU, "unknown Read{} @ {:#010X}", sizeof(var) * 8, addr);
         return;
     }
@@ -315,7 +315,7 @@ inline void Write(u32 addr, const T data) {
     addr -= HW::VADDR_GPU;
     u32 index{addr / 4};
     // Writes other than u32 are untested, so I'd rather have them abort than silently fail
-    if (index >= Regs::NumIds() || !std::is_same<T, u32>::value) {
+    if (index >= Regs::NumIDs() || !std::is_same<T, u32>::value) {
         LOG_ERROR(HW_GPU, "unknown Write{} {:#010X} @ {:#010X}", sizeof(data) * 8, (u32)data, addr);
         return;
     }
@@ -334,9 +334,9 @@ inline void Write(u32 addr, const T data) {
             // TODO: hwtest this
             if (config.GetStartAddress() != 0)
                 if (!is_second_filler)
-                    Service::GSP::SignalInterrupt(Service::GSP::InterruptId::PSC0);
+                    Service::GSP::SignalInterrupt(Service::GSP::InterruptID::PSC0);
                 else
-                    Service::GSP::SignalInterrupt(Service::GSP::InterruptId::PSC1);
+                    Service::GSP::SignalInterrupt(Service::GSP::InterruptID::PSC1);
             // Reset "trigger" flag and set the "finish" flag
             // NOTE: This was confirmed to happen on hardware even if "address_start" is zero.
             config.trigger.Assign(0);
@@ -367,7 +367,7 @@ inline void Write(u32 addr, const T data) {
                           static_cast<u32>(config.output_format.Value()), config.flags);
             }
             g_regs.display_transfer_config.trigger = 0;
-            Service::GSP::SignalInterrupt(Service::GSP::InterruptId::PPF);
+            Service::GSP::SignalInterrupt(Service::GSP::InterruptID::PPF);
         }
         break;
     }
@@ -404,8 +404,8 @@ static void VBlankCallback(u64 userdata, s64 cycles_late) {
     // screen, or if both use the same interrupts and these two instead determine the
     // beginning and end of the VBlank period. If needed, split the interrupt firing into
     // two different intervals.
-    Service::GSP::SignalInterrupt(Service::GSP::InterruptId::PDC0);
-    Service::GSP::SignalInterrupt(Service::GSP::InterruptId::PDC1);
+    Service::GSP::SignalInterrupt(Service::GSP::InterruptID::PDC0);
+    Service::GSP::SignalInterrupt(Service::GSP::InterruptID::PDC1);
     // Reschedule recurrent event
     Core::System::GetInstance().CoreTiming().ScheduleEvent(
         static_cast<u64>(BASE_CLOCK_RATE_ARM11 / Settings::values.screen_refresh_rate) -

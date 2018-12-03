@@ -70,7 +70,7 @@ void Timer::WakeupAllWaitingThreads() {
 }
 
 void Timer::Signal(s64 cycles_late) {
-    LOG_TRACE(Kernel, "Timer {} fired", GetObjectId());
+    LOG_TRACE(Kernel, "Timer {} fired", GetObjectID());
     signaled = true;
     // Resume all waiting threads
     WakeupAllWaitingThreads();

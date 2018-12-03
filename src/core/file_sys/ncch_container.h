@@ -241,13 +241,13 @@ public:
      * Get the Program ID of the NCCH container
      * @return ResultStatus result of function
      */
-    Loader::ResultStatus ReadProgramId(u64_le& program_id);
+    Loader::ResultStatus ReadProgramID(u64_le& program_id);
 
     /**
      * Get the Extdata ID of the NCCH container
      * @return ResultStatus result of function
      */
-    Loader::ResultStatus ReadExtdataId(u64& extdata_id);
+    Loader::ResultStatus ReadExtdataID(u64& extdata_id);
 
     /**
      * Checks whether the NCCH container contains an ExeFS

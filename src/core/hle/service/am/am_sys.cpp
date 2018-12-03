@@ -13,7 +13,7 @@ AM_SYS::AM_SYS(std::shared_ptr<Module> am) : Module::Interface{std::move(am), "a
         {0x00030084, &AM_SYS::GetProgramInfos, "GetProgramInfos"},
         {0x000400C0, &AM_SYS::DeleteUserProgram, "DeleteUserProgram"},
         {0x000500C0, &AM_SYS::GetProductCode, "GetProductCode"},
-        {0x000600C0, nullptr, "GetStorageId"},
+        {0x000600C0, nullptr, "GetStorageID"},
         {0x00070080, &AM_SYS::DeleteTicket, "DeleteTicket"},
         {0x00080000, &AM_SYS::GetNumTickets, "GetNumTickets"},
         {0x00090082, &AM_SYS::GetTicketList, "GetTicketList"},

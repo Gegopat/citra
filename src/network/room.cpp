@@ -93,30 +93,30 @@ struct Room::RoomImpl {
      * Returns whether the console ID is valid, ie. isn't already taken by someone else in
      * the room.
      */
-    bool IsValidConsoleId(u64 console_id) const;
+    bool IsValidConsoleID(u64 console_id) const;
 
     /// Returns whether a nickname has mod permissions.
     bool HasModPermission(const ENetPeer* client) const;
 
-    /// Sends a IdRoomIsFull message telling the client that the room is full.
+    /// Sends a IDRoomIsFull message telling the client that the room is full.
     void SendRoomIsFull(ENetPeer* client);
 
-    /// Sends a IdNameCollision message telling the client that the name is invalid.
+    /// Sends a IDNameCollision message telling the client that the name is invalid.
     void SendNameCollision(ENetPeer* client);
 
-    /// Sends a IdMACCollision message telling the client that the MAC is invalid.
+    /// Sends a IDMACCollision message telling the client that the MAC is invalid.
     void SendMacCollision(ENetPeer* client);
 
     /**
-     * Sends a IdConsoleIdCollision message telling the client that another member with the same
+     * Sends a IDConsoleIDCollision message telling the client that another member with the same
      * console ID exists.
      */
-    void SendConsoleIdCollision(ENetPeer* client);
+    void SendConsoleIDCollision(ENetPeer* client);
 
-    /// Sends a IdVersionMismatch message telling the client that the version is invalid.
+    /// Sends a IDVersionMismatch message telling the client that the version is invalid.
     void SendVersionMismatch(ENetPeer* client);
 
-    /// Sends a IdWrongPassword message telling the client that the password is wrong.
+    /// Sends a IDWrongPassword message telling the client that the password is wrong.
     void SendWrongPassword(ENetPeer* client);
 
     /**
@@ -125,19 +125,19 @@ struct Room::RoomImpl {
      */
     void SendJoinSuccess(ENetPeer* client, MACAddress mac_address);
 
-    /// Sends a IdHostKicked message telling the client that they have been kicked.
+    /// Sends a IDHostKicked message telling the client that they have been kicked.
     void SendUserKicked(ENetPeer* client);
 
-    /// Sends a IdHostBanned message telling the client that they have been banned.
+    /// Sends a IDHostBanned message telling the client that they have been banned.
     void SendUserBanned(ENetPeer* client);
 
     /**
-     * Sends a IdModPermissionDenied message telling the client that they don't have mod
+     * Sends a IDModPermissionDenied message telling the client that they don't have mod
      * permission.
      */
     void SendModPermissionDenied(ENetPeer* client);
 
-    /// Sends a IdModNoSuchUser message telling the client that the given user couldn't be found.
+    /// Sends a IDModNoSuchUser message telling the client that the given user couldn't be found.
     void SendModNoSuchUser(ENetPeer* client);
 
     /// Sends the ban list in response to a client's request for getting ban list.
@@ -202,29 +202,29 @@ void Room::RoomImpl::ServerLoop() {
             switch (event.type) {
             case ENET_EVENT_TYPE_RECEIVE:
                 switch (event.packet->data[0]) {
-                case IdJoinRequest:
+                case IDJoinRequest:
                     HandleJoinRequest(&event);
                     break;
-                case IdSetProgram:
+                case IDSetProgram:
                     HandleProgramPacket(&event);
                     break;
-                case IdWiFiPacket:
+                case IDWiFiPacket:
                     HandleWiFiPacket(&event);
                     break;
-                case IdChatMessage:
+                case IDChatMessage:
                     HandleChatPacket(&event);
                     break;
                 // Moderation
-                case IdModKick:
+                case IDModKick:
                     HandleModKickPacket(&event);
                     break;
-                case IdModBan:
+                case IDModBan:
                     HandleModBanPacket(&event);
                     break;
-                case IdModUnban:
+                case IDModUnban:
                     HandleModUnbanPacket(&event);
                     break;
-                case IdModGetBanList:
+                case IDModGetBanList:
                     HandleModGetBanListPacket(&event);
                     break;
                 }
@@ -285,8 +285,8 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
     } else
         // Assign a MAC address of this client automatically
         preferred_mac = GenerateMACAddress();
-    if (!IsValidConsoleId(console_id)) {
-        SendConsoleIdCollision(event->peer);
+    if (!IsValidConsoleID(console_id)) {
+        SendConsoleIDCollision(event->peer);
         return;
     }
     if (client_version != NetworkVersion) {
@@ -311,7 +311,7 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
         }
     }
     // Notify everyone that the user has joined.
-    SendStatusMessage(IdMemberJoin, member.nickname);
+    SendStatusMessage(IDMemberJoin, member.nickname);
     {
         std::lock_guard lock{member_mutex};
         members.push_back(std::move(member));
@@ -346,7 +346,7 @@ void Room::RoomImpl::HandleModKickPacket(const ENetEvent* event) {
         members.erase(target_member);
     }
     // Announce the change to all clients.
-    SendStatusMessage(IdMemberKicked, nickname);
+    SendStatusMessage(IDMemberKicked, nickname);
     BroadcastRoomInformation();
 }
 
@@ -386,7 +386,7 @@ void Room::RoomImpl::HandleModBanPacket(const ENetEvent* event) {
             ban_list.push_back(ip);
     }
     // Announce the change to all clients.
-    SendStatusMessage(IdMemberBanned, nickname);
+    SendStatusMessage(IDMemberBanned, nickname);
     BroadcastRoomInformation();
 }
 
@@ -410,7 +410,7 @@ void Room::RoomImpl::HandleModUnbanPacket(const ENetEvent* event) {
         }
     }
     if (unbanned)
-        SendStatusMessage(IdAddressUnbanned, address);
+        SendStatusMessage(IDAddressUnbanned, address);
     else
         SendModNoSuchUser(event->peer);
 }
@@ -441,8 +441,8 @@ bool Room::RoomImpl::IsValidMACAddress(const MACAddress& address) const {
                        [&address](const auto& member) { return member.mac_address != address; });
 }
 
-bool Room::RoomImpl::IsValidConsoleId(u64 console_id) const {
-    // A Console ID is valid if it isn't already taken by anybody else in the room.
+bool Room::RoomImpl::IsValidConsoleID(u64 console_id) const {
+    // A console ID is valid if it isn't already taken by anybody else in the room.
     std::lock_guard lock{member_mutex};
     return std::all_of(members.begin(), members.end(), [&console_id](const auto& member) {
         return member.console_id != console_id;
@@ -450,22 +450,16 @@ bool Room::RoomImpl::IsValidConsoleId(u64 console_id) const {
 }
 
 bool Room::RoomImpl::HasModPermission(const ENetPeer* client) const {
-    if (room_information.creator.empty())
-        return false; // This room doesn't support moderation
-    std::lock_guard lock{member_mutex};
-    const auto sending_member{
-        std::find_if(members.begin(), members.end(),
-                     [client](const auto& member) { return member.peer == client; })};
-    if (sending_member == members.end())
-        return false;
-    if (sending_member->nickname != room_information.creator)
-        return false;
-    return true;
+    // A member has mod permissions if it's the host
+    char ip_raw[256];
+    enet_address_get_host_ip(&client->address, ip_raw, sizeof(ip_raw) - 1);
+    std::string ip{ip_raw};
+    return ip == "127.0.0.1";
 }
 
 void Room::RoomImpl::SendNameCollision(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IdNameCollision);
+    packet << static_cast<u8>(IDNameCollision);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
@@ -474,16 +468,16 @@ void Room::RoomImpl::SendNameCollision(ENetPeer* client) {
 
 void Room::RoomImpl::SendMacCollision(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IdMACCollision);
+    packet << static_cast<u8>(IDMACCollision);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
     enet_host_flush(server);
 }
 
-void Room::RoomImpl::SendConsoleIdCollision(ENetPeer* client) {
+void Room::RoomImpl::SendConsoleIDCollision(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IdConsoleIdCollision);
+    packet << static_cast<u8>(IDConsoleIDCollision);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
@@ -492,7 +486,7 @@ void Room::RoomImpl::SendConsoleIdCollision(ENetPeer* client) {
 
 void Room::RoomImpl::SendWrongPassword(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IdWrongPassword);
+    packet << static_cast<u8>(IDWrongPassword);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
@@ -501,7 +495,7 @@ void Room::RoomImpl::SendWrongPassword(ENetPeer* client) {
 
 void Room::RoomImpl::SendRoomIsFull(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IdRoomIsFull);
+    packet << static_cast<u8>(IDRoomIsFull);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
@@ -510,7 +504,7 @@ void Room::RoomImpl::SendRoomIsFull(ENetPeer* client) {
 
 void Room::RoomImpl::SendVersionMismatch(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IdVersionMismatch);
+    packet << static_cast<u8>(IDVersionMismatch);
     packet << NetworkVersion;
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
@@ -520,7 +514,7 @@ void Room::RoomImpl::SendVersionMismatch(ENetPeer* client) {
 
 void Room::RoomImpl::SendJoinSuccess(ENetPeer* client, MACAddress mac_address) {
     Packet packet;
-    packet << static_cast<u8>(IdJoinSuccess);
+    packet << static_cast<u8>(IDJoinSuccess);
     packet << mac_address;
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
@@ -530,7 +524,7 @@ void Room::RoomImpl::SendJoinSuccess(ENetPeer* client, MACAddress mac_address) {
 
 void Room::RoomImpl::SendUserKicked(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IdHostKicked);
+    packet << static_cast<u8>(IDHostKicked);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
@@ -539,7 +533,7 @@ void Room::RoomImpl::SendUserKicked(ENetPeer* client) {
 
 void Room::RoomImpl::SendUserBanned(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IdHostBanned);
+    packet << static_cast<u8>(IDHostBanned);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
@@ -548,7 +542,7 @@ void Room::RoomImpl::SendUserBanned(ENetPeer* client) {
 
 void Room::RoomImpl::SendModPermissionDenied(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IdModPermissionDenied);
+    packet << static_cast<u8>(IDModPermissionDenied);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
@@ -557,7 +551,7 @@ void Room::RoomImpl::SendModPermissionDenied(ENetPeer* client) {
 
 void Room::RoomImpl::SendModNoSuchUser(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IdModNoSuchUser);
+    packet << static_cast<u8>(IDModNoSuchUser);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
@@ -566,7 +560,7 @@ void Room::RoomImpl::SendModNoSuchUser(ENetPeer* client) {
 
 void Room::RoomImpl::SendModBanListResponse(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IdModBanListResponse);
+    packet << static_cast<u8>(IDModBanListResponse);
     {
         std::lock_guard lock{ban_list_mutex};
         packet << ban_list;
@@ -579,7 +573,7 @@ void Room::RoomImpl::SendModBanListResponse(ENetPeer* client) {
 
 void Room::RoomImpl::SendCloseMessage() {
     Packet packet;
-    packet << static_cast<u8>(IdCloseRoom);
+    packet << static_cast<u8>(IDCloseRoom);
     std::lock_guard lock{member_mutex};
     if (!members.empty()) {
         auto enet_packet{
@@ -594,7 +588,7 @@ void Room::RoomImpl::SendCloseMessage() {
 
 void Room::RoomImpl::SendStatusMessage(StatusMessageTypes type, const std::string& nickname) {
     Packet packet;
-    packet << static_cast<u8>(IdStatusMessage);
+    packet << static_cast<u8>(IDStatusMessage);
     packet << static_cast<u8>(type);
     packet << nickname;
     std::lock_guard lock{member_mutex};
@@ -609,7 +603,7 @@ void Room::RoomImpl::SendStatusMessage(StatusMessageTypes type, const std::strin
 
 void Room::RoomImpl::BroadcastRoomInformation() {
     Packet packet;
-    packet << static_cast<u8>(IdRoomInformation);
+    packet << static_cast<u8>(IDRoomInformation);
     packet << room_information.name;
     packet << room_information.description;
     packet << room_information.member_slots;
@@ -701,7 +695,7 @@ void Room::RoomImpl::HandleChatPacket(const ENetEvent* event) {
     // Limit the size of chat messages to MaxMessageSize
     message.resize(MaxMessageSize);
     Packet out_packet;
-    out_packet << static_cast<u8>(IdChatMessage);
+    out_packet << static_cast<u8>(IDChatMessage);
     out_packet << sending_member->nickname;
     out_packet << message;
     auto enet_packet{enet_packet_create(out_packet.GetData(), out_packet.GetDataSize(),
@@ -751,7 +745,7 @@ void Room::RoomImpl::HandleClientDisconnection(ENetPeer* client) {
     // Announce the change to all clients.
     enet_peer_disconnect(client, 0);
     if (!nickname.empty())
-        SendStatusMessage(IdMemberLeave, nickname);
+        SendStatusMessage(IDMemberLeave, nickname);
     BroadcastRoomInformation();
 }
 

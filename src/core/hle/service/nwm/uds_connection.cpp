@@ -39,7 +39,7 @@ static std::vector<u8> GenerateSSIDTag(u32 network_id) {
     constexpr u8 SSIDSize{8};
 
     struct {
-        u8 id{static_cast<u8>(TagId::SSID)};
+        u8 id{static_cast<u8>(TagID::SSID)};
         u8 size{SSIDSize};
     } tag_header;
 
@@ -59,8 +59,8 @@ std::vector<u8> GenerateAssocResponseFrame(AssocStatus status, u16 association_i
     frame.capabilities = DefaultExtraCapabilities;
     frame.status_code = status;
     // The association id is ORed with this magic value (0xC000)
-    constexpr u16 AssociationIdMagic{0xC000};
-    frame.assoc_id = association_id | AssociationIdMagic;
+    constexpr u16 AssociationIDMagic{0xC000};
+    frame.assoc_id = association_id | AssociationIDMagic;
 
     std::vector<u8> data(sizeof(frame));
     std::memcpy(data.data(), &frame, sizeof(frame));
@@ -78,8 +78,8 @@ std::tuple<AssocStatus, u16> GetAssociationResult(const std::vector<u8>& body) {
     AssociationResponseFrame frame;
     std::memcpy(&frame, body.data(), sizeof(frame));
 
-    constexpr u16 AssociationIdMask{0x3FFF};
-    return std::make_tuple(frame.status_code, frame.assoc_id & AssociationIdMask);
+    constexpr u16 AssociationIDMask{0x3FFF};
+    return std::make_tuple(frame.status_code, frame.assoc_id & AssociationIDMask);
 }
 
 } // namespace Service::NWM

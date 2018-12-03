@@ -27,7 +27,7 @@ enum class AppletPos { Program = 0, Library = 1, System = 2, SysLibrary = 3, Res
 
 struct AppletTitleData {
     // There are two possible applet ids for each applet.
-    std::array<AppletId, 2> applet_ids;
+    std::array<AppletID, 2> applet_ids;
 
     // There's a specific ProgramID per region for each applet.
     static constexpr std::size_t NumRegions{7};
@@ -36,53 +36,53 @@ struct AppletTitleData {
 
 constexpr std::size_t NumApplets{29};
 constexpr std::array<AppletTitleData, NumApplets> applet_titleids{{
-    {AppletId::HomeMenu, AppletId::None, 0x4003000008202, 0x4003000008F02, 0x4003000009802,
+    {AppletID::HomeMenu, AppletID::None, 0x4003000008202, 0x4003000008F02, 0x4003000009802,
      0x4003000008202, 0x400300000A102, 0x400300000A902, 0x400300000B102},
-    {AppletId::AlternateMenu, AppletId::None, 0x4003000008102, 0x4003000008102, 0x4003000008102,
+    {AppletID::AlternateMenu, AppletID::None, 0x4003000008102, 0x4003000008102, 0x4003000008102,
      0x4003000008102, 0x4003000008102, 0x4003000008102, 0x4003000008102},
-    {AppletId::Camera, AppletId::None, 0x4003000008402, 0x4003000009002, 0x4003000009902,
+    {AppletID::Camera, AppletID::None, 0x4003000008402, 0x4003000009002, 0x4003000009902,
      0x4003000008402, 0x400300000A202, 0x400300000AA02, 0x400300000B202},
-    {AppletId::FriendList, AppletId::None, 0x4003000008D02, 0x4003000009602, 0x4003000009F02,
+    {AppletID::FriendList, AppletID::None, 0x4003000008D02, 0x4003000009602, 0x4003000009F02,
      0x4003000008D02, 0x400300000A702, 0x400300000AF02, 0x400300000B702},
-    {AppletId::GameNotes, AppletId::None, 0x4003000008702, 0x4003000009302, 0x4003000009C02,
+    {AppletID::GameNotes, AppletID::None, 0x4003000008702, 0x4003000009302, 0x4003000009C02,
      0x4003000008702, 0x400300000A502, 0x400300000AD02, 0x400300000B502},
-    {AppletId::InternetBrowser, AppletId::None, 0x4003000008802, 0x4003000009402, 0x4003000009D02,
+    {AppletID::InternetBrowser, AppletID::None, 0x4003000008802, 0x4003000009402, 0x4003000009D02,
      0x4003000008802, 0x400300000A602, 0x400300000AE02, 0x400300000B602},
-    {AppletId::InstructionManual, AppletId::None, 0x4003000008602, 0x4003000009202, 0x4003000009B02,
+    {AppletID::InstructionManual, AppletID::None, 0x4003000008602, 0x4003000009202, 0x4003000009B02,
      0x4003000008602, 0x400300000A402, 0x400300000AC02, 0x400300000B402},
-    {AppletId::Notifications, AppletId::None, 0x4003000008E02, 0x4003000009702, 0x400300000A002,
+    {AppletID::Notifications, AppletID::None, 0x4003000008E02, 0x4003000009702, 0x400300000A002,
      0x4003000008E02, 0x400300000A802, 0x400300000B002, 0x400300000B802},
-    {AppletId::Miiverse, AppletId::None, 0x400300000BC02, 0x400300000BD02, 0x400300000BE02,
+    {AppletID::Miiverse, AppletID::None, 0x400300000BC02, 0x400300000BD02, 0x400300000BE02,
      0x400300000BC02, 0x4003000009E02, 0x4003000009502, 0x400300000B902},
     // These values obtained from an older NS dump firmware 4.5
-    {AppletId::MiiversePost, AppletId::None, 0x400300000BA02, 0x400300000BA02, 0x400300000BA02,
+    {AppletID::MiiversePost, AppletID::None, 0x400300000BA02, 0x400300000BA02, 0x400300000BA02,
      0x400300000BA02, 0x400300000BA02, 0x400300000BA02, 0x400300000BA02},
-    // {AppletId::MiiversePost, AppletId::None, 0x4003000008302, 0x4003000008B02, 0x400300000BA02,
+    // {AppletID::MiiversePost, AppletID::None, 0x4003000008302, 0x4003000008B02, 0x400300000BA02,
     //  0x4003000008302, 0x0, 0x0, 0x0},
-    {AppletId::AmiiboSettings, AppletId::None, 0x4003000009502, 0x4003000009E02, 0x400300000B902,
+    {AppletID::AmiiboSettings, AppletID::None, 0x4003000009502, 0x4003000009E02, 0x400300000B902,
      0x4003000009502, 0x0, 0x4003000008C02, 0x400300000BF02},
-    {AppletId::SoftwareKeyboard1, AppletId::SoftwareKeyboard2, 0x400300000C002, 0x400300000C802,
+    {AppletID::SoftwareKeyboard1, AppletID::SoftwareKeyboard2, 0x400300000C002, 0x400300000C802,
      0x400300000D002, 0x400300000C002, 0x400300000D802, 0x400300000DE02, 0x400300000E402},
-    {AppletId::Ed1, AppletId::Ed2, 0x400300000C102, 0x400300000C902, 0x400300000D102,
+    {AppletID::Ed1, AppletID::Ed2, 0x400300000C102, 0x400300000C902, 0x400300000D102,
      0x400300000C102, 0x400300000D902, 0x400300000DF02, 0x400300000E502},
-    {AppletId::PnoteApp, AppletId::PnoteApp2, 0x400300000C302, 0x400300000CB02, 0x400300000D302,
+    {AppletID::PnoteApp, AppletID::PnoteApp2, 0x400300000C302, 0x400300000CB02, 0x400300000D302,
      0x400300000C302, 0x400300000DB02, 0x400300000E102, 0x400300000E702},
-    {AppletId::SnoteApp, AppletId::SnoteApp2, 0x400300000C402, 0x400300000CC02, 0x400300000D402,
+    {AppletID::SnoteApp, AppletID::SnoteApp2, 0x400300000C402, 0x400300000CC02, 0x400300000D402,
      0x400300000C402, 0x400300000DC02, 0x400300000E202, 0x400300000E802},
-    {AppletId::Error, AppletId::Error2, 0x400300000C502, 0x400300000C502, 0x400300000C502,
+    {AppletID::Error, AppletID::Error2, 0x400300000C502, 0x400300000C502, 0x400300000C502,
      0x400300000C502, 0x400300000CF02, 0x400300000CF02, 0x400300000CF02},
-    {AppletId::Mint, AppletId::Mint2, 0x400300000C602, 0x400300000CE02, 0x400300000D602,
+    {AppletID::Mint, AppletID::Mint2, 0x400300000C602, 0x400300000CE02, 0x400300000D602,
      0x400300000C602, 0x400300000DD02, 0x400300000E302, 0x400300000E902},
-    {AppletId::Extrapad, AppletId::Extrapad2, 0x400300000CD02, 0x400300000CD02, 0x400300000CD02,
+    {AppletID::Extrapad, AppletID::Extrapad2, 0x400300000CD02, 0x400300000CD02, 0x400300000CD02,
      0x400300000CD02, 0x400300000D502, 0x400300000D502, 0x400300000D502},
-    {AppletId::Memolib, AppletId::Memolib2, 0x400300000F602, 0x400300000F602, 0x400300000F602,
+    {AppletID::Memolib, AppletID::Memolib2, 0x400300000F602, 0x400300000F602, 0x400300000F602,
      0x400300000F602, 0x400300000F602, 0x400300000F602, 0x400300000F602},
     // TODO: Fill in the rest of the titleids
 }};
 
 /// Handles updating the current Applet every time it's called.
 void AppletManager::AppletUpdateEvent(u64 applet_id, s64 cycles_late) {
-    auto id{static_cast<AppletId>(applet_id)};
+    auto id{static_cast<AppletID>(applet_id)};
     auto itr{hle_applets.find(id)};
     std::shared_ptr<HLE::Applets::Applet> applet{itr == hle_applets.end() ? nullptr : itr->second};
     ASSERT_MSG(applet, "Applet 0x{:03X} doesn't exist!", static_cast<u32>(id));
@@ -93,8 +93,8 @@ void AppletManager::AppletUpdateEvent(u64 applet_id, s64 cycles_late) {
                                           applet_update_event, applet_id);
 }
 
-u64 AppletManager::GetProgramIDForApplet(AppletId id) {
-    ASSERT_MSG(id != AppletId::None, "Invalid applet id");
+u64 AppletManager::GetProgramIDForApplet(AppletID id) {
+    ASSERT_MSG(id != AppletID::None, "Invalid applet id");
     auto itr{std::find_if(applet_titleids.begin(), applet_titleids.end(),
                           [id](const AppletTitleData& data) {
                               return data.applet_ids[0] == id || data.applet_ids[1] == id;
@@ -106,42 +106,42 @@ u64 AppletManager::GetProgramIDForApplet(AppletId id) {
                                  ->GetRegionValue()];
 }
 
-AppletManager::AppletSlotData* AppletManager::GetAppletSlotData(AppletId id) {
+AppletManager::AppletSlotData* AppletManager::GetAppletSlotData(AppletID id) {
     auto GetSlot{[this](AppletSlot slot) -> AppletSlotData* {
         return &applet_slots[static_cast<std::size_t>(slot)];
     }};
-    if (id == AppletId::Program) {
+    if (id == AppletID::Program) {
         auto slot{GetSlot(AppletSlot::Program)};
-        if (slot->applet_id != AppletId::None)
+        if (slot->applet_id != AppletID::None)
             return slot;
         return nullptr;
     }
-    if (id == AppletId::AnySystemApplet) {
+    if (id == AppletID::AnySystemApplet) {
         auto system_slot{GetSlot(AppletSlot::SystemApplet)};
-        if (system_slot->applet_id != AppletId::None)
+        if (system_slot->applet_id != AppletID::None)
             return system_slot;
         // The Home Menu is also a system applet, but it lives in its own slot to be able to run
         // concurrently with other system applets.
         auto home_slot{GetSlot(AppletSlot::HomeMenu)};
-        if (home_slot->applet_id != AppletId::None)
+        if (home_slot->applet_id != AppletID::None)
             return home_slot;
         return nullptr;
     }
-    if (id == AppletId::AnyLibraryApplet || id == AppletId::AnySysLibraryApplet) {
+    if (id == AppletID::AnyLibraryApplet || id == AppletID::AnySysLibraryApplet) {
         auto slot{GetSlot(AppletSlot::LibraryApplet)};
-        if (slot->applet_id == AppletId::None)
+        if (slot->applet_id == AppletID::None)
             return nullptr;
         u32 applet_pos{slot->attributes.applet_pos};
-        if (id == AppletId::AnyLibraryApplet && applet_pos == static_cast<u32>(AppletPos::Library))
+        if (id == AppletID::AnyLibraryApplet && applet_pos == static_cast<u32>(AppletPos::Library))
             return slot;
-        if (id == AppletId::AnySysLibraryApplet &&
+        if (id == AppletID::AnySysLibraryApplet &&
             applet_pos == static_cast<u32>(AppletPos::SysLibrary))
             return slot;
         return nullptr;
     }
-    if (id == AppletId::HomeMenu || id == AppletId::AlternateMenu) {
+    if (id == AppletID::HomeMenu || id == AppletID::AlternateMenu) {
         auto slot{GetSlot(AppletSlot::HomeMenu)};
-        if (slot->applet_id != AppletId::None)
+        if (slot->applet_id != AppletID::None)
             return slot;
         return nullptr;
     }
@@ -172,7 +172,7 @@ AppletManager::AppletSlotData* AppletManager::GetAppletSlotData(AppletAttributes
 void AppletManager::CancelAndSendParameter(const MessageParameter& parameter) {
     next_parameter = parameter;
     // Signal the event to let the receiver know that a new parameter is ready to be read
-    auto const slot_data{GetAppletSlotData(static_cast<AppletId>(parameter.destination_id))};
+    auto const slot_data{GetAppletSlotData(static_cast<AppletID>(parameter.destination_id))};
     if (!slot_data) {
         LOG_DEBUG(Service_APT, "No applet was registered with the id {:03X}",
                   static_cast<u32>(parameter.destination_id));
@@ -195,7 +195,7 @@ ResultCode AppletManager::SendParameter(const MessageParameter& parameter) {
     return RESULT_SUCCESS;
 }
 
-ResultVal<MessageParameter> AppletManager::GlanceParameter(AppletId program_id) {
+ResultVal<MessageParameter> AppletManager::GlanceParameter(AppletID program_id) {
     if (!next_parameter)
         return ResultCode(ErrorDescription::NoData, ErrorModule::Applet, ErrorSummary::InvalidState,
                           ErrorLevel::Status);
@@ -210,7 +210,7 @@ ResultVal<MessageParameter> AppletManager::GlanceParameter(AppletId program_id) 
     return MakeResult<MessageParameter>(parameter);
 }
 
-ResultVal<MessageParameter> AppletManager::ReceiveParameter(AppletId program_id) {
+ResultVal<MessageParameter> AppletManager::ReceiveParameter(AppletID program_id) {
     auto result{GlanceParameter(program_id)};
     if (result.Succeeded())
         // Clear the parameter
@@ -218,8 +218,8 @@ ResultVal<MessageParameter> AppletManager::ReceiveParameter(AppletId program_id)
     return result;
 }
 
-bool AppletManager::CancelParameter(bool check_sender, AppletId sender_appid, bool check_receiver,
-                                    AppletId receiver_appid) {
+bool AppletManager::CancelParameter(bool check_sender, AppletID sender_appid, bool check_receiver,
+                                    AppletID receiver_appid) {
     bool cancellation_success{true};
     if (!next_parameter)
         cancellation_success = false;
@@ -234,7 +234,7 @@ bool AppletManager::CancelParameter(bool check_sender, AppletId sender_appid, bo
     return cancellation_success;
 }
 
-ResultVal<AppletManager::InitializeResult> AppletManager::Initialize(AppletId program_id,
+ResultVal<AppletManager::InitializeResult> AppletManager::Initialize(AppletID program_id,
                                                                      AppletAttributes attributes) {
     auto const slot_data{GetAppletSlotData(attributes)};
     // Note: The real NS service doesn't check if the attributes value is valid before accessing
@@ -243,13 +243,13 @@ ResultVal<AppletManager::InitializeResult> AppletManager::Initialize(AppletId pr
     if (slot_data->registered)
         return ResultCode(ErrorDescription::AlreadyExists, ErrorModule::Applet,
                           ErrorSummary::InvalidState, ErrorLevel::Status);
-    slot_data->applet_id = static_cast<AppletId>(program_id);
+    slot_data->applet_id = static_cast<AppletID>(program_id);
     slot_data->attributes.raw = attributes.raw;
-    if (slot_data->applet_id == AppletId::Program || slot_data->applet_id == AppletId::HomeMenu) {
+    if (slot_data->applet_id == AppletID::Program || slot_data->applet_id == AppletID::HomeMenu) {
         // Initialize the APT parameter to wake up the program.
         next_parameter.emplace();
         next_parameter->signal = SignalType::Wakeup;
-        next_parameter->sender_id = AppletId::None;
+        next_parameter->sender_id = AppletID::None;
         next_parameter->destination_id = program_id;
         // Not signaling the parameter event will cause the program (or Home Menu) to hang
         // during startup. In the real console, it is usually the Kernel and Home Menu who cause NS
@@ -269,12 +269,12 @@ ResultCode AppletManager::Enable(AppletAttributes attributes) {
     return RESULT_SUCCESS;
 }
 
-bool AppletManager::IsRegistered(AppletId program_id) {
+bool AppletManager::IsRegistered(AppletID program_id) {
     const auto slot_data{GetAppletSlotData(program_id)};
     // Check if an LLE applet was registered first, then fallback to HLE applets
     bool is_registered{slot_data && slot_data->registered};
     if (!is_registered && !Settings::values.use_lle_applets)
-        if (program_id == AppletId::AnyLibraryApplet)
+        if (program_id == AppletID::AnyLibraryApplet)
             is_registered =
                 std::any_of(hle_applets.begin(), hle_applets.end(), [](const auto& applet) -> bool {
                     return applet.second->IsLibraryApplet();
@@ -285,7 +285,7 @@ bool AppletManager::IsRegistered(AppletId program_id) {
     return is_registered;
 }
 
-ResultCode AppletManager::PrepareToStartLibraryApplet(AppletId applet_id) {
+ResultCode AppletManager::PrepareToStartLibraryApplet(AppletID applet_id) {
     // The real APT service returns an error if there's a pending APT parameter when this function
     // is called.
     if (next_parameter)
@@ -310,7 +310,7 @@ ResultCode AppletManager::PrepareToStartLibraryApplet(AppletId applet_id) {
         ASSERT_MSG(false, "Applet 0x{:03X} unimplemented", static_cast<u32>(applet_id));
 }
 
-ResultCode AppletManager::PreloadLibraryApplet(AppletId applet_id) {
+ResultCode AppletManager::PreloadLibraryApplet(AppletID applet_id) {
     const auto& slot{applet_slots[static_cast<std::size_t>(AppletSlot::LibraryApplet)]};
     if (slot.registered)
         return ResultCode(ErrorDescription::AlreadyExists, ErrorModule::Applet,
@@ -330,19 +330,19 @@ ResultCode AppletManager::PreloadLibraryApplet(AppletId applet_id) {
         ASSERT_MSG(false, "Applet {:03X} unimplemented", static_cast<u32>(applet_id));
 }
 
-ResultCode AppletManager::FinishPreloadingLibraryApplet(AppletId applet_id) {
+ResultCode AppletManager::FinishPreloadingLibraryApplet(AppletID applet_id) {
     // TODO: This function should fail depending on the applet preparation state.
     auto& slot{applet_slots[static_cast<std::size_t>(AppletSlot::LibraryApplet)]};
     slot.loaded = true;
     return RESULT_SUCCESS;
 }
 
-ResultCode AppletManager::StartLibraryApplet(AppletId applet_id,
+ResultCode AppletManager::StartLibraryApplet(AppletID applet_id,
                                              Kernel::SharedPtr<Kernel::Object> object,
                                              const std::vector<u8>& buffer) {
     MessageParameter param;
     param.destination_id = applet_id;
-    param.sender_id = AppletId::Program;
+    param.sender_id = AppletID::Program;
     param.object = object;
     param.signal = SignalType::Wakeup;
     param.buffer = buffer;
@@ -357,7 +357,7 @@ ResultCode AppletManager::StartLibraryApplet(AppletId applet_id,
         return RESULT_SUCCESS;
 }
 
-ResultVal<AppletManager::AppletInfo> AppletManager::GetAppletInfo(AppletId program_id) {
+ResultVal<AppletManager::AppletInfo> AppletManager::GetAppletInfo(AppletID program_id) {
     const auto slot{GetAppletSlotData(program_id)};
     if (!slot || !slot->registered) {
         // See if using HLE applets and there's an HLE applet and try to use it before erroring out.
@@ -369,7 +369,7 @@ ResultVal<AppletManager::AppletInfo> AppletManager::GetAppletInfo(AppletId progr
         // TODO: Get the program ID for the current applet and write it in the response[2-3]
         return MakeResult<AppletInfo>({0, FS::MediaType::NAND, true, true, 0});
     }
-    if (program_id == AppletId::Program) {
+    if (program_id == AppletID::Program) {
         // TODO: Implement this
         LOG_ERROR(Service_APT, "Unimplemented GetAppletInfo(Program)");
         return ResultCode(ErrorDescription::NotFound, ErrorModule::Applet, ErrorSummary::NotFound,
@@ -379,7 +379,7 @@ ResultVal<AppletManager::AppletInfo> AppletManager::GetAppletInfo(AppletId progr
                                    slot->registered, slot->loaded, slot->attributes.raw});
 }
 
-void AppletManager::ScheduleEvent(AppletId id) {
+void AppletManager::ScheduleEvent(AppletID id) {
     system.CoreTiming().ScheduleEvent(usToCycles(applet_update_interval_us), applet_update_event,
                                       static_cast<u64>(id));
 }
@@ -407,7 +407,7 @@ ResultCode AppletManager::CloseLibraryApplet(Kernel::SharedPtr<Kernel::Object> o
     // TODO: The destination id should be the "current applet slot id", which changes
     // constantly depending on what is going on in the system. Most of the time it is the running
     // program, but it could be something else if a system applet is launched.
-    param.destination_id = AppletId::Program;
+    param.destination_id = AppletID::Program;
     param.sender_id = slot.applet_id;
     param.object = std::move(object);
     param.signal = library_applet_closing_command;
@@ -424,7 +424,7 @@ AppletManager::AppletManager(Core::System& system) : system{system} {
     for (std::size_t slot{}; slot < applet_slots.size(); ++slot) {
         auto& slot_data{applet_slots[slot]};
         slot_data.slot = static_cast<AppletSlot>(slot);
-        slot_data.applet_id = AppletId::None;
+        slot_data.applet_id = AppletID::None;
         slot_data.attributes.raw = 0;
         slot_data.registered = false;
         slot_data.loaded = false;
@@ -436,16 +436,16 @@ AppletManager::AppletManager(Core::System& system) : system{system} {
         "HLE Applet Update Event",
         [this](u64 userdata, s64 cycles_late) { AppletUpdateEvent(userdata, cycles_late); });
     using namespace HLE::Applets;
-    hle_applets.emplace(AppletId::SoftwareKeyboard1,
-                        std::make_shared<SoftwareKeyboard>(AppletId::SoftwareKeyboard1, *this));
-    hle_applets.emplace(AppletId::SoftwareKeyboard2,
-                        std::make_shared<SoftwareKeyboard>(AppletId::SoftwareKeyboard2, *this));
-    hle_applets.emplace(AppletId::Ed1, std::make_shared<MiiSelector>(AppletId::Ed1, *this));
-    hle_applets.emplace(AppletId::Ed2, std::make_shared<MiiSelector>(AppletId::Ed2, *this));
-    hle_applets.emplace(AppletId::Error, std::make_shared<MiiSelector>(AppletId::Error, *this));
-    hle_applets.emplace(AppletId::Error2, std::make_shared<MiiSelector>(AppletId::Error2, *this));
-    hle_applets.emplace(AppletId::Mint, std::make_shared<MiiSelector>(AppletId::Mint, *this));
-    hle_applets.emplace(AppletId::Mint2, std::make_shared<MiiSelector>(AppletId::Mint2, *this));
+    hle_applets.emplace(AppletID::SoftwareKeyboard1,
+                        std::make_shared<SoftwareKeyboard>(AppletID::SoftwareKeyboard1, *this));
+    hle_applets.emplace(AppletID::SoftwareKeyboard2,
+                        std::make_shared<SoftwareKeyboard>(AppletID::SoftwareKeyboard2, *this));
+    hle_applets.emplace(AppletID::Ed1, std::make_shared<MiiSelector>(AppletID::Ed1, *this));
+    hle_applets.emplace(AppletID::Ed2, std::make_shared<MiiSelector>(AppletID::Ed2, *this));
+    hle_applets.emplace(AppletID::Error, std::make_shared<MiiSelector>(AppletID::Error, *this));
+    hle_applets.emplace(AppletID::Error2, std::make_shared<MiiSelector>(AppletID::Error2, *this));
+    hle_applets.emplace(AppletID::Mint, std::make_shared<MiiSelector>(AppletID::Mint, *this));
+    hle_applets.emplace(AppletID::Mint2, std::make_shared<MiiSelector>(AppletID::Mint2, *this));
 }
 
 AppletManager::~AppletManager() {

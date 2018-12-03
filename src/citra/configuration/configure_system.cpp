@@ -282,7 +282,7 @@ void ConfigureSystem::ReadSystemSettings() {
     country_code = cfg->GetCountryCode();
     ui->combo_country->setCurrentIndex(ui->combo_country->findData(country_code));
     // Set the console id
-    u64 console_id{cfg->GetConsoleUniqueId()};
+    u64 console_id{cfg->GetConsoleUniqueID()};
     ui->label_console_id->setText(
         QString("Console ID: 0x%1").arg(QString::number(console_id, 16).toUpper()));
     // Set the region
@@ -378,8 +378,8 @@ void ConfigureSystem::RefreshConsoleID() {
         return;
     u32 random_number;
     u64 console_id;
-    cfg->GenerateConsoleUniqueId(random_number, console_id);
-    cfg->SetConsoleUniqueId(random_number, console_id);
+    cfg->GenerateConsoleUniqueID(random_number, console_id);
+    cfg->SetConsoleUniqueID(random_number, console_id);
     cfg->UpdateConfigNANDSavegame();
     ui->label_console_id->setText(
         QString("Console ID: 0x%1").arg(QString::number(console_id, 16).toUpper()));

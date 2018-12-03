@@ -160,19 +160,19 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
             switch (event.type) {
             case ENET_EVENT_TYPE_RECEIVE:
                 switch (event.packet->data[0]) {
-                case IdWiFiPacket:
+                case IDWiFiPacket:
                     HandleWiFiPacket(&event);
                     break;
-                case IdChatMessage:
+                case IDChatMessage:
                     HandleChatPacket(&event);
                     break;
-                case IdStatusMessage:
+                case IDStatusMessage:
                     HandleStatusMessagePacket(&event);
                     break;
-                case IdRoomInformation:
+                case IDRoomInformation:
                     HandleRoomInformationPacket(&event);
                     break;
-                case IdJoinSuccess:
+                case IDJoinSuccess:
                     // The join request was successful, we're now in the room.
                     // If we joined successfully, there must be at least one client in the room: us.
                     ASSERT_MSG(member_information.size() > 0,
@@ -180,49 +180,49 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
                     HandleJoinPacket(&event);
                     SetState(State::Joined);
                     break;
-                case IdModBanListResponse:
+                case IDModBanListResponse:
                     HandleModBanListResponsePacket(&event);
                     break;
-                case IdRoomIsFull:
+                case IDRoomIsFull:
                     SetState(State::Idle);
                     SetError(Error::RoomIsFull);
                     break;
-                case IdNameCollision:
+                case IDNameCollision:
                     SetState(State::Idle);
                     SetError(Error::NameCollision);
                     break;
-                case IdMACCollision:
+                case IDMACCollision:
                     SetState(State::Idle);
                     SetError(Error::MACCollision);
                     break;
-                case IdConsoleIdCollision:
+                case IDConsoleIDCollision:
                     SetState(State::Idle);
-                    SetError(Error::ConsoleIdCollision);
+                    SetError(Error::ConsoleIDCollision);
                     break;
-                case IdVersionMismatch:
+                case IDVersionMismatch:
                     SetState(State::Idle);
                     SetError(Error::WrongVersion);
                     break;
-                case IdWrongPassword:
+                case IDWrongPassword:
                     SetState(State::Idle);
                     SetError(Error::WrongPassword);
                     break;
-                case IdCloseRoom:
+                case IDCloseRoom:
                     SetState(State::Idle);
                     SetError(Error::LostConnection);
                     break;
-                case IdHostKicked:
+                case IDHostKicked:
                     SetState(State::Idle);
                     SetError(Error::HostKicked);
                     break;
-                case IdHostBanned:
+                case IDHostBanned:
                     SetState(State::Idle);
                     SetError(Error::HostBanned);
                     break;
-                case IdModPermissionDenied:
+                case IDModPermissionDenied:
                     SetError(Error::PermissionDenied);
                     break;
-                case IdModNoSuchUser:
+                case IDModNoSuchUser:
                     SetError(Error::NoSuchUser);
                     break;
                 }
@@ -263,7 +263,7 @@ void RoomMember::RoomMemberImpl::SendJoinRequest(const std::string& nickname, u6
                                                  const MACAddress& preferred_mac,
                                                  const std::string& password) {
     Packet packet;
-    packet << static_cast<u8>(IdJoinRequest);
+    packet << static_cast<u8>(IDJoinRequest);
     packet << nickname;
     packet << console_id;
     packet << preferred_mac;
@@ -512,7 +512,7 @@ bool RoomMember::IsConnected() const {
 
 void RoomMember::SendWiFiPacket(const WiFiPacket& wifi_packet) {
     Packet packet;
-    packet << static_cast<u8>(IdWiFiPacket);
+    packet << static_cast<u8>(IDWiFiPacket);
     packet << static_cast<u8>(wifi_packet.type);
     packet << wifi_packet.channel;
     packet << wifi_packet.transmitter_address;
@@ -523,7 +523,7 @@ void RoomMember::SendWiFiPacket(const WiFiPacket& wifi_packet) {
 
 void RoomMember::SendChatMessage(const std::string& message) {
     Packet packet;
-    packet << static_cast<u8>(IdChatMessage);
+    packet << static_cast<u8>(IDChatMessage);
     packet << message;
     room_member_impl->Send(std::move(packet));
 }
@@ -533,13 +533,13 @@ void RoomMember::SendProgram(const std::string& program) {
     if (!IsConnected())
         return;
     Packet packet;
-    packet << static_cast<u8>(IdSetProgram);
+    packet << static_cast<u8>(IDSetProgram);
     packet << program;
     room_member_impl->Send(std::move(packet));
 }
 
 void RoomMember::SendModerationRequest(RoomMessageTypes type, const std::string& nickname) {
-    ASSERT_MSG(type == IdModKick || type == IdModBan || type == IdModUnban,
+    ASSERT_MSG(type == IDModKick || type == IDModBan || type == IDModUnban,
                "Type isn't a moderation request");
     if (!IsConnected())
         return;
@@ -553,7 +553,7 @@ void RoomMember::RequestBanList() {
     if (!IsConnected())
         return;
     Packet packet;
-    packet << static_cast<u8>(IdModGetBanList);
+    packet << static_cast<u8>(IDModGetBanList);
     room_member_impl->Send(std::move(packet));
 }
 

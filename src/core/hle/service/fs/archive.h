@@ -32,7 +32,7 @@ class System;
 namespace Service::FS {
 
 /// Supported archive types
-enum class ArchiveIdCode : u32 {
+enum class ArchiveIDCode : u32 {
     SelfNCCH = 0x00000003,
     SaveData = 0x00000004,
     ExtSaveData = 0x00000006,
@@ -59,11 +59,11 @@ public:
 
     /**
      * Opens an archive
-     * @param id_code IdCode of the archive to open
+     * @param id_code IDCode of the archive to open
      * @param archive_path Path to the archive, used with Binary paths
      * @return Handle to the opened archive
      */
-    ResultVal<ArchiveHandle> OpenArchive(ArchiveIdCode id_code, FileSys::Path& archive_path);
+    ResultVal<ArchiveHandle> OpenArchive(ArchiveIDCode id_code, FileSys::Path& archive_path);
 
     /**
      * Closes an archive
@@ -174,7 +174,7 @@ public:
      * @param path The path to the archive, if relevant.
      * @return ResultCode 0 on success or the corresponding code on error
      */
-    ResultCode FormatArchive(ArchiveIdCode id_code, const FileSys::ArchiveFormatInfo& format_info,
+    ResultCode FormatArchive(ArchiveIDCode id_code, const FileSys::ArchiveFormatInfo& format_info,
                              const FileSys::Path& path = FileSys::Path());
 
     /**
@@ -184,7 +184,7 @@ public:
      * @param archive_path The path of the archive, if relevant
      * @return The format info of the archive, or the corresponding error code if failed.
      */
-    ResultVal<FileSys::ArchiveFormatInfo> GetArchiveFormatInfo(ArchiveIdCode id_code,
+    ResultVal<FileSys::ArchiveFormatInfo> GetArchiveFormatInfo(ArchiveIDCode id_code,
                                                                FileSys::Path& archive_path);
 
     /**
@@ -232,12 +232,12 @@ private:
     Core::System& system;
 
     /**
-     * Registers an Archive type, instances of which can later be opened using its IdCode.
+     * Registers an Archive type, instances of which can later be opened using its IDCode.
      * @param factory File system backend interface to the archive
-     * @param id_code Id code used to access this type of archive
+     * @param id_code ID code used to access this type of archive
      */
     ResultCode RegisterArchiveType(std::unique_ptr<FileSys::ArchiveFactory>&& factory,
-                                   ArchiveIdCode id_code);
+                                   ArchiveIDCode id_code);
 
     /// Register all archive types
     void RegisterArchiveTypes();
@@ -248,7 +248,7 @@ private:
      * Map of registered archives, identified by id code. Once an archive is registered here, it is
      * never removed until UnregisterArchiveTypes is called.
      */
-    boost::container::flat_map<ArchiveIdCode, std::unique_ptr<ArchiveFactory>> id_code_map;
+    boost::container::flat_map<ArchiveIDCode, std::unique_ptr<ArchiveFactory>> id_code_map;
 
     /**
      * Map of active archive handles to archive objects

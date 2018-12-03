@@ -32,7 +32,7 @@ ResultCode Mint::ReceiveParameter(const Service::APT::MessageParameter& paramete
     Service::APT::MessageParameter result;
     result.signal = Service::APT::SignalType::Response;
     result.buffer.clear();
-    result.destination_id = AppletId::Program;
+    result.destination_id = AppletID::Program;
     result.sender_id = id;
     result.object = framebuffer_memory;
     SendParameter(result);
@@ -49,7 +49,7 @@ ResultCode Mint::StartImpl(const Service::APT::AppletStartupParameter& parameter
     message.buffer.resize(parameter.buffer.size());
     std::fill(message.buffer.begin(), message.buffer.end(), 0);
     message.signal = Service::APT::SignalType::WakeupByExit;
-    message.destination_id = AppletId::Program;
+    message.destination_id = AppletID::Program;
     message.sender_id = id;
     SendParameter(message);
     is_running = false;

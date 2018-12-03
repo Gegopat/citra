@@ -94,7 +94,7 @@ void HostRoomWindow::Host() {
         ui->host->setEnabled(true);
         return;
     }
-    member.Join(ui->nickname->text().toStdString(), Service::CFG::GetConsoleId(system), "127.0.0.1",
+    member.Join(ui->nickname->text().toStdString(), Service::CFG::GetConsoleID(system), "127.0.0.1",
                 port, BroadcastMac, password);
     // Store settings
     UISettings::values.room_nickname = ui->nickname->text();

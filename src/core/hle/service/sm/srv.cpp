@@ -68,7 +68,7 @@ void SRV::GetServiceHandle(Kernel::HLERequestContext& ctx) {
         auto client_port{system.ServiceManager().GetServicePort(name)};
         auto session{client_port.Unwrap()->Connect()};
         if (session.Succeeded()) {
-            LOG_DEBUG(Service_SRV, "service={} -> session={}", name, (*session)->GetObjectId());
+            LOG_DEBUG(Service_SRV, "service={} -> session={}", name, (*session)->GetObjectID());
             IPC::ResponseBuilder rb{ctx, 0x5, 1, 2};
             rb.Push(session.Code());
             rb.PushMoveObjects(std::move(session).Unwrap());
@@ -100,7 +100,7 @@ void SRV::GetServiceHandle(Kernel::HLERequestContext& ctx) {
     }
     auto session{client_port.Unwrap()->Connect()};
     if (session.Succeeded()) {
-        LOG_DEBUG(Service_SRV, "service={} -> session={}", name, (*session)->GetObjectId());
+        LOG_DEBUG(Service_SRV, "service={} -> session={}", name, (*session)->GetObjectID());
         auto rb{rp.MakeBuilder(1, 2)};
         rb.Push(session.Code());
         rb.PushMoveObjects(std::move(session).Unwrap());

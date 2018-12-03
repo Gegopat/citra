@@ -36,7 +36,7 @@ ArchiveBackend* ArchiveManager::GetArchive(ArchiveHandle handle) {
     return (itr == handle_map.end()) ? nullptr : itr->second.get();
 }
 
-ResultVal<ArchiveHandle> ArchiveManager::OpenArchive(ArchiveIdCode id_code,
+ResultVal<ArchiveHandle> ArchiveManager::OpenArchive(ArchiveIDCode id_code,
                                                      FileSys::Path& archive_path) {
     LOG_TRACE(Service_FS, "Opening archive with id code 0x{:08X}", static_cast<u32>(id_code));
     auto itr{id_code_map.find(id_code)};
@@ -60,7 +60,7 @@ ResultCode ArchiveManager::CloseArchive(ArchiveHandle handle) {
 // TODO: This might be what the fs:REG service is for. See the Register/Unregister calls in
 // http://3dbrew.org/wiki/Filesystem_services#ProgramRegistry_service_.22fs:REG.22
 ResultCode ArchiveManager::RegisterArchiveType(std::unique_ptr<FileSys::ArchiveFactory>&& factory,
-                                               ArchiveIdCode id_code) {
+                                               ArchiveIDCode id_code) {
     auto result{id_code_map.emplace(id_code, std::move(factory))};
     bool inserted{result.second};
     ASSERT_MSG(inserted, "Tried to register more than one archive with same id code");
@@ -173,7 +173,7 @@ ResultVal<u64> ArchiveManager::GetFreeBytesInArchive(ArchiveHandle archive_handl
     return MakeResult<u64>(archive->GetFreeBytes());
 }
 
-ResultCode ArchiveManager::FormatArchive(ArchiveIdCode id_code,
+ResultCode ArchiveManager::FormatArchive(ArchiveIDCode id_code,
                                          const FileSys::ArchiveFormatInfo& format_info,
                                          const FileSys::Path& path) {
     auto archive{id_code_map.find(id_code)};
@@ -183,7 +183,7 @@ ResultCode ArchiveManager::FormatArchive(ArchiveIdCode id_code,
 }
 
 ResultVal<FileSys::ArchiveFormatInfo> ArchiveManager::GetArchiveFormatInfo(
-    ArchiveIdCode id_code, FileSys::Path& archive_path) {
+    ArchiveIDCode id_code, FileSys::Path& archive_path) {
     auto archive{id_code_map.find(id_code)};
     if (archive == id_code_map.end())
         return UnimplementedFunction(ErrorModule::FS); // TODO: Find the right error
@@ -196,8 +196,8 @@ ResultCode ArchiveManager::CreateExtSaveData(MediaType media_type, u32 high, u32
     // Construct the binary path to the archive first
     FileSys::Path path{
         FileSys::ConstructExtDataBinaryPath(static_cast<u32>(media_type), high, low)};
-    auto archive{id_code_map.find(media_type == MediaType::NAND ? ArchiveIdCode::SharedExtSaveData
-                                                                : ArchiveIdCode::ExtSaveData)};
+    auto archive{id_code_map.find(media_type == MediaType::NAND ? ArchiveIDCode::SharedExtSaveData
+                                                                : ArchiveIDCode::ExtSaveData)};
     if (archive == id_code_map.end())
         return UnimplementedFunction(ErrorModule::FS); // TODO: Find the right error
     auto ext_savedata{static_cast<FileSys::ArchiveFactory_ExtSaveData*>(archive->second.get())};
@@ -265,12 +265,12 @@ void ArchiveManager::RegisterArchiveTypes() {
         FileUtil::GetUserPath(FileUtil::UserPath::NANDDir, Settings::values.nand_dir)};
     auto sdmc_factory{std::make_unique<FileSys::ArchiveFactory_SDMC>(sdmc_directory)};
     if (sdmc_factory->Initialize())
-        RegisterArchiveType(std::move(sdmc_factory), ArchiveIdCode::SDMC);
+        RegisterArchiveType(std::move(sdmc_factory), ArchiveIDCode::SDMC);
     else
         LOG_ERROR(Service_FS, "Can't instantiate SDMC archive with path {}", sdmc_directory);
     auto sdmcwo_factory{std::make_unique<FileSys::ArchiveFactory_SDMCWriteOnly>(sdmc_directory)};
     if (sdmcwo_factory->Initialize())
-        RegisterArchiveType(std::move(sdmcwo_factory), ArchiveIdCode::SDMCWriteOnly);
+        RegisterArchiveType(std::move(sdmcwo_factory), ArchiveIDCode::SDMCWriteOnly);
     else
         LOG_ERROR(Service_FS, "Can't instantiate SDMCWriteOnly archive with path {}",
                   sdmc_directory);
@@ -278,39 +278,39 @@ void ArchiveManager::RegisterArchiveTypes() {
     auto sd_savedata_source{std::make_shared<FileSys::ArchiveSource_SDSaveData>(sdmc_directory)};
     auto savedata_factory{
         std::make_unique<FileSys::ArchiveFactory_SaveData>(system, sd_savedata_source)};
-    RegisterArchiveType(std::move(savedata_factory), ArchiveIdCode::SaveData);
+    RegisterArchiveType(std::move(savedata_factory), ArchiveIDCode::SaveData);
     // Create the OtherSaveDataPermitted archive
     auto other_savedata_permitted_factory{
         std::make_unique<FileSys::ArchiveFactory_OtherSaveDataPermitted>(sd_savedata_source)};
     RegisterArchiveType(std::move(other_savedata_permitted_factory),
-                        ArchiveIdCode::OtherSaveDataPermitted);
+                        ArchiveIDCode::OtherSaveDataPermitted);
     // Create the OtherSaveDataGeneral archive
     auto other_savedata_general_factory{
         std::make_unique<FileSys::ArchiveFactory_OtherSaveDataGeneral>(sd_savedata_source)};
     RegisterArchiveType(std::move(other_savedata_general_factory),
-                        ArchiveIdCode::OtherSaveDataGeneral);
+                        ArchiveIDCode::OtherSaveDataGeneral);
     // Create the ExtSaveData archive
     auto extsavedata_factory{
         std::make_unique<FileSys::ArchiveFactory_ExtSaveData>(sdmc_directory, false)};
-    RegisterArchiveType(std::move(extsavedata_factory), ArchiveIdCode::ExtSaveData);
+    RegisterArchiveType(std::move(extsavedata_factory), ArchiveIDCode::ExtSaveData);
     // Create the shared ExtSaveData archive
     auto sharedextsavedata_factory{
         std::make_unique<FileSys::ArchiveFactory_ExtSaveData>(nand_directory, true)};
-    RegisterArchiveType(std::move(sharedextsavedata_factory), ArchiveIdCode::SharedExtSaveData);
+    RegisterArchiveType(std::move(sharedextsavedata_factory), ArchiveIDCode::SharedExtSaveData);
     // Create the NCCH archive, basically a small variation of the RomFS archive
     auto savedatacheck_factory{std::make_unique<FileSys::ArchiveFactory_NCCH>(system)};
-    RegisterArchiveType(std::move(savedatacheck_factory), ArchiveIdCode::NCCH);
+    RegisterArchiveType(std::move(savedatacheck_factory), ArchiveIDCode::NCCH);
     // Create the SystemSaveData archive
     auto systemsavedata_factory{
         std::make_unique<FileSys::ArchiveFactory_SystemSaveData>(nand_directory)};
-    RegisterArchiveType(std::move(systemsavedata_factory), ArchiveIdCode::SystemSaveData);
+    RegisterArchiveType(std::move(systemsavedata_factory), ArchiveIDCode::SystemSaveData);
     // Create the SelfNCCH archive
     auto selfncch_factory{std::make_unique<FileSys::ArchiveFactory_SelfNCCH>(system)};
-    RegisterArchiveType(std::move(selfncch_factory), ArchiveIdCode::SelfNCCH);
+    RegisterArchiveType(std::move(selfncch_factory), ArchiveIDCode::SelfNCCH);
 }
 
 void ArchiveManager::RegisterSelfNCCH(Loader::ProgramLoader& program_loader) {
-    auto itr{id_code_map.find(ArchiveIdCode::SelfNCCH)};
+    auto itr{id_code_map.find(ArchiveIDCode::SelfNCCH)};
     if (itr == id_code_map.end()) {
         LOG_ERROR(Service_FS,
                   "Couldn't register a new NCCH because the SelfNCCH archive hasn't been created");

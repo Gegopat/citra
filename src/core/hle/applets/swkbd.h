@@ -233,7 +233,7 @@ ValidationError ValidateButton(const SoftwareKeyboardConfig& config, u8 button);
 
 class SoftwareKeyboard final : public Applet {
 public:
-    explicit SoftwareKeyboard(AppletId id, Service::APT::AppletManager& manager)
+    explicit SoftwareKeyboard(AppletID id, Service::APT::AppletManager& manager)
         : Applet{id, manager} {}
 
     ResultCode ReceiveParameter(const Service::APT::MessageParameter& parameter) override;

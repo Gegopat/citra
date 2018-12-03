@@ -38,10 +38,10 @@ enum {
 constexpr std::size_t MaxBeaconFrames{15};
 
 // Network node id used when a SecureData packet is addressed to every connected node.
-constexpr u16 BroadcastNetworkNodeId{0xFFFF};
+constexpr u16 BroadcastNetworkNodeID{0xFFFF};
 
 // The host has always dest_node_id 1
-constexpr u16 HostDestNodeId{1};
+constexpr u16 HostDestNodeID{1};
 
 /// Returns a list of received 802.11 beacon frames from the specified sender since the last call.
 std::list<Network::WiFiPacket> NWM_UDS::GetReceivedBeacons(const MACAddress& sender) {
@@ -75,7 +75,7 @@ void NWM_UDS::SendPacket(Network::WiFiPacket& packet) {
  * Returns an available index in the nodes array for the
  * currently-hosted UDS network.
  */
-u16 NWM_UDS::GetNextAvailableNodeId() {
+u16 NWM_UDS::GetNextAvailableNodeID() {
     for (u16 index{}; index < connection_status.max_nodes; ++index)
         if ((connection_status.node_bitmask & (1 << index)) == 0)
             return index + 1;
@@ -195,7 +195,7 @@ void NWM_UDS::HandleEAPoLPacket(const Network::WiFiPacket& packet) {
         ASSERT(connection_status.max_nodes != connection_status.total_nodes);
         auto node{DeserializeNodeInfoFromFrame(packet.data)};
         // Get an unused network node id
-        u16 node_id{GetNextAvailableNodeId()};
+        u16 node_id{GetNextAvailableNodeID()};
         node.network_node_id = node_id;
         connection_status.node_bitmask |= 1 << (node_id - 1);
         connection_status.changed_nodes |= 1 << (node_id - 1);
@@ -284,7 +284,7 @@ void NWM_UDS::HandleSecureDataPacket(const Network::WiFiPacket& packet) {
         // Ignore packets that came from ourselves.
         return;
     if (secure_data.dest_node_id != connection_status.network_node_id &&
-        secure_data.dest_node_id != BroadcastNetworkNodeId) {
+        secure_data.dest_node_id != BroadcastNetworkNodeID) {
         // The packet wasn't addressed to us, we can only act as a router if we're the host.
         // However, we might have received this packet due to a broadcast from the host, in that
         // case just ignore it.
@@ -292,7 +292,7 @@ void NWM_UDS::HandleSecureDataPacket(const Network::WiFiPacket& packet) {
                        connection_status.status == static_cast<u32>(NetworkStatus::ConnectedAsHost),
                    "Can't be a router if we're not a host");
         if (connection_status.status == static_cast<u32>(NetworkStatus::ConnectedAsHost) &&
-            secure_data.dest_node_id != BroadcastNetworkNodeId) {
+            secure_data.dest_node_id != BroadcastNetworkNodeID) {
             // Broadcast the packet so the right receiver can get it.
             // TODO: Is there a flag that makes this kind of routing be unicast instead of
             // multicast? Perhaps this is a way to allow spectators to see some of the packets.
@@ -310,7 +310,7 @@ void NWM_UDS::HandleSecureDataPacket(const Network::WiFiPacket& packet) {
     // Ignore packets from channels we're not interested in.
     if (channel_info == channel_data.end())
         return;
-    if (channel_info->second.network_node_id != BroadcastNetworkNodeId &&
+    if (channel_info->second.network_node_id != BroadcastNetworkNodeID &&
         channel_info->second.network_node_id != secure_data.src_node_id)
         return;
     // Add the received packet to the data queue.
@@ -475,10 +475,10 @@ void NWM_UDS::OnWiFiPacketReceived(const Network::WiFiPacket& packet) {
 
 std::optional<MACAddress> NWM_UDS::GetNodeMACAddress(u16 dest_node_id, u8 flags) {
     constexpr u8 BroadcastFlag{0x2};
-    if ((flags & BroadcastFlag) || dest_node_id == BroadcastNetworkNodeId)
+    if ((flags & BroadcastFlag) || dest_node_id == BroadcastNetworkNodeID)
         // Broadcast
         return BroadcastMac;
-    else if (dest_node_id == HostDestNodeId)
+    else if (dest_node_id == HostDestNodeID)
         // Destination is host
         return network_info.host_mac_address;
     // Destination is a specific client
@@ -710,7 +710,7 @@ void NWM_UDS::BeginHostingNetwork(Kernel::HLERequestContext& ctx) {
         connection_status.status = static_cast<u32>(NetworkStatus::ConnectedAsHost);
         // Set up basic information for this network.
         network_info.oui_value = NintendoOUI3;
-        network_info.oui_type = static_cast<u8>(NintendoTagId::NetworkInfo);
+        network_info.oui_type = static_cast<u8>(NintendoTagID::NetworkInfo);
         connection_status.max_nodes = network_info.max_nodes;
         // Resize the nodes list to hold max_nodes.
         node_info.clear();
@@ -998,7 +998,7 @@ void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
     std::array<u8, 3> oui;
     std::memcpy(oui.data(), encrypted_data0_buffer.data(), oui.size());
     ASSERT_MSG(oui == NintendoOUI3, "Unexpected OUI");
-    ASSERT_MSG(encrypted_data0_buffer[3] == static_cast<u8>(NintendoTagId::EncryptedData0),
+    ASSERT_MSG(encrypted_data0_buffer[3] == static_cast<u8>(NintendoTagID::EncryptedData0),
                "Unexpected tag id");
     std::vector<u8> beacon_data(encrypted_data0_buffer.size() - 4 + encrypted_data1_buffer.size() -
                                 4);

@@ -191,7 +191,7 @@ inline void ResponseBuilder::PushStaticBuffer(const std::vector<u8>& buffer, u8 
 
 inline void ResponseBuilder::PushMappedBuffer(const Kernel::MappedBuffer& mapped_buffer) {
     Push(mapped_buffer.GenerateDescriptor());
-    Push(mapped_buffer.GetId());
+    Push(mapped_buffer.GetID());
 }
 
 class RequestParser : public RequestHelperBase {

@@ -11,7 +11,7 @@ namespace HLE::Applets {
 
 class Mint final : public Applet {
 public:
-    explicit Mint(AppletId id, Service::APT::AppletManager& manager) : Applet{id, manager} {}
+    explicit Mint(AppletID id, Service::APT::AppletManager& manager) : Applet{id, manager} {}
 
     ResultCode ReceiveParameter(const Service::APT::MessageParameter& parameter) override;
     ResultCode StartImpl(const Service::APT::AppletStartupParameter& parameter) override;

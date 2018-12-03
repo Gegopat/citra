@@ -204,7 +204,7 @@ void ProgramList::onTextChanged(const QString& newText) {
                 auto file_name{file_path.mid(file_path.lastIndexOf("/") + 1)};
                 auto file_title{child->data(ProgramListItemPath::TitleRole).toString().toLower()};
                 auto file_programid{
-                    child->data(ProgramListItemPath::ProgramIdRole).toString().toLower()};
+                    child->data(ProgramListItemPath::ProgramIDRole).toString().toLower()};
                 // Only items which filename in combination with its title contains all words
                 // that are in the searchfield will be visible in the ProgramList
                 // The search is case insensitive because of toLower()
@@ -436,8 +436,8 @@ void ProgramList::PopupContextMenu(const QPoint& menu_location) {
 }
 
 void ProgramList::AddAppPopup(QMenu& context_menu, QStandardItem* child) {
-    u64 program_id{child->data(ProgramListItemPath::ProgramIdRole).toULongLong()};
-    u64 extdata_id{child->data(ProgramListItemPath::ExtdataIdRole).toULongLong()};
+    u64 program_id{child->data(ProgramListItemPath::ProgramIDRole).toULongLong()};
+    u64 extdata_id{child->data(ProgramListItemPath::ExtdataIDRole).toULongLong()};
     auto path{child->data(ProgramListItemPath::FullPathRole).toString()};
     auto open_save_location{context_menu.addAction("Open Save Data Location")};
     auto open_extdata_location{context_menu.addAction("Open Extra Data Location")};
@@ -454,7 +454,7 @@ void ProgramList::AddAppPopup(QMenu& context_menu, QStandardItem* child) {
     if (extdata_id)
         open_extdata_location->setVisible(
             0x0004000000000000 <= program_id && program_id <= 0x00040000FFFFFFFF &&
-            FileUtil::Exists(FileSys::GetExtDataPathFromId(sdmc_dir, extdata_id)));
+            FileUtil::Exists(FileSys::GetExtDataPathFromID(sdmc_dir, extdata_id)));
     else
         open_extdata_location->setVisible(false);
     auto media_type{Service::AM::GetProgramMediaType(program_id)};
@@ -614,7 +614,7 @@ QString ProgramList::FindProgramByProgramID(u64 program_id) {
 
 QString ProgramList::FindProgramByProgramID(QStandardItem* current_item, u64 program_id) {
     if (current_item->type() == static_cast<int>(ProgramListItemType::Program) &&
-        current_item->data(ProgramListItemPath::ProgramIdRole).toULongLong() == program_id)
+        current_item->data(ProgramListItemPath::ProgramIDRole).toULongLong() == program_id)
         return current_item->data(ProgramListItemPath::FullPathRole).toString();
     else if (current_item->hasChildren()) {
         for (int child_id{}; child_id < current_item->rowCount(); child_id++) {

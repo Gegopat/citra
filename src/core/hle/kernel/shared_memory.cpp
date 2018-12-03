@@ -93,20 +93,20 @@ ResultCode SharedMemory::Map(Process& target_process, VAddr address, MemoryPermi
     // Error out if the requested permissions don't match what the creator process allows.
     if (static_cast<u32>(permissions) & ~static_cast<u32>(own_other_permissions)) {
         LOG_ERROR(Kernel, "can't map id={}, address=0x{:08X} name={}, permissions don't match",
-                  GetObjectId(), address, name);
+                  GetObjectID(), address, name);
         return ERR_INVALID_COMBINATION;
     }
     // Heap-backed memory blocks can not be mapped with other_permissions = DontCare
     if (base_address != 0 && other_permissions == MemoryPermission::DontCare) {
         LOG_ERROR(Kernel, "can't map id={}, address=0x{08X} name={}, permissions don't match",
-                  GetObjectId(), address, name);
+                  GetObjectID(), address, name);
         return ERR_INVALID_COMBINATION;
     }
     // Error out if the provided permissions are not compatible with what the creator process needs.
     if (other_permissions != MemoryPermission::DontCare &&
         static_cast<u32>(this->permissions) & ~static_cast<u32>(other_permissions)) {
         LOG_ERROR(Kernel, "can't map id={}, address=0x{:08X} name={}, permissions don't match",
-                  GetObjectId(), address, name);
+                  GetObjectID(), address, name);
         return ERR_WRONG_PERMISSION;
     }
     // TODO: Check for the Shared Device Mem flag in the creator process.
@@ -119,7 +119,7 @@ ResultCode SharedMemory::Map(Process& target_process, VAddr address, MemoryPermi
     if (address != 0)
         if (address < Memory::HEAP_VADDR || address + size >= Memory::SHARED_MEMORY_VADDR_END) {
             LOG_ERROR(Kernel, "can't map id={}, address=0x{:08X} name={}, invalid address",
-                      GetObjectId(), address, name);
+                      GetObjectID(), address, name);
             return ERR_INVALID_ADDRESS;
         }
     auto target_address{address};
@@ -134,7 +134,7 @@ ResultCode SharedMemory::Map(Process& target_process, VAddr address, MemoryPermi
         vma->second.base + vma->second.size < target_address + size) {
         LOG_ERROR(Kernel,
                   "can't map id={}, address=0x{:08X} name={}, mapping to already allocated memory",
-                  GetObjectId(), address, name);
+                  GetObjectID(), address, name);
         return ERR_INVALID_ADDRESS_STATE;
     }
     // Map the memory block into the target process

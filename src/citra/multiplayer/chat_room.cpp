@@ -226,23 +226,23 @@ void ChatRoom::OnChatReceive(const Network::ChatEntry& chat) {
 
 void ChatRoom::OnStatusMessageReceive(const Network::StatusMessageEntry& status_message) {
     switch (status_message.type) {
-    case Network::IdMemberJoin:
+    case Network::IDMemberJoin:
         AppendStatusMessage(
             QString("%1 has joined").arg(QString::fromStdString(status_message.nickname)));
         break;
-    case Network::IdMemberLeave:
+    case Network::IDMemberLeave:
         AppendStatusMessage(
             QString("%1 has left").arg(QString::fromStdString(status_message.nickname)));
         break;
-    case Network::IdMemberKicked:
+    case Network::IDMemberKicked:
         AppendStatusMessage(
             QString("%1 has been kicked").arg(QString::fromStdString(status_message.nickname)));
         break;
-    case Network::IdMemberBanned:
+    case Network::IDMemberBanned:
         AppendStatusMessage(
             QString("%1 has been banned").arg(QString::fromStdString(status_message.nickname)));
         break;
-    case Network::IdAddressUnbanned:
+    case Network::IDAddressUnbanned:
         AppendStatusMessage(
             QString("%1 has been unbanned").arg(QString::fromStdString(status_message.nickname)));
         break;
@@ -334,7 +334,7 @@ void ChatRoom::PopupContextMenu(const QPoint& menu_location) {
                                           .arg(QString::fromStdString(nickname)),
                                       QMessageBox::Yes | QMessageBox::No)};
             if (result == QMessageBox::Yes)
-                SendModerationRequest(Network::IdModKick, nickname);
+                SendModerationRequest(Network::IDModKick, nickname);
         });
         connect(ban_action, &QAction::triggered, [this, nickname] {
             auto result{QMessageBox::question(
@@ -344,7 +344,7 @@ void ChatRoom::PopupContextMenu(const QPoint& menu_location) {
                     .arg(QString::fromStdString(nickname)),
                 QMessageBox::Yes | QMessageBox::No)};
             if (result == QMessageBox::Yes)
-                SendModerationRequest(Network::IdModBan, nickname);
+                SendModerationRequest(Network::IDModBan, nickname);
         });
         connect(moderation_action, &QAction::triggered, [this] {
             ModerationDialog dialog{system.RoomMember(), this};

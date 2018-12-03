@@ -32,13 +32,13 @@ enum ThreadPriority : u32 {
     ThreadPrioLowest = 63,      ///< Lowest thread priority
 };
 
-enum ThreadProcessorId : s32 {
-    ThreadProcessorIdDefault = -2, ///< Run thread on default core specified by exheader
-    ThreadProcessorIdAll = -1,     ///< Run thread on either core
-    ThreadProcessorId0 = 0,        ///< Run thread on core 0 (AppCore)
-    ThreadProcessorId1 = 1,        ///< Run thread on core 1 (SysCore)
-    ThreadProcessorId2 = 2,        ///< Run thread on core 2 (SysCore)
-    ThreadProcessorIdMax = 2,      ///< Processor ID must be less than this
+enum ThreadProcessorID : s32 {
+    ThreadProcessorIDDefault = -2, ///< Run thread on default core specified by exheader
+    ThreadProcessorIDAll = -1,     ///< Run thread on either core
+    ThreadProcessorID0 = 0,        ///< Run thread on core 0 (AppCore)
+    ThreadProcessorID1 = 1,        ///< Run thread on core 1 (SysCore)
+    ThreadProcessorID2 = 2,        ///< Run thread on core 2 (SysCore)
+    ThreadProcessorIDMax = 2,      ///< Processor ID must be less than this
 };
 
 enum class ThreadStatus {
@@ -68,7 +68,7 @@ public:
      * Creates a new thread ID
      * @return The new thread ID
      */
-    u32 NewThreadId();
+    u32 NewThreadID();
 
     /// Gets the current thread
     Thread* GetCurrentThread() const;
@@ -177,7 +177,7 @@ public:
      * Gets the thread's ID
      * @return The thread's ID
      */
-    u32 GetThreadId() const {
+    u32 GetThreadID() const {
         return thread_id;
     }
 

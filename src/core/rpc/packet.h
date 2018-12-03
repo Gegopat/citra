@@ -52,7 +52,7 @@ public:
         return header.version;
     }
 
-    u32 GetId() const {
+    u32 GetID() const {
         return header.id;
     }
 

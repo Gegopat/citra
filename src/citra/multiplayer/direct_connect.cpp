@@ -79,7 +79,7 @@ void DirectConnectWindow::Connect() {
     auto f{QtConcurrent::run([&] {
         auto port{UISettings::values.port.toUInt()};
         system.RoomMember().Join(ui->nickname->text().toStdString(),
-                                 Service::CFG::GetConsoleId(system),
+                                 Service::CFG::GetConsoleID(system),
                                  ui->ip->text().toStdString().c_str(), port, BroadcastMac,
                                  ui->password->text().toStdString().c_str());
     })};

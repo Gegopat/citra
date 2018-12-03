@@ -61,7 +61,7 @@ ResultStatus ProgramLoader_NCCH::LoadExec(Kernel::SharedPtr<Kernel::Process>& pr
     std::vector<u8> code;
     u64_le program_id;
     if (ResultStatus::Success == ReadCode(code) &&
-        ResultStatus::Success == ReadProgramId(program_id)) {
+        ResultStatus::Success == ReadProgramID(program_id)) {
         auto process_name{Common::StringFromFixedZeroTerminatedBuffer(
             (const char*)overlay_ncch->exheader_header.codeset_info.name, 8)};
         auto codeset{system.Kernel().CreateCodeSet(process_name, program_id)};
@@ -136,7 +136,7 @@ ResultStatus ProgramLoader_NCCH::Load(Kernel::SharedPtr<Kernel::Process>& proces
     if (result != ResultStatus::Success)
         return result;
     u64_le ncch_program_id;
-    ReadProgramId(ncch_program_id);
+    ReadProgramID(ncch_program_id);
     auto program_id{fmt::format("{:016X}", ncch_program_id)};
     LOG_INFO(Loader, "Program ID: {}", program_id);
     update_ncch.OpenFile(Service::AM::GetProgramContentPath(Service::FS::MediaType::SDMC,
@@ -172,15 +172,15 @@ ResultStatus ProgramLoader_NCCH::ReadLogo(std::vector<u8>& buffer) {
     return overlay_ncch->LoadSectionExeFS("logo", buffer);
 }
 
-ResultStatus ProgramLoader_NCCH::ReadProgramId(u64& out_program_id) {
-    auto result{base_ncch.ReadProgramId(out_program_id)};
+ResultStatus ProgramLoader_NCCH::ReadProgramID(u64& out_program_id) {
+    auto result{base_ncch.ReadProgramID(out_program_id)};
     if (result != ResultStatus::Success)
         return result;
     return ResultStatus::Success;
 }
 
-ResultStatus ProgramLoader_NCCH::ReadExtdataId(u64& out_extdata_id) {
-    auto result{base_ncch.ReadExtdataId(out_extdata_id)};
+ResultStatus ProgramLoader_NCCH::ReadExtdataID(u64& out_extdata_id) {
+    auto result{base_ncch.ReadExtdataID(out_extdata_id)};
     if (result != ResultStatus::Success)
         return result;
     return ResultStatus::Success;

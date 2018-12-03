@@ -32,7 +32,7 @@ void Thread::Acquire(Thread* thread) {
     ASSERT_MSG(!ShouldWait(thread), "object unavailable!");
 }
 
-u32 ThreadManager::NewThreadId() {
+u32 ThreadManager::NewThreadID() {
     return next_thread_id++;
 }
 
@@ -195,12 +195,12 @@ void Thread::ResumeFromWait() {
         // already been set to ThreadStatus::Ready.
         return;
     case ThreadStatus::Running:
-        DEBUG_ASSERT_MSG(false, "Thread with object id {} has already resumed.", GetObjectId());
+        DEBUG_ASSERT_MSG(false, "Thread with object id {} has already resumed.", GetObjectID());
         return;
     case ThreadStatus::Dead:
         // This should never happen, as threads must complete before being stopped.
         DEBUG_ASSERT_MSG(false, "Thread with object id {} can't be resumed because it's DEAD.",
-                         GetObjectId());
+                         GetObjectID());
         return;
     }
     wakeup_callback = nullptr;
@@ -255,7 +255,7 @@ ResultVal<SharedPtr<Thread>> KernelSystem::CreateThread(std::string name, VAddr 
         LOG_ERROR(Kernel_SVC, "Invalid thread priority: {}", priority);
         return ERR_OUT_OF_RANGE;
     }
-    if (processor_id > ThreadProcessorIdMax) {
+    if (processor_id > ThreadProcessorIDMax) {
         LOG_ERROR(Kernel_SVC, "Invalid processor id: {}", processor_id);
         return ERR_OUT_OF_RANGE_KERNEL;
     }
@@ -269,7 +269,7 @@ ResultVal<SharedPtr<Thread>> KernelSystem::CreateThread(std::string name, VAddr 
     SharedPtr<Thread> thread{new Thread(*this)};
     thread_manager->thread_list.push_back(thread);
     thread_manager->ready_queue.prepare(priority);
-    thread->thread_id = thread_manager->NewThreadId();
+    thread->thread_id = thread_manager->NewThreadID();
     thread->status = ThreadStatus::Dormant;
     thread->entry_point = entry_point;
     thread->stack_top = stack_top;
@@ -369,11 +369,11 @@ void ThreadManager::Reschedule() {
     auto cur{GetCurrentThread()};
     auto next{PopNextReadyThread()};
     if (cur && next)
-        LOG_TRACE(Kernel, "context switch {} -> {}", cur->GetObjectId(), next->GetObjectId());
+        LOG_TRACE(Kernel, "context switch {} -> {}", cur->GetObjectID(), next->GetObjectID());
     else if (cur)
-        LOG_TRACE(Kernel, "context switch {} -> idle", cur->GetObjectId());
+        LOG_TRACE(Kernel, "context switch {} -> idle", cur->GetObjectID());
     else if (next)
-        LOG_TRACE(Kernel, "context switch idle -> {}", next->GetObjectId());
+        LOG_TRACE(Kernel, "context switch idle -> {}", next->GetObjectID());
     SwitchContext(next);
 }
 

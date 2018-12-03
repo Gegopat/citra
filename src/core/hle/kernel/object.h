@@ -47,7 +47,7 @@ public:
     virtual ~Object();
 
     /// Returns a unique identifier for the object. For debugging purposes only.
-    u32 GetObjectId() const {
+    u32 GetObjectID() const {
         return object_id.load(std::memory_order_relaxed);
     }
 

@@ -155,7 +155,7 @@ public:
      * @param out_program_id Reference to store program id into
      * @return ResultStatus result of function
      */
-    virtual ResultStatus ReadProgramId(u64& out_program_id) {
+    virtual ResultStatus ReadProgramID(u64& out_program_id) {
         return ResultStatus::ErrorNotImplemented;
     }
 
@@ -164,7 +164,7 @@ public:
      * @param out_extdata_id Reference to store extdata id into
      * @return ResultStatus result of function
      */
-    virtual ResultStatus ReadExtdataId(u64& out_extdata_id) {
+    virtual ResultStatus ReadExtdataID(u64& out_extdata_id) {
         return ResultStatus::ErrorNotImplemented;
     }
 

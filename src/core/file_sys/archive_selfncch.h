@@ -40,7 +40,7 @@ public:
     ResultVal<ArchiveFormatInfo> GetFormatInfo(const Path& path) const override;
 
 private:
-    /// Mapping of ProgramId -> NCCHData
+    /// Mapping of ProgramID -> NCCHData
     std::unordered_map<u64, NCCHData> ncch_data;
 
     Core::System& system;

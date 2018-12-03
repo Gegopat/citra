@@ -134,13 +134,13 @@ void Module::Interface::ReconfigureTask(Kernel::HLERequestContext& ctx) {
     LOG_WARNING(Service_BOSS, "(stubbed) size={:#010X}, unk_param2={:#04X}", size, unk_param2);
 }
 
-void Module::Interface::GetTaskIdList(Kernel::HLERequestContext& ctx) {
+void Module::Interface::GetTaskIDList(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{ctx, 0x0E, 1, 0};
     rb.Push(RESULT_SUCCESS);
     LOG_WARNING(Service_BOSS, "stubbed");
 }
 
-void Module::Interface::GetStepIdList(Kernel::HLERequestContext& ctx) {
+void Module::Interface::GetStepIDList(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0F, 1, 2};
     const u32 size{rp.Pop<u32>()};
     auto& buffer{rp.PopMappedBuffer()};
@@ -150,7 +150,7 @@ void Module::Interface::GetStepIdList(Kernel::HLERequestContext& ctx) {
     LOG_WARNING(Service_BOSS, "(stubbed) size={:#010X}", size);
 }
 
-void Module::Interface::GetNsDataIdList(Kernel::HLERequestContext& ctx) {
+void Module::Interface::GetNsDataIDList(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x10, 4, 2};
     const u32 filter{rp.Pop<u32>()};
     const u32 max_entries{rp.Pop<u32>()}; /// buffer size in words
@@ -160,7 +160,7 @@ void Module::Interface::GetNsDataIdList(Kernel::HLERequestContext& ctx) {
     auto rb{rp.MakeBuilder(3, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u16>(0); /// Actual number of output entries
-    rb.Push<u16>(0); /// Last word-index copied to output in the internal NsDataId list.
+    rb.Push<u16>(0); /// Last word-index copied to output in the internal NsDataID list.
     rb.PushMappedBuffer(buffer);
     LOG_WARNING(Service_BOSS,
                 "(stubbed) filter={:#010X}, max_entries={:#010X}, "
@@ -168,7 +168,7 @@ void Module::Interface::GetNsDataIdList(Kernel::HLERequestContext& ctx) {
                 filter, max_entries, word_index_start, start_ns_data_id);
 }
 
-void Module::Interface::GetNsDataIdList1(Kernel::HLERequestContext& ctx) {
+void Module::Interface::GetNsDataIDList1(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x11, 4, 2};
     const u32 filter{rp.Pop<u32>()};
     const u32 max_entries{rp.Pop<u32>()}; /// buffer size in words
@@ -178,7 +178,7 @@ void Module::Interface::GetNsDataIdList1(Kernel::HLERequestContext& ctx) {
     auto rb{rp.MakeBuilder(3, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u16>(0); /// Actual number of output entries
-    rb.Push<u16>(0); /// Last word-index copied to output in the internal NsDataId list.
+    rb.Push<u16>(0); /// Last word-index copied to output in the internal NsDataID list.
     rb.PushMappedBuffer(buffer);
     LOG_WARNING(Service_BOSS,
                 "(stubbed) filter={:#010X}, max_entries={:#010X}, "
@@ -186,7 +186,7 @@ void Module::Interface::GetNsDataIdList1(Kernel::HLERequestContext& ctx) {
                 filter, max_entries, word_index_start, start_ns_data_id);
 }
 
-void Module::Interface::GetNsDataIdList2(Kernel::HLERequestContext& ctx) {
+void Module::Interface::GetNsDataIDList2(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x12, 4, 2};
     const u32 filter{rp.Pop<u32>()};
     const u32 max_entries{rp.Pop<u32>()}; /// buffer size in words
@@ -196,7 +196,7 @@ void Module::Interface::GetNsDataIdList2(Kernel::HLERequestContext& ctx) {
     auto rb{rp.MakeBuilder(3, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u16>(0); /// Actual number of output entries
-    rb.Push<u16>(0); /// Last word-index copied to output in the internal NsDataId list.
+    rb.Push<u16>(0); /// Last word-index copied to output in the internal NsDataID list.
     rb.PushMappedBuffer(buffer);
     LOG_WARNING(Service_BOSS,
                 "(stubbed) filter={:#010X}, max_entries={:#010X}, "
@@ -204,7 +204,7 @@ void Module::Interface::GetNsDataIdList2(Kernel::HLERequestContext& ctx) {
                 filter, max_entries, word_index_start, start_ns_data_id);
 }
 
-void Module::Interface::GetNsDataIdList3(Kernel::HLERequestContext& ctx) {
+void Module::Interface::GetNsDataIDList3(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x13, 4, 2};
     const u32 filter{rp.Pop<u32>()};
     const u32 max_entries{rp.Pop<u32>()}; /// buffer size in words
@@ -214,7 +214,7 @@ void Module::Interface::GetNsDataIdList3(Kernel::HLERequestContext& ctx) {
     auto rb{rp.MakeBuilder(3, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u16>(0); /// Actual number of output entries
-    rb.Push<u16>(0); /// Last word-index copied to output in the internal NsDataId list.
+    rb.Push<u16>(0); /// Last word-index copied to output in the internal NsDataID list.
     rb.PushMappedBuffer(buffer);
     LOG_WARNING(Service_BOSS,
                 "(stubbed) filter={:#010X}, max_entries={:#010X}, "
@@ -644,7 +644,7 @@ void Module::Interface::GetAppNewFlag(Kernel::HLERequestContext& ctx) {
     LOG_WARNING(Service_BOSS, "(stubbed) programID={:#018X}", programID);
 }
 
-void Module::Interface::GetNsDataIdListPrivileged(Kernel::HLERequestContext& ctx) {
+void Module::Interface::GetNsDataIDListPrivileged(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x40D, 6, 2};
     const u64 programID{rp.Pop<u64>()};
     const u32 filter{rp.Pop<u32>()};
@@ -655,7 +655,7 @@ void Module::Interface::GetNsDataIdListPrivileged(Kernel::HLERequestContext& ctx
     auto rb{rp.MakeBuilder(3, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u16>(0); /// Actual number of output entries
-    rb.Push<u16>(0); /// Last word-index copied to output in the internal NsDataId list.
+    rb.Push<u16>(0); /// Last word-index copied to output in the internal NsDataID list.
     rb.PushMappedBuffer(buffer);
     LOG_WARNING(Service_BOSS,
                 "(stubbed) programID={:#018X}, filter={:#010X}, max_entries={:#010X}, "
@@ -663,7 +663,7 @@ void Module::Interface::GetNsDataIdListPrivileged(Kernel::HLERequestContext& ctx
                 programID, filter, max_entries, word_index_start, start_ns_data_id);
 }
 
-void Module::Interface::GetNsDataIdListPrivileged1(Kernel::HLERequestContext& ctx) {
+void Module::Interface::GetNsDataIDListPrivileged1(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x40E, 6, 2};
     const u64 programID{rp.Pop<u64>()};
     const u32 filter{rp.Pop<u32>()};
@@ -674,7 +674,7 @@ void Module::Interface::GetNsDataIdListPrivileged1(Kernel::HLERequestContext& ct
     auto rb{rp.MakeBuilder(3, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u16>(0); /// Actual number of output entries
-    rb.Push<u16>(0); /// Last word-index copied to output in the internal NsDataId list.
+    rb.Push<u16>(0); /// Last word-index copied to output in the internal NsDataID list.
     rb.PushMappedBuffer(buffer);
     LOG_WARNING(Service_BOSS,
                 "(stubbed) programID={:#018X}, filter={:#010X}, max_entries={:#010X}, "

@@ -76,7 +76,7 @@ void FS_USER::OpenFile(Kernel::HLERequestContext& ctx) {
 void FS_USER::OpenFileDirectly(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x803, 8, 4};
     rp.Skip(1, false); // Transaction
-    auto archive_id{rp.PopEnum<FS::ArchiveIdCode>()};
+    auto archive_id{rp.PopEnum<FS::ArchiveIDCode>()};
     auto archivename_type{rp.PopEnum<FileSys::LowPathType>()};
     u32 archivename_size{rp.Pop<u32>()};
     auto filename_type{rp.PopEnum<FileSys::LowPathType>()};
@@ -125,7 +125,7 @@ void FS_USER::OpenFileDirectly(Kernel::HLERequestContext& ctx) {
 
 void FS_USER::DeleteFile(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x804, 5, 2};
-    rp.Skip(1, false); // TransactionId
+    rp.Skip(1, false); // TransactionID
     ArchiveHandle archive_handle{rp.PopRaw<ArchiveHandle>()};
     auto filename_type{rp.PopEnum<FileSys::LowPathType>()};
     u32 filename_size{rp.Pop<u32>()};
@@ -140,7 +140,7 @@ void FS_USER::DeleteFile(Kernel::HLERequestContext& ctx) {
 
 void FS_USER::RenameFile(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x805, 9, 4};
-    rp.Skip(1, false); // TransactionId
+    rp.Skip(1, false); // TransactionID
     ArchiveHandle src_archive_handle{rp.PopRaw<ArchiveHandle>()};
     auto src_filename_type{rp.PopEnum<FileSys::LowPathType>()};
     u32 src_filename_size{rp.Pop<u32>()};
@@ -164,7 +164,7 @@ void FS_USER::RenameFile(Kernel::HLERequestContext& ctx) {
 
 void FS_USER::DeleteDirectory(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x806, 5, 2};
-    rp.Skip(1, false); // TransactionId
+    rp.Skip(1, false); // TransactionID
     ArchiveHandle archive_handle{rp.PopRaw<ArchiveHandle>()};
     auto dirname_type{rp.PopEnum<FileSys::LowPathType>()};
     u32 dirname_size{rp.Pop<u32>()};
@@ -179,7 +179,7 @@ void FS_USER::DeleteDirectory(Kernel::HLERequestContext& ctx) {
 
 void FS_USER::DeleteDirectoryRecursively(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x807, 5, 2};
-    rp.Skip(1, false); // TransactionId
+    rp.Skip(1, false); // TransactionID
     ArchiveHandle archive_handle{rp.PopRaw<ArchiveHandle>()};
     auto dirname_type{rp.PopEnum<FileSys::LowPathType>()};
     u32 dirname_size{rp.Pop<u32>()};
@@ -194,7 +194,7 @@ void FS_USER::DeleteDirectoryRecursively(Kernel::HLERequestContext& ctx) {
 
 void FS_USER::CreateFile(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x808, 8, 2};
-    rp.Skip(1, false); // TransactionId
+    rp.Skip(1, false); // TransactionID
     ArchiveHandle archive_handle{rp.PopRaw<ArchiveHandle>()};
     auto filename_type{rp.PopEnum<FileSys::LowPathType>()};
     u32 filename_size{rp.Pop<u32>()};
@@ -211,7 +211,7 @@ void FS_USER::CreateFile(Kernel::HLERequestContext& ctx) {
 
 void FS_USER::CreateDirectory(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x809, 6, 2};
-    rp.Skip(1, false); // TransactionId
+    rp.Skip(1, false); // TransactionID
     ArchiveHandle archive_handle{rp.PopRaw<ArchiveHandle>()};
     auto dirname_type{rp.PopEnum<FileSys::LowPathType>()};
     u32 dirname_size{rp.Pop<u32>()};
@@ -227,7 +227,7 @@ void FS_USER::CreateDirectory(Kernel::HLERequestContext& ctx) {
 
 void FS_USER::RenameDirectory(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x80A, 9, 4};
-    rp.Skip(1, false); // TransactionId
+    rp.Skip(1, false); // TransactionID
     ArchiveHandle src_archive_handle{rp.PopRaw<ArchiveHandle>()};
     auto src_dirname_type{rp.PopEnum<FileSys::LowPathType>()};
     u32 src_dirname_size{rp.Pop<u32>()};
@@ -277,7 +277,7 @@ void FS_USER::OpenDirectory(Kernel::HLERequestContext& ctx) {
 
 void FS_USER::OpenArchive(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x80C, 3, 2};
-    auto archive_id{rp.PopEnum<FS::ArchiveIdCode>()};
+    auto archive_id{rp.PopEnum<FS::ArchiveIDCode>()};
     auto archivename_type{rp.PopEnum<FileSys::LowPathType>()};
     u32 archivename_size{rp.Pop<u32>()};
     std::vector<u8> archivename{rp.PopStaticBuffer()};
@@ -320,7 +320,7 @@ void FS_USER::IsSdmcWriteable(Kernel::HLERequestContext& ctx) {
 
 void FS_USER::FormatSaveData(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x84C, 9, 2};
-    auto archive_id{rp.PopEnum<FS::ArchiveIdCode>()};
+    auto archive_id{rp.PopEnum<FS::ArchiveIDCode>()};
     auto archivename_type{rp.PopEnum<FileSys::LowPathType>()};
     u32 archivename_size{rp.Pop<u32>()};
     u32 block_size{rp.Pop<u32>()};
@@ -334,7 +334,7 @@ void FS_USER::FormatSaveData(Kernel::HLERequestContext& ctx) {
     FileSys::Path archive_path{archivename_type, archivename};
     LOG_DEBUG(Service_FS, "archive_path={}", archive_path.DebugStr());
     auto rb{rp.MakeBuilder(1, 0)};
-    if (archive_id != FS::ArchiveIdCode::SaveData) {
+    if (archive_id != FS::ArchiveIDCode::SaveData) {
         LOG_ERROR(Service_FS, "tried to format an archive different than SaveData, {}",
                   static_cast<u32>(archive_id));
         rb.Push(FileSys::ERROR_INVALID_PATH);
@@ -351,7 +351,7 @@ void FS_USER::FormatSaveData(Kernel::HLERequestContext& ctx) {
     format_info.number_directories = number_directories;
     format_info.number_files = number_files;
     format_info.total_size = block_size * 512;
-    rb.Push(archives.FormatArchive(ArchiveIdCode::SaveData, format_info));
+    rb.Push(archives.FormatArchive(ArchiveIDCode::SaveData, format_info));
 }
 
 void FS_USER::FormatThisUserSaveData(Kernel::HLERequestContext& ctx) {
@@ -368,7 +368,7 @@ void FS_USER::FormatThisUserSaveData(Kernel::HLERequestContext& ctx) {
     format_info.number_files = number_files;
     format_info.total_size = block_size * 512;
     auto rb{rp.MakeBuilder(1, 0)};
-    rb.Push(archives.FormatArchive(ArchiveIdCode::SaveData, format_info));
+    rb.Push(archives.FormatArchive(ArchiveIDCode::SaveData, format_info));
     LOG_TRACE(Service_FS, "called");
 }
 
@@ -536,7 +536,7 @@ void FS_USER::GetArchiveResource(Kernel::HLERequestContext& ctx) {
 
 void FS_USER::GetFormatInfo(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x845, 3, 2};
-    auto archive_id{rp.PopEnum<FS::ArchiveIdCode>()};
+    auto archive_id{rp.PopEnum<FS::ArchiveIDCode>()};
     auto archivename_type{rp.PopEnum<FileSys::LowPathType>()};
     u32 archivename_size{rp.Pop<u32>()};
     std::vector<u8> archivename{rp.PopStaticBuffer()};
@@ -564,7 +564,7 @@ void FS_USER::GetProgramLaunchInfo(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_FS, "process_id={}", process_id);
     // TODO: The real FS service manages its own process list and only checks the processes
     // that were registered with the 'fs:REG' service.
-    auto process{system.Kernel().GetProcessById(process_id)};
+    auto process{system.Kernel().GetProcessByID(process_id)};
     if (!process) {
         // Note: In this case, the rest of the parameters aren't changed but the command header
         // remains the same.
@@ -761,7 +761,7 @@ void FS_USER::ReadExtSaveDataIcon(Kernel::HLERequestContext& ctx) {
     u32 smdh_size{rp.Pop<u32>()};
     auto smdh_buffer{rp.PopStaticBuffer()};
     FileUtil::IOFile file{
-        FileSys::GetExtDataPathFromId(
+        FileSys::GetExtDataPathFromID(
             info.media_type == static_cast<u8>(MediaType::NAND)
                 ? FileUtil::GetUserPath(FileUtil::UserPath::NANDDir, Settings::values.nand_dir)
                 : FileUtil::GetUserPath(FileUtil::UserPath::SDMCDir, Settings::values.sdmc_dir),

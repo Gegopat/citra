@@ -24,7 +24,7 @@ class SharedMemory;
 namespace Service::GSP {
 
 /// GSP interrupt ID
-enum class InterruptId : u8 {
+enum class InterruptID : u8 {
     PSC0 = 0x00,
     PSC1 = 0x01,
     PDC0 = 0x02, // Seems called every vertical screen line
@@ -35,7 +35,7 @@ enum class InterruptId : u8 {
 };
 
 /// GSP command ID
-enum class CommandId : u32 {
+enum class CommandID : u32 {
     REQUEST_DMA = 0x00,
     /// Submits a commandlist for execution by the GPU.
     SUBMIT_GPU_CMDLIST = 0x01,
@@ -66,7 +66,7 @@ struct InterruptRelayQueue {
     u32 missed_PDC0;
     u32 missed_PDC1;
 
-    InterruptId slot[0x34]; ///< Interrupt ID slots
+    InterruptID slot[0x34]; ///< Interrupt ID slots
 };
 static_assert(sizeof(InterruptRelayQueue) == 0x40, "InterruptRelayQueue struct has incorrect size");
 
@@ -100,7 +100,7 @@ static_assert(offsetof(FrameBufferUpdate, framebuffer_info[1]) == 0x20,
 
 /// GSP command
 struct Command {
-    BitField<0, 8, CommandId> id;
+    BitField<0, 8, CommandID> id;
 
     union {
         struct {
@@ -210,9 +210,9 @@ public:
      * Signals that the specified interrupt type has occurred to userland code
      * @param interrupt_id ID of interrupt that is being signalled
      */
-    void SignalInterrupt(InterruptId interrupt_id);
+    void SignalInterrupt(InterruptID interrupt_id);
 
-    u32 GetUnusedThreadId() const;
+    u32 GetUnusedThreadID() const;
 
     /// Maximum number of threads that can be registered at the same time in the GSP module.
     static constexpr u32 MaxGSPThreads{4};
@@ -231,7 +231,7 @@ private:
      */
     FrameBufferUpdate* GetFrameBufferInfo(u32 thread_id, u32 screen_index);
 
-    void SignalInterruptForThread(InterruptId interrupt_id, u32 thread_id);
+    void SignalInterruptForThread(InterruptID interrupt_id, u32 thread_id);
     void WriteHWRegs(Kernel::HLERequestContext& ctx);
     void WriteHWRegsWithMask(Kernel::HLERequestContext& ctx);
     void ReadHWRegs(Kernel::HLERequestContext& ctx);

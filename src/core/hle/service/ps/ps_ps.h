@@ -30,12 +30,12 @@ private:
     void VerifyRsaSha256(Kernel::HLERequestContext& ctx);
     void EncryptDecryptAes(Kernel::HLERequestContext& ctx);
     void EncryptSignDecryptVerifyAesCcm(Kernel::HLERequestContext& ctx);
-    void GetRomId(Kernel::HLERequestContext& ctx);
-    void GetRomId2(Kernel::HLERequestContext& ctx);
+    void GetRomID(Kernel::HLERequestContext& ctx);
+    void GetRomID2(Kernel::HLERequestContext& ctx);
     void GetRomMakerCode(Kernel::HLERequestContext& ctx);
     void GetCTRCardAutoStartupBit(Kernel::HLERequestContext& ctx);
     void GetLocalFriendCodeSeed(Kernel::HLERequestContext& ctx);
-    void GetDeviceId(Kernel::HLERequestContext& ctx);
+    void GetDeviceID(Kernel::HLERequestContext& ctx);
     void SeedRNG(Kernel::HLERequestContext& ctx);
     void GenerateRandomBytes(Kernel::HLERequestContext& ctx);
     void InterfaceForPXI_0x04010084(Kernel::HLERequestContext& ctx);

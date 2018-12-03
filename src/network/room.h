@@ -29,40 +29,40 @@ struct RoomInformation {
 
 // The different types of messages that can be sent. The first byte of each packet defines the type
 enum RoomMessageTypes : u8 {
-    IdJoinRequest = 1,
-    IdJoinSuccess,
-    IdRoomInformation,
-    IdSetProgram,
-    IdWiFiPacket,
-    IdChatMessage,
-    IdStatusMessage,
-    IdNameCollision,
-    IdMACCollision,
-    IdConsoleIdCollision,
-    IdVersionMismatch,
-    IdWrongPassword,
-    IdCloseRoom,
-    IdRoomIsFull,
-    IdHostKicked,
-    IdHostBanned,
+    IDJoinRequest = 1,
+    IDJoinSuccess,
+    IDRoomInformation,
+    IDSetProgram,
+    IDWiFiPacket,
+    IDChatMessage,
+    IDStatusMessage,
+    IDNameCollision,
+    IDMACCollision,
+    IDConsoleIDCollision,
+    IDVersionMismatch,
+    IDWrongPassword,
+    IDCloseRoom,
+    IDRoomIsFull,
+    IDHostKicked,
+    IDHostBanned,
     /// Moderation requests
-    IdModKick,
-    IdModBan,
-    IdModUnban,
-    IdModGetBanList,
+    IDModKick,
+    IDModBan,
+    IDModUnban,
+    IDModGetBanList,
     // Moderation responses
-    IdModBanListResponse,
-    IdModPermissionDenied,
-    IdModNoSuchUser,
+    IDModBanListResponse,
+    IDModPermissionDenied,
+    IDModNoSuchUser,
 };
 
 /// Types of system status messages
 enum StatusMessageTypes : u8 {
-    IdMemberJoin = 1,  ///< Member joining
-    IdMemberLeave,     ///< Member leaving
-    IdMemberKicked,    ///< A member is kicked from the room
-    IdMemberBanned,    ///< A member is banned from the room
-    IdAddressUnbanned, ///< A ip address is unbanned from the room
+    IDMemberJoin = 1,  ///< Member joining
+    IDMemberLeave,     ///< Member leaving
+    IDMemberKicked,    ///< A member is kicked from the room
+    IDMemberBanned,    ///< A member is banned from the room
+    IDAddressUnbanned, ///< A ip address is unbanned from the room
 };
 
 /// This is what a server [person creating a server] would use.

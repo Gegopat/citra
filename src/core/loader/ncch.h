@@ -43,8 +43,8 @@ public:
     ResultStatus ReadIcon(std::vector<u8>& buffer) override;
     ResultStatus ReadBanner(std::vector<u8>& buffer) override;
     ResultStatus ReadLogo(std::vector<u8>& buffer) override;
-    ResultStatus ReadProgramId(u64& out_program_id) override;
-    ResultStatus ReadExtdataId(u64& out_extdata_id) override;
+    ResultStatus ReadProgramID(u64& out_program_id) override;
+    ResultStatus ReadExtdataID(u64& out_extdata_id) override;
     ResultStatus ReadRomFS(std::shared_ptr<FileSys::RomFSReader>& romfs_file) override;
     ResultStatus ReadUpdateRomFS(std::shared_ptr<FileSys::RomFSReader>& romfs_file) override;
     ResultStatus ReadShortTitle(std::string& short_title) override;

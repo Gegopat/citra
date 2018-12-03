@@ -73,12 +73,12 @@ void ModerationDialog::PopulateBanList(const Network::Room::BanList& ban_list) {
 }
 
 void ModerationDialog::SendUnbanRequest(const QString& subject) {
-    member.SendModerationRequest(Network::IdModUnban, subject.toStdString());
+    member.SendModerationRequest(Network::IDModUnban, subject.toStdString());
 }
 
 void ModerationDialog::OnStatusMessageReceived(const Network::StatusMessageEntry& status_message) {
-    if (status_message.type != Network::IdMemberBanned &&
-        status_message.type != Network::IdAddressUnbanned)
+    if (status_message.type != Network::IDMemberBanned &&
+        status_message.type != Network::IDAddressUnbanned)
         return;
     // Update the ban list for ban/unban
     LoadBanList();

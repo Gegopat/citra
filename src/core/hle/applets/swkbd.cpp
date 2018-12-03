@@ -150,7 +150,7 @@ ResultCode SoftwareKeyboard::ReceiveParameter(Service::APT::MessageParameter con
     Service::APT::MessageParameter result;
     result.signal = Service::APT::SignalType::Response;
     result.buffer.clear();
-    result.destination_id = AppletId::Program;
+    result.destination_id = AppletID::Program;
     result.sender_id = id;
     result.object = framebuffer_memory;
     SendParameter(result);
@@ -321,7 +321,7 @@ void SoftwareKeyboard::Finalize() {
     message.buffer.resize(sizeof(SoftwareKeyboardConfig));
     std::memcpy(message.buffer.data(), &config, message.buffer.size());
     message.signal = Service::APT::SignalType::WakeupByExit;
-    message.destination_id = AppletId::Program;
+    message.destination_id = AppletID::Program;
     message.sender_id = id;
     SendParameter(message);
     is_running = false;

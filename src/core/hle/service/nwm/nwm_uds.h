@@ -102,7 +102,7 @@ static_assert(offsetof(NetworkInfo, wlan_comm_id) == 0x10, "wlancommid is at the
 static_assert(sizeof(NetworkInfo) == 0x108, "NetworkInfo has incorrect size.");
 
 /// Additional block tag ids in the Beacon and Association Response frames
-enum class TagId : u8 {
+enum class TagID : u8 {
     SSID = 0,
     SupportedRates = 1,
     DSParameterSet = 2,
@@ -141,7 +141,7 @@ private:
     void BeaconBroadcastCallback(s64);
 
     std::list<Network::WiFiPacket> GetReceivedBeacons(const MACAddress& sender);
-    u16 GetNextAvailableNodeId();
+    u16 GetNextAvailableNodeID();
     void BroadcastNodeMap();
     void SendPacket(Network::WiFiPacket& packet);
     void HandleNodeMapPacket(const Network::WiFiPacket& packet);
@@ -181,7 +181,7 @@ private:
 
     // Mapping of data channels to their internal data.
     struct BindNodeData {
-        u32 bind_node_id;    ///< Id of the bind node associated with this data.
+        u32 bind_node_id;    ///< ID of the bind node associated with this data.
         u8 channel;          ///< Channel that this bind node was bound to.
         u16 network_node_id; ///< Node id this bind node is associated with, only packets from this
                              /// network node will be received.

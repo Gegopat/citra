@@ -77,7 +77,7 @@ static_assert(std::is_trivially_copyable_v<PortInfo>,
 struct PadData {
     enum class Flags : u8 {
         AllPorts,
-        Id,
+        ID,
         Mac,
     };
     /// Determines which method will be used as a look up for the controller

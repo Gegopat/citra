@@ -29,7 +29,7 @@ SOC_U::SOC_U(std::shared_ptr<Module> soc) : Module::Interface{std::move(soc), "s
         {0x001300C2, &SOC_U::Fcntl, "Fcntl"},
         {0x00140084, &SOC_U::Poll, "Poll"},
         {0x00150042, nullptr, "SockAtMark"},
-        {0x00160000, &SOC_U::GetHostId, "GetHostId"},
+        {0x00160000, &SOC_U::GetHostID, "GetHostID"},
         {0x00170082, &SOC_U::GetSockName, "GetSockName"},
         {0x00180082, &SOC_U::GetPeerName, "GetPeerName"},
         {0x00190000, &SOC_U::ShutdownSockets, "ShutdownSockets"},

@@ -10,7 +10,7 @@
 
 namespace Service::GSP {
 
-void SignalInterrupt(InterruptId interrupt_id) {
+void SignalInterrupt(InterruptID interrupt_id) {
     auto gpu{Core::System::GetInstance().ServiceManager().GetService<GSP_GPU>("gsp::Gpu")};
     return gpu->SignalInterrupt(interrupt_id);
 }

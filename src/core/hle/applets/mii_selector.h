@@ -62,7 +62,7 @@ ASSERT_REG_POSITION(guest_mii_name, 0x6C);
 
 class MiiSelector final : public Applet {
 public:
-    explicit MiiSelector(AppletId id, Service::APT::AppletManager& manager) : Applet{id, manager} {}
+    explicit MiiSelector(AppletID id, Service::APT::AppletManager& manager) : Applet{id, manager} {}
 
     ResultCode ReceiveParameter(const Service::APT::MessageParameter& parameter) override;
     ResultCode StartImpl(const Service::APT::AppletStartupParameter& parameter) override;

@@ -331,7 +331,7 @@ void GSP_GPU::UnregisterInterruptRelayQueue(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_GSP, "called");
 }
 
-void GSP_GPU::SignalInterruptForThread(InterruptId interrupt_id, u32 thread_id) {
+void GSP_GPU::SignalInterruptForThread(InterruptID interrupt_id, u32 thread_id) {
     auto session_data{FindRegisteredThreadData(thread_id)};
     if (!session_data)
         return;
@@ -353,7 +353,7 @@ void GSP_GPU::SignalInterruptForThread(InterruptId interrupt_id, u32 thread_id) 
     // TODO: The real GSP module triggers PDC0 after updating both the top and bottom
     // screen, it is currently unknown what PDC1 does.
     int screen_id{
-        (interrupt_id == InterruptId::PDC0) ? 0 : (interrupt_id == InterruptId::PDC1) ? 1 : -1};
+        (interrupt_id == InterruptID::PDC0) ? 0 : (interrupt_id == InterruptID::PDC1) ? 1 : -1};
     if (screen_id != -1) {
         auto info{GetFrameBufferInfo(thread_id, screen_id)};
         if (info->is_dirty) {
@@ -370,7 +370,7 @@ void GSP_GPU::SignalInterruptForThread(InterruptId interrupt_id, u32 thread_id) 
  * @todo This should probably take a thread_id parameter and only signal this thread?
  * @todo This probably doesn't belong in the GSP module, instead move to video_core
  */
-void GSP_GPU::SignalInterrupt(InterruptId interrupt_id) {
+void GSP_GPU::SignalInterrupt(InterruptID interrupt_id) {
     if (!shared_memory) {
         LOG_WARNING(Service_GSP, "can't synchronize until GSP shared memory has been created!");
         return;
@@ -378,7 +378,7 @@ void GSP_GPU::SignalInterrupt(InterruptId interrupt_id) {
     // The PDC0 and PDC1 interrupts are fired even if the GPU right hasn't been acquired.
     // Normal interrupts are only signaled for the active thread (ie, the thread that has the GPU
     // right), but the PDC0/1 interrupts are signaled for every registered thread.
-    if (interrupt_id == InterruptId::PDC0 || interrupt_id == InterruptId::PDC1) {
+    if (interrupt_id == InterruptID::PDC0 || interrupt_id == InterruptID::PDC1) {
         for (u32 thread_id{}; thread_id < MaxGSPThreads; ++thread_id)
             SignalInterruptForThread(interrupt_id, thread_id);
         return;
@@ -396,7 +396,7 @@ static void ExecuteCommand(const Command& command, u32 thread_id) {
         [](u32 id, u32 data) { GPU::Write<u32>(0x1EF00000 + 4 * id, data); }};
     switch (command.id) {
     // GX request DMA - typically used for copying memory from GSP heap to VRAM
-    case CommandId::REQUEST_DMA: {
+    case CommandID::REQUEST_DMA: {
         // TODO: Consider attempting rasterizer-accelerated surface blit if that usage is ever
         // possible/likely
         Memory::RasterizerFlushVirtualRegion(command.dma_request.source_address,
@@ -409,11 +409,11 @@ static void ExecuteCommand(const Command& command, u32 thread_id) {
         Memory::CopyBlock(*Core::System::GetInstance().Kernel().GetCurrentProcess(),
                           command.dma_request.dest_address, command.dma_request.source_address,
                           command.dma_request.size);
-        SignalInterrupt(InterruptId::DMA);
+        SignalInterrupt(InterruptID::DMA);
         break;
     }
     // TODO: This will need some rework in the future. (why?)
-    case CommandId::SUBMIT_GPU_CMDLIST: {
+    case CommandID::SUBMIT_GPU_CMDLIST: {
         auto& params{command.submit_gpu_cmdlist};
         WriteGPURegister(static_cast<u32>(GPU_REG_INDEX(command_processor_config.address)),
                          VirtualToPhysicalAddress(params.address) >> 3);
@@ -427,7 +427,7 @@ static void ExecuteCommand(const Command& command, u32 thread_id) {
     }
     // It's assumed that the two "blocks" behave equivalently.
     // Presumably this is done simply to allow two memory fills to run in parallel.
-    case CommandId::SET_MEMORY_FILL: {
+    case CommandID::SET_MEMORY_FILL: {
         auto& params{command.memory_fill};
         if (params.start1 != 0) {
             WriteGPURegister(static_cast<u32>(GPU_REG_INDEX(memory_fill_config[0].address_start)),
@@ -451,7 +451,7 @@ static void ExecuteCommand(const Command& command, u32 thread_id) {
         }
         break;
     }
-    case CommandId::SET_DISPLAY_TRANSFER: {
+    case CommandID::SET_DISPLAY_TRANSFER: {
         auto& params{command.display_transfer};
         WriteGPURegister(static_cast<u32>(GPU_REG_INDEX(display_transfer_config.input_address)),
                          VirtualToPhysicalAddress(params.in_buffer_address) >> 3);
@@ -467,7 +467,7 @@ static void ExecuteCommand(const Command& command, u32 thread_id) {
         break;
     }
 
-    case CommandId::SET_TEXTURE_COPY: {
+    case CommandID::SET_TEXTURE_COPY: {
         auto& params{command.texture_copy};
         WriteGPURegister((u32)GPU_REG_INDEX(display_transfer_config.input_address),
                          VirtualToPhysicalAddress(params.in_buffer_address) >> 3);
@@ -485,7 +485,7 @@ static void ExecuteCommand(const Command& command, u32 thread_id) {
         WriteGPURegister((u32)GPU_REG_INDEX(display_transfer_config.trigger), 1);
         break;
     }
-    case CommandId::CACHE_FLUSH: {
+    case CommandID::CACHE_FLUSH: {
         // Unimplemented for performance reasons
         break;
     }
@@ -620,7 +620,7 @@ SessionData* GSP_GPU::FindRegisteredThreadData(u32 thread_id) {
     return nullptr;
 }
 
-u32 GSP_GPU::GetUnusedThreadId() const {
+u32 GSP_GPU::GetUnusedThreadID() const {
     for (u32 id{}; id < MaxGSPThreads; ++id)
         if (!used_thread_ids[id])
             return id;
@@ -675,7 +675,7 @@ SessionData::SessionData() {
     // is done through a real thread (svcCreateThread) but we have to simulate it since our HLE
     // services don't have threads.
     auto gpu{Core::System::GetInstance().ServiceManager().GetService<GSP_GPU>("gsp::Gpu")};
-    thread_id = gpu->GetUnusedThreadId();
+    thread_id = gpu->GetUnusedThreadID();
     gpu->used_thread_ids[thread_id] = true;
 }
 

@@ -36,7 +36,7 @@ public:
         void Fcntl(Kernel::HLERequestContext& ctx);
         void Listen(Kernel::HLERequestContext& ctx);
         void Accept(Kernel::HLERequestContext& ctx);
-        void GetHostId(Kernel::HLERequestContext& ctx);
+        void GetHostID(Kernel::HLERequestContext& ctx);
         void Close(Kernel::HLERequestContext& ctx);
         void SendTo(Kernel::HLERequestContext& ctx);
         void RecvFromOther(Kernel::HLERequestContext& ctx);

@@ -89,7 +89,7 @@ void Module::Interface::Open(Kernel::HLERequestContext& ctx) {
             rb.Push(RESULT_SUCCESS);
             rb.Push<u32>(session_data->file->GetSize()); // Return file size
         }
-        if (path_type == CecDataPathType::MboxProgramId) {
+        if (path_type == CecDataPathType::MboxProgramID) {
             std::vector<u8> program_id(8);
             u64_le le_program_id{cecd->system.Kernel().GetCurrentProcess()->codeset->program_id};
             std::memcpy(program_id.data(), &le_program_id, sizeof(u64));

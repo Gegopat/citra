@@ -149,8 +149,8 @@ public:
                         u64 program_id, u64 extdata_id)
         : ProgramListItem{} {
         setData(program_path, FullPathRole);
-        setData(qulonglong(program_id), ProgramIdRole);
-        setData(qulonglong(extdata_id), ExtdataIdRole);
+        setData(qulonglong(program_id), ProgramIDRole);
+        setData(qulonglong(extdata_id), ExtdataIDRole);
         if (UISettings::values.program_list_icon_size == UISettings::ProgramListIconSize::NoIcon)
             // Don't display icons
             setData(QPixmap{}, Qt::DecorationRole);
@@ -193,7 +193,7 @@ public:
                 {UISettings::ProgramListText::FullPath, data(FullPathRole).toString()},
                 {UISettings::ProgramListText::ProgramName, data(TitleRole).toString()},
                 {UISettings::ProgramListText::ProgramID,
-                 QString::fromStdString(fmt::format("{:016X}", data(ProgramIdRole).toULongLong()))},
+                 QString::fromStdString(fmt::format("{:016X}", data(ProgramIDRole).toULongLong()))},
                 {UISettings::ProgramListText::Publisher, data(PublisherRole).toString()},
             };
             const auto& row1{display_texts.at(UISettings::values.program_list_row_1)};
@@ -209,8 +209,8 @@ public:
 
     static constexpr int FullPathRole{Qt::UserRole + 1};
     static constexpr int TitleRole{Qt::UserRole + 2};
-    static constexpr int ProgramIdRole{Qt::UserRole + 3};
-    static constexpr int ExtdataIdRole{Qt::UserRole + 4};
+    static constexpr int ProgramIDRole{Qt::UserRole + 3};
+    static constexpr int ExtdataIDRole{Qt::UserRole + 4};
     static constexpr int PublisherRole{Qt::UserRole + 5};
 };
 

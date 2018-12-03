@@ -340,7 +340,7 @@ Kernel::Process::Process(KernelSystem& kernel)
     : Object{kernel}, handle_table{kernel}, kernel{kernel} {}
 Kernel::Process::~Process() {}
 
-SharedPtr<Process> KernelSystem::GetProcessById(u32 process_id) const {
+SharedPtr<Process> KernelSystem::GetProcessByID(u32 process_id) const {
     auto itr{std::find_if(
         process_list.begin(), process_list.end(),
         [&](const SharedPtr<Process>& process) { return process->process_id == process_id; })};

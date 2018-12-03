@@ -88,7 +88,7 @@ void Server::Impl::SendReply(Packet& reply_packet) {
                     reply_packet.GetPacketDataSize());
         zmq_socket->send(reply_buffer.get(), MIN_PACKET_SIZE + reply_packet.GetPacketDataSize());
         LOG_INFO(RPC, "Sent reply version({}) id=({}) type=({}) size=({})",
-                 reply_packet.GetVersion(), reply_packet.GetId(),
+                 reply_packet.GetVersion(), reply_packet.GetID(),
                  static_cast<u32>(reply_packet.GetPacketType()), reply_packet.GetPacketDataSize());
     }
 }
@@ -114,7 +114,7 @@ void Server::Stop() {
 void Server::NewRequestCallback(std::unique_ptr<RPC::Packet> new_request) {
     if (new_request)
         LOG_INFO(RPC, "Received request (version={}, id={}, type={}, size={})",
-                 new_request->GetVersion(), new_request->GetId(),
+                 new_request->GetVersion(), new_request->GetID(),
                  static_cast<u32>(new_request->GetPacketType()), new_request->GetPacketDataSize());
     rpc_server.QueueRequest(std::move(new_request));
 }

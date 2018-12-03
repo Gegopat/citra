@@ -103,7 +103,7 @@ inline u32 StaticBufferDesc(std::size_t size, u8 buffer_id) {
 /**
  * @brief Creates a header describing a buffer to be sent over PXI.
  * @param size         Size of the buffer. Max 0x00FFFFFF.
- * @param buffer_id    The Id of the buffer. Max 0xF.
+ * @param buffer_id    The ID of the buffer. Max 0xF.
  * @param is_read_only true if the buffer is read-only. If false, the buffer is considered to have
  * read-write access.
  * @return The created PXI buffer header.

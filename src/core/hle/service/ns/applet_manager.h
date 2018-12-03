@@ -18,7 +18,7 @@ class Applet;
 } // namespace HLE::Applets
 
 /// Applet id's used by APT functions
-enum class AppletId : u32 {
+enum class AppletID : u32 {
     None = 0,
     AnySystemApplet = 0x100,
     HomeMenu = 0x101,
@@ -54,13 +54,13 @@ enum class AppletId : u32 {
     Memolib2 = 0x409,
 };
 
-// Specializes std::hash for AppletId, so that we can use it in std::unordered_map.
+// Specializes std::hash for AppletID, so that we can use it in std::unordered_map.
 // Workaround for libstdc++ bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60970
 namespace std {
 
 template <>
-struct hash<AppletId> {
-    using argument_type = AppletId;
+struct hash<AppletID> {
+    using argument_type = AppletID;
     using result_type = size_t;
 
     result_type operator()(const argument_type& id_code) const {
@@ -97,8 +97,8 @@ enum class SignalType : u32 {
 
 /// Holds information about the parameters used in Send/Glance/ReceiveParameter
 struct MessageParameter {
-    AppletId sender_id{AppletId::None};
-    AppletId destination_id{AppletId::None};
+    AppletID sender_id{AppletID::None};
+    AppletID destination_id{AppletID::None};
     SignalType signal{SignalType::None};
     Kernel::SharedPtr<Kernel::Object> object{};
     std::vector<u8> buffer;
@@ -132,23 +132,23 @@ public:
     void CancelAndSendParameter(const MessageParameter& parameter);
 
     ResultCode SendParameter(const MessageParameter& parameter);
-    ResultVal<MessageParameter> GlanceParameter(AppletId program_id);
-    ResultVal<MessageParameter> ReceiveParameter(AppletId program_id);
-    bool CancelParameter(bool check_sender, AppletId sender_appid, bool check_receiver,
-                         AppletId receiver_appid);
+    ResultVal<MessageParameter> GlanceParameter(AppletID program_id);
+    ResultVal<MessageParameter> ReceiveParameter(AppletID program_id);
+    bool CancelParameter(bool check_sender, AppletID sender_appid, bool check_receiver,
+                         AppletID receiver_appid);
 
     struct InitializeResult {
         Kernel::SharedPtr<Kernel::Event> notification_event;
         Kernel::SharedPtr<Kernel::Event> parameter_event;
     };
 
-    ResultVal<InitializeResult> Initialize(AppletId program_id, AppletAttributes attributes);
+    ResultVal<InitializeResult> Initialize(AppletID program_id, AppletAttributes attributes);
     ResultCode Enable(AppletAttributes attributes);
-    bool IsRegistered(AppletId program_id);
-    ResultCode PrepareToStartLibraryApplet(AppletId applet_id);
-    ResultCode PreloadLibraryApplet(AppletId applet_id);
-    ResultCode FinishPreloadingLibraryApplet(AppletId applet_id);
-    ResultCode StartLibraryApplet(AppletId applet_id, Kernel::SharedPtr<Kernel::Object> object,
+    bool IsRegistered(AppletID program_id);
+    ResultCode PrepareToStartLibraryApplet(AppletID applet_id);
+    ResultCode PreloadLibraryApplet(AppletID applet_id);
+    ResultCode FinishPreloadingLibraryApplet(AppletID applet_id);
+    ResultCode StartLibraryApplet(AppletID applet_id, Kernel::SharedPtr<Kernel::Object> object,
                                   const std::vector<u8>& buffer);
     ResultCode PrepareToCloseLibraryApplet(bool not_pause, bool exiting, bool jump_home);
     ResultCode CloseLibraryApplet(Kernel::SharedPtr<Kernel::Object> object, std::vector<u8> buffer);
@@ -161,9 +161,9 @@ public:
         u32 attributes;
     };
 
-    ResultVal<AppletInfo> GetAppletInfo(AppletId program_id);
+    ResultVal<AppletInfo> GetAppletInfo(AppletID program_id);
 
-    void ScheduleEvent(AppletId id);
+    void ScheduleEvent(AppletID id);
 
     Core::System& System() {
         return system;
@@ -186,7 +186,7 @@ private:
     };
 
     struct AppletSlotData {
-        AppletId applet_id;
+        AppletID applet_id;
         AppletSlot slot;
         bool registered;
         bool loaded;
@@ -195,7 +195,7 @@ private:
         Kernel::SharedPtr<Kernel::Event> parameter_event;
 
         void Reset() {
-            applet_id = AppletId::None;
+            applet_id = AppletID::None;
             registered = false;
             attributes.raw = 0;
         }
@@ -205,16 +205,16 @@ private:
     std::array<AppletSlotData, NumAppletSlot> applet_slots{};
 
     void AppletUpdateEvent(u64 applet_id, s64 cycles_late);
-    u64 GetProgramIDForApplet(AppletId id);
+    u64 GetProgramIDForApplet(AppletID id);
 
     // This overload returns nullptr if no applet with the specified id has been started.
-    AppletSlotData* GetAppletSlotData(AppletId id);
+    AppletSlotData* GetAppletSlotData(AppletID id);
     AppletSlotData* GetAppletSlotData(AppletAttributes attributes);
 
     // Command that will be sent to the program when a library applet calls CloseLibraryApplet.
     SignalType library_applet_closing_command;
 
-    std::unordered_map<AppletId, std::shared_ptr<HLE::Applets::Applet>> hle_applets;
+    std::unordered_map<AppletID, std::shared_ptr<HLE::Applets::Applet>> hle_applets;
 
     /// The CoreTiming event identifier for the Applet update callback.
     Core::TimingEventType* applet_update_event;

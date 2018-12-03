@@ -105,7 +105,7 @@ void Lobby::OnJoinRoom(const QModelIndex& source) {
     int port{proxy->data(connection_index, LobbyItemHost::HostPortRole).toInt()};
     // Attempt to connect in a different thread
     auto f{QtConcurrent::run([this, nickname, ip, port, password] {
-        system.RoomMember().Join(nickname, Service::CFG::GetConsoleId(system), ip.c_str(), port,
+        system.RoomMember().Join(nickname, Service::CFG::GetConsoleID(system), ip.c_str(), port,
                                  BroadcastMac, password);
     })};
     watcher->setFuture(f);

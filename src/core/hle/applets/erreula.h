@@ -50,7 +50,7 @@ static_assert(sizeof(ErrEulaConfig) == 0xF80, "ErrEulaConfig structure size is w
 
 class ErrEula final : public Applet {
 public:
-    explicit ErrEula(AppletId id, Service::APT::AppletManager& manager) : Applet{id, manager} {}
+    explicit ErrEula(AppletID id, Service::APT::AppletManager& manager) : Applet{id, manager} {}
 
     ResultCode ReceiveParameter(const Service::APT::MessageParameter& parameter) override;
     ResultCode StartImpl(const Service::APT::AppletStartupParameter& parameter) override;

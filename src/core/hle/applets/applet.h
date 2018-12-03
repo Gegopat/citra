@@ -39,7 +39,7 @@ public:
     }
 
 protected:
-    explicit Applet(AppletId id, Service::APT::AppletManager& manager) : id{id}, manager{manager} {}
+    explicit Applet(AppletID id, Service::APT::AppletManager& manager) : id{id}, manager{manager} {}
 
     /**
      * Handles the Applet start event, triggered from the program.
@@ -48,7 +48,7 @@ protected:
      */
     virtual ResultCode StartImpl(const Service::APT::AppletStartupParameter& parameter) = 0;
 
-    AppletId id; ///< ID of this Applet
+    AppletID id; ///< ID of this Applet
 
     /// Whether this applet is currently running instead of the host program or not.
     bool is_running{};

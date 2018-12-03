@@ -487,7 +487,7 @@ void Module::Interface::Accept(Kernel::HLERequestContext& ctx) {
     rb.PushStaticBuffer(ctr_addr_buf, 0);
 }
 
-void Module::Interface::GetHostId(Kernel::HLERequestContext& ctx) {
+void Module::Interface::GetHostID(Kernel::HLERequestContext& ctx) {
     char name[128];
     gethostname(name, sizeof(name));
     addrinfo hints{};

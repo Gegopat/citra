@@ -143,9 +143,9 @@ private:
     ResultCode SetThreadPriority(Handle handle, u32 priority);
     ResultCode CreateMutex(Handle* out_handle, u32 initial_locked);
     ResultCode ReleaseMutex(Handle handle);
-    ResultCode GetProcessId(u32* process_id, Handle process_handle);
-    ResultCode GetProcessIdOfThread(u32* process_id, Handle thread_handle);
-    ResultCode GetThreadId(u32* thread_id, Handle handle);
+    ResultCode GetProcessID(u32* process_id, Handle process_handle);
+    ResultCode GetProcessIDOfThread(u32* process_id, Handle thread_handle);
+    ResultCode GetThreadID(u32* thread_id, Handle handle);
     ResultCode CreateSemaphore(Handle* out_handle, s32 initial_count, s32 max_count);
     ResultCode ReleaseSemaphore(s32* count, Handle handle, s32 release_count);
     ResultCode QueryProcessMemory(MemoryInfo* memory_info, PageInfo* page_info,
@@ -722,23 +722,23 @@ ResultCode SVC::CreateThread(Handle* out_handle, u32 entry_point, u32 arg, VAddr
     auto& resource_limit{current_process->resource_limit};
     if (resource_limit->GetMaxResourceValue(ResourceTypes::PRIORITY) > priority)
         return ERR_NOT_AUTHORIZED;
-    if (processor_id == ThreadProcessorIdDefault) {
+    if (processor_id == ThreadProcessorIDDefault) {
         // Set the target CPU to the one specified in the process' exheader.
         processor_id = current_process->ideal_processor;
-        ASSERT(processor_id != ThreadProcessorIdDefault);
+        ASSERT(processor_id != ThreadProcessorIDDefault);
     }
     switch (processor_id) {
-    case ThreadProcessorId0:
+    case ThreadProcessorID0:
         break;
-    case ThreadProcessorIdAll:
+    case ThreadProcessorIDAll:
         LOG_INFO(Kernel_SVC,
                  "Newly created thread is allowed to be run in any Core, unimplemented.");
         break;
-    case ThreadProcessorId1:
+    case ThreadProcessorID1:
         LOG_ERROR(Kernel_SVC,
                   "Newly created thread must run in the SysCore (Core1), unimplemented.");
         break;
-    case ThreadProcessorId2:
+    case ThreadProcessorID2:
         LOG_ERROR(Kernel_SVC,
                   "Newly created thread must run in the SysCore (Core2), unimplemented.");
         break;
@@ -817,7 +817,7 @@ ResultCode SVC::ReleaseMutex(Handle handle) {
 }
 
 /// Get the ID of the specified process
-ResultCode SVC::GetProcessId(u32* process_id, Handle process_handle) {
+ResultCode SVC::GetProcessID(u32* process_id, Handle process_handle) {
     LOG_TRACE(Kernel_SVC, "process=0x{:08X}", process_handle);
     const auto process{kernel.GetCurrentProcess()->handle_table.Get<Process>(process_handle)};
     if (!process)
@@ -827,7 +827,7 @@ ResultCode SVC::GetProcessId(u32* process_id, Handle process_handle) {
 }
 
 /// Get the ID of the process that owns the specified thread
-ResultCode SVC::GetProcessIdOfThread(u32* process_id, Handle thread_handle) {
+ResultCode SVC::GetProcessIDOfThread(u32* process_id, Handle thread_handle) {
     LOG_TRACE(Kernel_SVC, "thread=0x{:08X}", thread_handle);
     const auto thread{kernel.GetCurrentProcess()->handle_table.Get<Thread>(thread_handle)};
     if (!thread)
@@ -839,12 +839,12 @@ ResultCode SVC::GetProcessIdOfThread(u32* process_id, Handle thread_handle) {
 }
 
 /// Get the ID for the specified thread.
-ResultCode SVC::GetThreadId(u32* thread_id, Handle handle) {
+ResultCode SVC::GetThreadID(u32* thread_id, Handle handle) {
     LOG_TRACE(Kernel_SVC, "thread=0x{:08X}", handle);
     const auto thread{kernel.GetCurrentProcess()->handle_table.Get<Thread>(handle)};
     if (!thread)
         return ERR_INVALID_HANDLE;
-    *thread_id = thread->GetThreadId();
+    *thread_id = thread->GetThreadID();
     return RESULT_SUCCESS;
 }
 
@@ -1185,8 +1185,8 @@ const SVC::FunctionDef SVC::SVC_Table[]{
     {0x03, &SVC::ExitProcess, "ExitProcess"},
     {0x04, nullptr, "GetProcessAffinityMask"},
     {0x05, nullptr, "SetProcessAffinityMask"},
-    {0x06, nullptr, "GetProcessIdealProcessor"},
-    {0x07, nullptr, "SetProcessIdealProcessor"},
+    {0x06, nullptr, "GetProcessIDealProcessor"},
+    {0x07, nullptr, "SetProcessIDealProcessor"},
     {0x08, &SVC::Wrap<&SVC::CreateThread>, "CreateThread"},
     {0x09, &SVC::ExitThread, "ExitThread"},
     {0x0A, &SVC::Wrap<&SVC::SleepThread>, "SleepThread"},
@@ -1194,8 +1194,8 @@ const SVC::FunctionDef SVC::SVC_Table[]{
     {0x0C, &SVC::Wrap<&SVC::SetThreadPriority>, "SetThreadPriority"},
     {0x0D, nullptr, "GetThreadAffinityMask"},
     {0x0E, nullptr, "SetThreadAffinityMask"},
-    {0x0F, nullptr, "GetThreadIdealProcessor"},
-    {0x10, nullptr, "SetThreadIdealProcessor"},
+    {0x0F, nullptr, "GetThreadIDealProcessor"},
+    {0x10, nullptr, "SetThreadIDealProcessor"},
     {0x11, nullptr, "GetCurrentProcessorNumber"},
     {0x12, nullptr, "Run"},
     {0x13, &SVC::Wrap<&SVC::CreateMutex>, "CreateMutex"},
@@ -1232,9 +1232,9 @@ const SVC::FunctionDef SVC::SVC_Table[]{
     {0x32, &SVC::Wrap<&SVC::SendSyncRequest>, "SendSyncRequest"},
     {0x33, nullptr, "OpenProcess"},
     {0x34, nullptr, "OpenThread"},
-    {0x35, &SVC::Wrap<&SVC::GetProcessId>, "GetProcessId"},
-    {0x36, &SVC::Wrap<&SVC::GetProcessIdOfThread>, "GetProcessIdOfThread"},
-    {0x37, &SVC::Wrap<&SVC::GetThreadId>, "GetThreadId"},
+    {0x35, &SVC::Wrap<&SVC::GetProcessID>, "GetProcessID"},
+    {0x36, &SVC::Wrap<&SVC::GetProcessIDOfThread>, "GetProcessIDOfThread"},
+    {0x37, &SVC::Wrap<&SVC::GetThreadID>, "GetThreadID"},
     {0x38, &SVC::Wrap<&SVC::GetResourceLimit>, "GetResourceLimit"},
     {0x39, &SVC::Wrap<&SVC::GetResourceLimitLimitValues>, "GetResourceLimitLimitValues"},
     {0x3A, &SVC::Wrap<&SVC::GetResourceLimitCurrentValues>, "GetResourceLimitCurrentValues"},

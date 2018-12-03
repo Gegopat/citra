@@ -375,7 +375,7 @@ IR_USER::IR_USER(Core::System& system) : ServiceFramework{"ir:USER", 1} {
         {0x00170000, nullptr, "GetConnectionRole"},
         {0x00180182, &IR_USER::InitializeIrNopShared, "InitializeIrNopShared"},
         {0x00190040, &IR_USER::ReleaseReceivedData, "ReleaseReceivedData"},
-        {0x001A0040, nullptr, "SetOwnMachineId"},
+        {0x001A0040, nullptr, "SetOwnMachineID"},
     };
     RegisterHandlers(functions);
     conn_status_event =

@@ -199,7 +199,7 @@ public:
     u32 GenerateObjectID();
 
     /// Retrieves a process from the current list of processes.
-    SharedPtr<Process> GetProcessById(u32 process_id) const;
+    SharedPtr<Process> GetProcessByID(u32 process_id) const;
 
     SharedPtr<Process> GetCurrentProcess() const;
     void SetCurrentProcess(SharedPtr<Process> process);

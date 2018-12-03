@@ -48,7 +48,7 @@ private:
      */
     std::string mount_point;
 
-    /// Returns a path with the correct SaveIdHigh value for Shared extdata paths.
+    /// Returns a path with the correct SaveIDHigh value for Shared extdata paths.
     Path GetCorrectedPath(const Path& path);
 };
 
@@ -68,7 +68,7 @@ std::string GetExtSaveDataPath(const std::string& mount_point, const Path& path)
  * @param extdata_id The id of the ExtSaveData
  * @returns The complete path to the specified extdata archive in the host filesystem
  */
-std::string GetExtDataPathFromId(const std::string& mount_point, u64 extdata_id);
+std::string GetExtDataPathFromID(const std::string& mount_point, u64 extdata_id);
 
 /**
  * Constructs a path to the base folder to hold concrete ExtSaveData archives in the host file

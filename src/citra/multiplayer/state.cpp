@@ -109,7 +109,7 @@ void MultiplayerState::OnNetworkError(const Network::RoomMember::Error& error) {
     case Network::RoomMember::Error::MACCollision:
         NetworkMessage::ShowError(NetworkMessage::MAC_COLLISION);
         break;
-    case Network::RoomMember::Error::ConsoleIdCollision:
+    case Network::RoomMember::Error::ConsoleIDCollision:
         NetworkMessage::ShowError(NetworkMessage::CONSOLE_ID_COLLISION);
         break;
     case Network::RoomMember::Error::RoomIsFull:

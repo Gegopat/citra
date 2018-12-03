@@ -17,7 +17,7 @@ namespace Service::NWM {
  * Internal vendor-specific tag ids as stored inside
  * VendorSpecific blocks in the Beacon frames.
  */
-enum class NintendoTagId : u8 {
+enum class NintendoTagID : u8 {
     Dummy = 20,
     NetworkInfo = 21,
     EncryptedData0 = 24,

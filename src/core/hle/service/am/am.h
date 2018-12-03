@@ -112,7 +112,7 @@ InstallStatus InstallCIA(const std::string& path,
  * @param id the installed program ID
  * @returns MediaType which the installed program will reside on
  */
-Service::FS::MediaType GetProgramMediaType(u64 programId);
+Service::FS::MediaType GetProgramMediaType(u64 programID);
 
 /**
  * Get the .tmd path for a program

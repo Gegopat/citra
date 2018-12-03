@@ -221,7 +221,7 @@ private:
 
 void ArchiveFactory_SelfNCCH::Register(Loader::ProgramLoader& program_loader) {
     u64 program_id{};
-    if (program_loader.ReadProgramId(program_id) != Loader::ResultStatus::Success)
+    if (program_loader.ReadProgramID(program_id) != Loader::ResultStatus::Success)
         LOG_WARNING(
             Service_FS,
             "Couldn't read program id when registering with SelfNCCH, this might be a 3dsx file");

@@ -34,7 +34,7 @@ namespace Service::APT {
 
 void Module::Interface::Initialize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x2, 2, 0};
-    AppletId program_id{rp.PopEnum<AppletId>()};
+    AppletID program_id{rp.PopEnum<AppletID>()};
     u32 attributes{rp.Pop<u32>()};
     LOG_DEBUG(Service_APT, "program_id={:#010X}, attributes={:#010X}", static_cast<u32>(program_id),
               attributes);
@@ -227,15 +227,15 @@ void Module::Interface::GetAppletManInfo(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS); // No error
     rb.Push<u32>(0);
     rb.Push<u32>(0);
-    rb.Push(static_cast<u32>(AppletId::HomeMenu)); // Home menu AppID
-    rb.Push(static_cast<u32>(AppletId::Program));  // TODO: Do this correctly
+    rb.Push(static_cast<u32>(AppletID::HomeMenu)); // Home menu AppID
+    rb.Push(static_cast<u32>(AppletID::Program));  // TODO: Do this correctly
 
     LOG_WARNING(Service_APT, "(stubbed) unk={:#010X}", unk);
 }
 
 void Module::Interface::IsRegistered(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x9, 1, 0};
-    AppletId program_id{rp.PopEnum<AppletId>()};
+    AppletID program_id{rp.PopEnum<AppletID>()};
     auto rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS); // No error
     rb.Push(apt->applet_manager->IsRegistered(program_id));
@@ -254,8 +254,8 @@ void Module::Interface::InquireNotification(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::SendParameter(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xC, 4, 4};
-    AppletId src_program_id{rp.PopEnum<AppletId>()};
-    AppletId dst_program_id{rp.PopEnum<AppletId>()};
+    AppletID src_program_id{rp.PopEnum<AppletID>()};
+    AppletID dst_program_id{rp.PopEnum<AppletID>()};
     SignalType signal_type{rp.PopEnum<SignalType>()};
     u32 buffer_size{rp.Pop<u32>()};
     Kernel::SharedPtr<Kernel::Object> object{rp.PopGenericObject()};
@@ -277,7 +277,7 @@ void Module::Interface::SendParameter(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::ReceiveParameter(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xD, 2, 0};
-    AppletId program_id{rp.PopEnum<AppletId>()};
+    AppletID program_id{rp.PopEnum<AppletID>()};
     u32 buffer_size{rp.Pop<u32>()};
     LOG_DEBUG(Service_APT, "program_id={:#010X}, buffer_size={:#010X}",
               static_cast<u32>(program_id), buffer_size);
@@ -300,7 +300,7 @@ void Module::Interface::ReceiveParameter(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GlanceParameter(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xE, 2, 0};
-    AppletId program_id{rp.PopEnum<AppletId>()};
+    AppletID program_id{rp.PopEnum<AppletID>()};
     u32 buffer_size{rp.Pop<u32>()};
     LOG_DEBUG(Service_APT, "program_id={:#010X}, buffer_size={:#010X}",
               static_cast<u32>(program_id), buffer_size);
@@ -324,9 +324,9 @@ void Module::Interface::GlanceParameter(Kernel::HLERequestContext& ctx) {
 void Module::Interface::CancelParameter(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xF, 4, 0};
     bool check_sender{rp.Pop<bool>()};
-    AppletId sender_appid{rp.PopEnum<AppletId>()};
+    AppletID sender_appid{rp.PopEnum<AppletID>()};
     bool check_receiver{rp.Pop<bool>()};
-    AppletId receiver_appid{rp.PopEnum<AppletId>()};
+    AppletID receiver_appid{rp.PopEnum<AppletID>()};
     auto rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS); // No error
     rb.Push(apt->applet_manager->CancelParameter(check_sender, sender_appid, check_receiver,
@@ -407,7 +407,7 @@ void Module::Interface::GetAppCpuTimeLimit(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::PrepareToStartLibraryApplet(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x18, 1, 0};
-    AppletId applet_id{rp.PopEnum<AppletId>()};
+    AppletID applet_id{rp.PopEnum<AppletID>()};
     auto rb{rp.MakeBuilder(1, 0)};
     rb.Push(apt->applet_manager->PrepareToStartLibraryApplet(applet_id));
     LOG_DEBUG(Service_APT, "applet_id={:08X}", static_cast<u32>(applet_id));
@@ -425,7 +425,7 @@ void Module::Interface::PrepareToStartNewestHomeMenu(Kernel::HLERequestContext& 
 
 void Module::Interface::PreloadLibraryApplet(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x16, 1, 0};
-    AppletId applet_id{rp.PopEnum<AppletId>()};
+    AppletID applet_id{rp.PopEnum<AppletID>()};
     LOG_DEBUG(Service_APT, "applet_id={:08X}", static_cast<u32>(applet_id));
     auto rb{rp.MakeBuilder(1, 0)};
     rb.Push(apt->applet_manager->PreloadLibraryApplet(applet_id));
@@ -433,7 +433,7 @@ void Module::Interface::PreloadLibraryApplet(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::FinishPreloadingLibraryApplet(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x17, 1, 0};
-    AppletId applet_id{rp.PopEnum<AppletId>()};
+    AppletID applet_id{rp.PopEnum<AppletID>()};
     auto rb{rp.MakeBuilder(1, 0)};
     rb.Push(apt->applet_manager->FinishPreloadingLibraryApplet(applet_id));
     LOG_WARNING(Service_APT, "(stubbed) applet_id={:#05X}", static_cast<u32>(applet_id));
@@ -441,7 +441,7 @@ void Module::Interface::FinishPreloadingLibraryApplet(Kernel::HLERequestContext&
 
 void Module::Interface::StartLibraryApplet(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1E, 2, 4};
-    AppletId applet_id{rp.PopEnum<AppletId>()};
+    AppletID applet_id{rp.PopEnum<AppletID>()};
     std::size_t buffer_size{rp.Pop<u32>()};
     Kernel::SharedPtr<Kernel::Object> object{rp.PopGenericObject()};
     std::vector<u8> buffer{rp.PopStaticBuffer()};
@@ -590,7 +590,7 @@ void Module::Interface::GetScreenCapPostPermission(Kernel::HLERequestContext& ct
 
 void Module::Interface::GetAppletInfo(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x6, 1, 0};
-    auto program_id{rp.PopEnum<AppletId>()};
+    auto program_id{rp.PopEnum<AppletID>()};
     LOG_DEBUG(Service_APT, "program_id={}", static_cast<u32>(program_id));
     auto info{apt->applet_manager->GetAppletInfo(program_id)};
     if (info.Failed()) {
@@ -752,7 +752,7 @@ void Module::Interface::IsStandardMemoryLayout(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::ReplySleepQuery(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x3E, 2, 0};
-    AppletId program_id{rp.PopEnum<AppletId>()};
+    AppletID program_id{rp.PopEnum<AppletID>()};
     QueryReply query_reply{rp.PopEnum<QueryReply>()};
     auto rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -801,7 +801,7 @@ void Module::Interface::SendDeliverArg(Kernel::HLERequestContext& ctx) {
 void Module::Interface::GetProgramID(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x58, 0, 2};
     u32 pid{rp.PopPID()};
-    auto process{apt->system.Kernel().GetProcessById(pid)};
+    auto process{apt->system.Kernel().GetProcessByID(pid)};
     auto rb{rp.MakeBuilder(3, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(process->codeset->program_id);
