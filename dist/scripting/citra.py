@@ -134,7 +134,7 @@ class Citra:
     # Sets the pad state.
     #   pad_state: Raw pressed buttons (Use Key enum)
     def set_pad_state(self, pad_state):
-        request_data = struct.pack("III", 0, 0, pad_state)
+        request_data = struct.pack("IIi", 0, 0, pad_state)
         request, request_id = self._generate_header(
             RequestType.PadState, len(request_data))
         request += request_data
