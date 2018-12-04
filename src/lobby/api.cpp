@@ -24,7 +24,8 @@ void to_json(nlohmann::json& json, const Room& room) {
     json["ip"] = room.ip;
     json["name"] = room.name;
     json["creator"] = room.creator;
-    json["description"] = room.description;
+    if (!room.description.empty())
+        json["description"] = room.description;
     json["port"] = room.port;
     json["maxMembers"] = room.max_members;
     json["netVersion"] = room.net_version;
