@@ -78,7 +78,7 @@ void Module::Interface::GetMyScreenName(Kernel::HLERequestContext& ctx) {
     struct ScreenName {
         std::array<char16_t, 12> name;
     };
-    // TODO: (mailwl) get the name from config
+    // TODO: get the name from config
     ScreenName screen_name{u"Citra"};
     IPC::ResponseBuilder rb{ctx, 0x9, 7, 0};
     rb.Push(RESULT_SUCCESS);
