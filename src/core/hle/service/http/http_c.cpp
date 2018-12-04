@@ -1260,7 +1260,7 @@ void HTTP_C::SetBasicAuthorization(Kernel::HLERequestContext& ctx) {
     auto in{fmt::format("{}:{}", username, password)};
     std::string out;
     Base64Encoder encoder;
-    AlgorithmParameters params{MakeParameters(InsertLineBreaks(), false)(Pad(), false)};
+    auto params{MakeParameters(InsertLineBreaks(), false)(Pad(), false)};
     encoder.IsolatedInitialize(params);
     encoder.Attach(new StringSink(out));
     encoder.Put((byte*)in.data(), in.length());
