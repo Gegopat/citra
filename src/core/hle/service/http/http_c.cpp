@@ -1255,7 +1255,6 @@ void HTTP_C::SetBasicAuthorization(Kernel::HLERequestContext& ctx) {
     auto itr{contexts.find(context_id)};
     ASSERT(itr != contexts.end());
     using namespace CryptoPP;
-    using Name::EncodingLookupArray;
     using Name::InsertLineBreaks;
     using Name::Pad;
     auto in{fmt::format("{}:{}", username, password)};
