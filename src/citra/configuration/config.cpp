@@ -272,6 +272,7 @@ void Config::Load() {
     qt_config->endGroup();
     qt_config->beginGroup("UI");
     UISettings::values.confirm_close = qt_config->value("confirm_close", true).toBool();
+    UISettings::values.enable_discord_rpc = qt_config->value("enable_discord_rpc", true).toBool();
     UISettings::values.theme = qt_config->value("theme", UISettings::themes[0].second).toString();
     qt_config->beginGroup("UILayout");
     UISettings::values.geometry = qt_config->value("geometry").toByteArray();
@@ -491,6 +492,7 @@ void Config::Save() {
     qt_config->endGroup();
     qt_config->beginGroup("UI");
     qt_config->setValue("confirm_close", UISettings::values.confirm_close);
+    qt_config->setValue("enable_discord_rpc", UISettings::values.enable_discord_rpc);
     qt_config->setValue("theme", UISettings::values.theme);
     qt_config->beginGroup("UILayout");
     qt_config->setValue("geometry", UISettings::values.geometry);

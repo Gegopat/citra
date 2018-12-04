@@ -52,9 +52,9 @@ before_build:
   - ps: |
         if ($env:BUILD_TYPE -eq 'msvc') {
           # redirect stderr and change the exit code to prevent powershell from cancelling the build if cmake prints a warning
-          cmd /C 'cmake -G "Visual Studio 15 2017 Win64" -DCITRA_USE_BUNDLED_QT=1 -DCITRA_USE_BUNDLED_SDL2=1 -DENABLE_SCRIPTING=ON .. 2>&1 && exit 0'
+          cmd /C 'cmake -G "Visual Studio 15 2017 Win64" -DCITRA_USE_BUNDLED_QT=1 -DCITRA_USE_BUNDLED_SDL2=1 -DENABLE_DISCORD_RPC=ON -DENABLE_SCRIPTING=ON .. 2>&1 && exit 0'
         } else {
-          C:\msys64\usr\bin\bash.exe -lc "cmake -G 'MSYS Makefiles' -DCMAKE_BUILD_TYPE=Release -DENABLE_SCRIPTING=ON .. 2>&1"
+          C:\msys64\usr\bin\bash.exe -lc "cmake -G 'MSYS Makefiles' -DCMAKE_BUILD_TYPE=Release -DENABLE_DISCORD_RPC=ON -DENABLE_SCRIPTING=ON .. 2>&1"
         }
   - cd ..
 

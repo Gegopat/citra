@@ -122,6 +122,10 @@ private slots:
     void OnMenuAboutCitra();
 
 private:
+    void InitializeDiscordRPC();
+    void ShutdownDiscordRPC();
+    void UpdateDiscordRPC(const Network::RoomInformation& info);
+
     void InitializeWidgets();
     void InitializeRecentFileMenuActions();
     void InitializeHotkeys();
@@ -183,6 +187,8 @@ private:
     QLabel* message_label;
     QLabel* perf_stats_label;
     QLabel* touch_label;
+
+    s64 discord_rpc_start_time;
 
     QTimer perf_stats_update_timer;
     QTimer movie_play_timer;
