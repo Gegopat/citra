@@ -1035,7 +1035,7 @@ void GMainWindow::OnOpenConfiguration() {
             SyncMenuUISettings();
             program_list->Refresh();
         } else {
-            configuration_dialog.ApplyConfiguration(hotkey_registry);
+            configuration_dialog.ApplyConfiguration();
             if (UISettings::values.theme != old_theme) {
                 UpdateUITheme();
                 emit UpdateThemedIcons();

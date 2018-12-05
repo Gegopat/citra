@@ -326,7 +326,7 @@ void Config::Load() {
     UISettings::values.recent_files = ReadSetting("recentFiles").toStringList();
     settings->endGroup();
     settings->beginGroup("Shortcuts");
-    const std::array<UISettings::Shortcut, 16> default_hotkeys{{
+    const std::array<UISettings::Shortcut, 21> default_hotkeys{{
         {"Load File", "Main Window",
          UISettings::ContextualShortcut{QKeySequence{QKeySequence::Open}.toString(),
                                         Qt::WindowShortcut}},
@@ -358,6 +358,16 @@ void Config::Load() {
          UISettings::ContextualShortcut{"F2", Qt::ApplicationShortcut}},
         {"Change CPU Ticks", "Main Window",
          UISettings::ContextualShortcut{"CTRL+T", Qt::ApplicationShortcut}},
+        {"Advance Frame", "Main Window",
+         UISettings::ContextualShortcut{"\\", Qt::ApplicationShortcut}},
+        {"Toggle Frame Advancing", "Main Window",
+         UISettings::ContextualShortcut{"Ctrl+A", Qt::ApplicationShortcut}},
+        {"Load Amiibo", "Main Window",
+         UISettings::ContextualShortcut{"F2", Qt::ApplicationShortcut}},
+        {"Remove Amiibo", "Main Window",
+         UISettings::ContextualShortcut{"F3", Qt::ApplicationShortcut}},
+        {"Capture Screenshot", "Main Window",
+         UISettings::ContextualShortcut{"Ctrl+P", Qt::ApplicationShortcut}},
     }};
     for (int i{}; i < default_hotkeys.size(); i++) {
         settings->beginGroup(default_hotkeys[i].group);

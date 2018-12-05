@@ -21,7 +21,7 @@ class ConfigurationDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit ConfigurationDialog(QWidget* parent, const HotkeyRegistry& registry,
+    explicit ConfigurationDialog(QWidget* parent, HotkeyRegistry& hotkey_registry,
                                  Core::System& system);
     ~ConfigurationDialog();
 
@@ -35,4 +35,5 @@ private:
 
     std::unique_ptr<Ui::ConfigurationDialog> ui;
     Core::System& system;
+    HotkeyRegistry& hotkey_registry;
 };

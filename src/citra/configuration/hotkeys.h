@@ -23,15 +23,13 @@ public:
     explicit ConfigurationHotkeys(QWidget* parent = nullptr);
     ~ConfigurationHotkeys();
 
-<<<<<<< HEAD:src/citra/configuration/hotkeys.h
-    void ApplyConfiguration(HotkeyRegistry& registry) void EmitHotkeysChanged();
-=======
+    void ApplyConfiguration(HotkeyRegistry& registry) : void EmitHotkeysChanged();
+
     /**
      * Populates the hotkey list widget using data from the provided registry.
      * Called everytime the Configure dialog is opened.
      * @param registry The HotkeyRegistry whose data is used to populate the list.
      */
->>>>>>> a9f011096... citra-qt: Commented & documented code related to hotkeys as & when required.:src/citra_qt/configuration/configure_hotkeys.h
     void Populate(const HotkeyRegistry& registry);
 
 public slots:
@@ -45,17 +43,13 @@ private:
     bool IsUsedKey(QKeySequence key_sequence);
     QList<QKeySequence> GetUsedKeyList();
 
-<<<<<<< HEAD:src/citra/configuration/hotkeys.h
     std::unique_ptr<Ui::ConfigurationHotkeys> ui;
-=======
-    std::unique_ptr<Ui::ConfigureHotkeys> ui;
 
     /**
      * List of keyboard keys currently registered to any of the 3DS inputs.
      * These can't be bound to any hotkey.
      * Synchronised with ConfigureInput via signal-slot.
      */
->>>>>>> a9f011096... citra-qt: Commented & documented code related to hotkeys as & when required.:src/citra_qt/configuration/configure_hotkeys.h
     QList<QKeySequence> input_keys_list;
 
     QStandardItemModel* model;

@@ -10,9 +10,10 @@
 #include "core/settings.h"
 #include "ui_dialog.h"
 
-ConfigurationDialog::ConfigurationDialog(QWidget* parent, const HotkeyRegistry& registry,
+ConfigurationDialog::ConfigurationDialog(QWidget* parent, HotkeyRegistry& hotkey_registry,
                                          Core::System& system)
-    : QDialog{parent}, ui{std::make_unique<Ui::ConfigurationDialog>()}, system{system} {
+    : QDialog{parent}, ui{std::make_unique<Ui::ConfigurationDialog>()}, system{system},
+      hotkey_registry{hotkey_registry} {
     ui->setupUi(this);
     ui->hotkeysTab->Populate(registry);
     PopulateSelectionList();
@@ -41,12 +42,12 @@ ConfigurationDialog::ConfigurationDialog(QWidget* parent, const HotkeyRegistry& 
 
 ConfigurationDialog::~ConfigurationDialog() {}
 
-void ConfigurationDialog::ApplyConfiguration(HotkeyRegistry& registry) {
+void ConfigurationDialog::ApplyConfiguration() {
     ui->generalTab->ApplyConfiguration();
     ui->systemTab->ApplyConfiguration();
     ui->inputTab->ApplyConfiguration();
     ui->inputTab->ApplyProfile();
-    ui->hotkeysTab->ApplyConfiguration(registry);
+    ui->hotkeysTab->ApplyConfiguration(hotkey_registry);
     ui->graphicsTab->ApplyConfiguration();
     ui->audioTab->ApplyConfiguration();
     ui->cameraTab->ApplyConfiguration();
