@@ -9,6 +9,10 @@ add_executable(citra
     issues_map.h
     aboutdialog.cpp
     aboutdialog.h
+    applets/swkbd.cpp
+    applets/swkbd.h
+    applets/mii_selector.cpp
+    applets/mii_selector.h
     bootmanager.cpp
     bootmanager.h
     cheats.cpp
@@ -22,6 +26,8 @@ add_executable(citra
     camera/qt_multimedia_camera.cpp
     camera/qt_multimedia_camera.h
     citra.rc
+    control_panel.cpp
+    control_panel.h
     camera/still_image_camera.cpp
     camera/still_image_camera.h
     configuration/config.cpp
@@ -81,15 +87,12 @@ add_executable(citra
     util/clickable_label.h
     util/util.cpp
     util/util.h
-    swkbd.cpp
-    swkbd.h
-    mii_selector.cpp
-    mii_selector.h
-    control_panel.cpp
-    control_panel.h
 )
 
 set(UIS
+    applets/swkbd.ui
+    applets/mii_selector.ui
+    control_panel.ui
     configuration/dialog.ui
     configuration/audio.ui
     configuration/camera.ui
@@ -101,13 +104,10 @@ set(UIS
     configuration/motion_touch.ui
     configuration/system.ui
     configuration/ui.ui
-    swkbd.ui
-    mii_selector.ui
     aboutdialog.ui
     hotkeys.ui
     cheats.ui
     main.ui
-    control_panel.ui
     multiplayer/chat_room.ui
     multiplayer/client_room.ui
     multiplayer/direct_connect.ui

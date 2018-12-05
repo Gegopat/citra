@@ -2,7 +2,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include "citra/swkbd.h"
+#include "citra/applets/swkbd.h"
 #include "ui_swkbd.h"
 
 SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent,

@@ -10,10 +10,10 @@
 #include <QMessageBox>
 #include <QScreen>
 #include <QWindow>
+#include "citra/applets/mii_selector.h"
+#include "citra/applets/swkbd.h"
 #include "citra/bootmanager.h"
 #include "citra/main.h"
-#include "citra/mii_selector.h"
-#include "citra/swkbd.h"
 #include "common/scm_rev.h"
 #include "common/string_util.h"
 #include "core/3ds.h"

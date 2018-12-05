@@ -4,7 +4,7 @@
 
 #include <string>
 #include <QMessageBox>
-#include "citra/mii_selector.h"
+#include "citra/applets/mii_selector.h"
 #include "common/file_util.h"
 #include "core/file_sys/archive_extsavedata.h"
 #include "core/file_sys/file_backend.h"
