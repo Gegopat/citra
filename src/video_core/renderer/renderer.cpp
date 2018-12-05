@@ -454,7 +454,7 @@ Core::System::ResultStatus Renderer::Init() {
     LOG_INFO(Render, "GL_VERSION: {}", gl_version);
     LOG_INFO(Render, "GL_VENDOR: {}", gpu_vendor);
     LOG_INFO(Render, "GL_RENDERER: {}", gpu_model);
-    if (gpu_vendor == "GDI Generic")
+    if (!std::strcmp(gpu_vendor, "GDI Generic"))
         return Core::System::ResultStatus::ErrorVideoCore_ErrorGenericDrivers;
     if (!GLAD_GL_VERSION_3_3)
         return Core::System::ResultStatus::ErrorVideoCore_ErrorBelowGL33;
