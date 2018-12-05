@@ -39,7 +39,7 @@ const ConnectionError HOST_KICKED{"You have been kicked by the room host."};
 const ConnectionError MAC_COLLISION{"MAC address is already in use. Please choose another."};
 const ConnectionError CONSOLE_ID_COLLISION{
     "Your console ID conflicted with someone else's in the room.\n\nPlease go to Emulation "
-    "> Configure > System to regenerate your console ID."};
+    "> Configuration > System to regenerate your console ID."};
 const ConnectionError PERMISSION_DENIED{"You don't have enough permission to perform this action."};
 const ConnectionError NO_SUCH_USER{
     "The user you're trying to kick/ban couldn't be found.\nThey may have left the room."};

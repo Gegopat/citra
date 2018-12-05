@@ -26,28 +26,28 @@ add_executable(citra
     camera/still_image_camera.h
     configuration/config.cpp
     configuration/config.h
-    configuration/configure_audio.cpp
-    configuration/configure_audio.h
-    configuration/configure_camera.cpp
-    configuration/configure_camera.h
-    configuration/configure_hacks.cpp
-    configuration/configure_hacks.h
-    configuration/configure_lle.cpp
-    configuration/configure_lle.h
-    configuration/configure_dialog.cpp
-    configuration/configure_dialog.h
-    configuration/configure_general.cpp
-    configuration/configure_general.h
-    configuration/configure_graphics.cpp
-    configuration/configure_graphics.h
-    configuration/configure_input.cpp
-    configuration/configure_input.h
-    configuration/configure_motion_touch.cpp
-    configuration/configure_motion_touch.h
-    configuration/configure_system.cpp
-    configuration/configure_system.h
-    configuration/configure_ui.cpp
-    configuration/configure_ui.h
+    configuration/audio.cpp
+    configuration/audio.h
+    configuration/camera.cpp
+    configuration/camera.h
+    configuration/hacks.cpp
+    configuration/hacks.h
+    configuration/lle.cpp
+    configuration/lle.h
+    configuration/dialog.cpp
+    configuration/dialog.h
+    configuration/general.cpp
+    configuration/general.h
+    configuration/graphics.cpp
+    configuration/graphics.h
+    configuration/input.cpp
+    configuration/input.h
+    configuration/motion_touch.cpp
+    configuration/motion_touch.h
+    configuration/system.cpp
+    configuration/system.h
+    configuration/ui.cpp
+    configuration/ui.h
     multiplayer/chat_room.cpp
     multiplayer/chat_room.h
     multiplayer/client_room.cpp
@@ -90,17 +90,17 @@ add_executable(citra
 )
 
 set(UIS
-    configuration/configure.ui
-    configuration/configure_audio.ui
-    configuration/configure_camera.ui
-    configuration/configure_hacks.ui
-    configuration/configure_lle.ui
-    configuration/configure_general.ui
-    configuration/configure_graphics.ui
-    configuration/configure_input.ui
-    configuration/configure_motion_touch.ui
-    configuration/configure_system.ui
-    configuration/configure_ui.ui
+    configuration/dialog.ui
+    configuration/audio.ui
+    configuration/camera.ui
+    configuration/hacks.ui
+    configuration/lle.ui
+    configuration/general.ui
+    configuration/graphics.ui
+    configuration/input.ui
+    configuration/motion_touch.ui
+    configuration/system.ui
+    configuration/ui.ui
     swkbd.ui
     mii_selector.ui
     aboutdialog.ui

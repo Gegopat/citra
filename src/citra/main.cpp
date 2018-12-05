@@ -26,7 +26,7 @@
 #include "citra/camera/still_image_camera.h"
 #include "citra/cheats.h"
 #include "citra/configuration/config.h"
-#include "citra/configuration/configure_dialog.h"
+#include "citra/configuration/dialog.h"
 #include "citra/control_panel.h"
 #include "citra/hotkeys.h"
 #include "citra/main.h"

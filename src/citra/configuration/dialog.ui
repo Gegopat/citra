@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ConfigurationDialog</class>
+ <widget class="QDialog" name="ConfigurationDialog">
+  <property name="windowTitle">
+   <string>Citra Configuration</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QListWidget" name="selectorList"/>
+     </item>
+     <item>
+      <widget class="QScrollArea" name="scrollArea">
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QTabWidget" name="tabWidget">
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="ConfigurationGeneral" name="generalTab">
+            <attribute name="title">
+             <string>General</string>
+            </attribute>
+           </widget>
+           <widget class="ConfigurationSystem" name="systemTab">
+            <attribute name="title">
+             <string>System</string>
+            </attribute>
+           </widget>
+           <widget class="ConfigurationInput" name="inputTab">
+            <attribute name="title">
+             <string>Input</string>
+            </attribute>
+           </widget>
+           <widget class="ConfigurationGraphics" name="graphicsTab">
+            <attribute name="title">
+             <string>Graphics</string>
+            </attribute>
+           </widget>
+           <widget class="ConfigurationAudio" name="audioTab">
+            <attribute name="title">
+             <string>Audio</string>
+            </attribute>
+           </widget>
+           <widget class="ConfigurationCamera" name="cameraTab">
+            <attribute name="title">
+             <string>Camera</string>
+            </attribute>
+           </widget>
+           <widget class="ConfigurationHacks" name="hacksTab">
+            <attribute name="title">
+             <string>Hacks</string>
+            </attribute>
+           </widget>
+           <widget class="ConfigurationLLE" name="lleTab">
+            <attribute name="title">
+             <string>LLE</string>
+            </attribute>
+           </widget>
+           <widget class="ConfigurationUi" name="uiTab">
+            <attribute name="title">
+             <string>UI</string>
+            </attribute>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ConfigurationGeneral</class>
+   <extends>QWidget</extends>
+   <header>configuration/general.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ConfigurationSystem</class>
+   <extends>QWidget</extends>
+   <header>configuration/system.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ConfigurationAudio</class>
+   <extends>QWidget</extends>
+   <header>configuration/audio.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ConfigurationCamera</class>
+   <extends>QWidget</extends>
+   <header>configuration/camera.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ConfigurationHacks</class>
+   <extends>QWidget</extends>
+   <header>configuration/hacks.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ConfigurationLLE</class>
+   <extends>QWidget</extends>
+   <header>configuration/lle.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ConfigurationInput</class>
+   <extends>QWidget</extends>
+   <header>configuration/input.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ConfigurationGraphics</class>
+   <extends>QWidget</extends>
+   <header>configuration/graphics.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ConfigurationUi</class>
+   <extends>QWidget</extends>
+   <header>configuration/ui.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>ConfigurationDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>220</x>
+     <y>380</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>220</x>
+     <y>200</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>ConfigurationDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>220</x>
+     <y>380</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>220</x>
+     <y>200</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
