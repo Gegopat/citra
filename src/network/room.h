@@ -99,9 +99,7 @@ public:
     /// Gets the banned IPs of the room.
     BanList GetBanList() const;
 
-    /**
-     * Destroys the socket
-     */
+    /// Destroys the socket
     void Destroy();
 
 private:

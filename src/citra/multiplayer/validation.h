@@ -17,12 +17,15 @@ public:
     const QValidator* GetRoomName() const {
         return &room_name;
     }
+
     const QValidator* GetNickname() const {
         return &nickname;
     }
+
     const QValidator* GetIP() const {
         return &ip;
     }
+
     const QValidator* GetPort() const {
         return &port;
     }
