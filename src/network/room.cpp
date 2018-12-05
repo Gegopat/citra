@@ -450,11 +450,15 @@ bool Room::RoomImpl::IsValidConsoleID(u64 console_id) const {
 }
 
 bool Room::RoomImpl::HasModPermission(const ENetPeer* client) const {
-    // A member has mod permissions if it's the host
-    char ip_raw[256];
-    enet_address_get_host_ip(&client->address, ip_raw, sizeof(ip_raw) - 1);
-    std::string ip{ip_raw};
-    return ip == "127.0.0.1";
+    if (room_information.creator.empty())
+        return false; // This room doesn't support moderation
+    std::lock_guard lock{member_mutex};
+    const auto sending_member{
+        std::find_if(members.begin(), members.end(),
+                     [client](const auto& member) { return member.peer == client; })};
+    if (sending_member == members.end())
+        return false;
+    return sending_member->nickname == room_information.creator;
 }
 
 void Room::RoomImpl::SendNameCollision(ENetPeer* client) {
