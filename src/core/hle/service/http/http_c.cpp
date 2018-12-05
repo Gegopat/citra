@@ -84,20 +84,11 @@ void Context::Send() {
         {RequestMethod::PostEmpty, "POST"},
         {RequestMethod::PutEmpty, "PUT"},
     }};
-    static const std::unordered_map<RequestMethod, bool> method_body_map{{
-        {RequestMethod::Get, false},
-        {RequestMethod::Post, true},
-        {RequestMethod::Head, false},
-        {RequestMethod::Put, true},
-        {RequestMethod::Delete, true},
-        {RequestMethod::PostEmpty, false},
-        {RequestMethod::PutEmpty, false},
-    }};
     req.method = method_string_map.find(method)->second;
     req.path = '/' + path;
     for (const auto& header : headers)
         req.headers.emplace(header.first, header.second);
-    if (method_body_map.find(method)->second) {
+    if (!post_data.empty()) {
         bool first{true};
         for (const auto& item : post_data) {
             switch (item.type) {
@@ -395,6 +386,16 @@ void HTTP_C::CreateContext(Kernel::HLERequestContext& ctx) {
     context.socket_buffer_size = 0;
     context.handle = context_counter;
     context.session_id = session_data->session_id;
+    httplib::Params params;
+    httplib::detail::parse_query_text(parsed_url.m_Query, params);
+    using PostData = Context::PostData;
+    for (const auto& p : params) {
+        PostData post_data;
+        post_data.type = PostData::Type::Ascii;
+        post_data.ascii.name = p.first;
+        post_data.ascii.value = p.second;
+        context.post_data.push_back(post_data);
+    }
     ++session_data->num_http_contexts;
     auto rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
