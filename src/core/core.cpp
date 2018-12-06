@@ -174,7 +174,8 @@ System::ResultStatus System::Init(Frontend& frontend, u32 system_mode) {
     Service::CFG::InstallInterfaces(*this);
     kernel->MemoryInit(system_mode);
     cpu_core = std::make_unique<Cpu>(*this);
-    dsp_core = std::make_unique<AudioCore::DspHle>(*this);
+    dsp_core = Settings::values.enable_dsp_lle ? std::make_unique<AudioCore::DspLle>(*this)
+                                               : std::make_unique<AudioCore::DspHle>(*this);
     dsp_core->EnableStretching(Settings::values.enable_audio_stretching);
 #ifdef ENABLE_SCRIPTING
     rpc_server = std::make_unique<RPC::RPCServer>(*this);
