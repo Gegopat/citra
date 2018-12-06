@@ -58,34 +58,19 @@ enum class ProgramListText {
 };
 
 struct Values {
-    QByteArray geometry;
-    QByteArray state;
-    QByteArray screens_geometry;
-    QByteArray programlist_header_state;
-    QByteArray configuration_geometry;
+    QByteArray geometry, state, screens_geometry, programlist_header_state, configuration_geometry;
 
-    bool fullscreen;
-    bool show_filter_bar;
-    bool show_status_bar;
+    bool fullscreen, show_filter_bar, show_status_bar, confirm_close, enable_discord_rpc;
 
-    QString amiibo_dir;
-    QString programs_dir;
-    QString movies_dir;
-    QString ram_dumps_dir;
-    QString screenshots_dir;
-    QString seeds_dir;
+    QString amiibo_dir, programs_dir, movies_dir, ram_dumps_dir, screenshots_dir, seeds_dir;
 
     // Program list
     ProgramListIconSize program_list_icon_size;
-    ProgramListText program_list_row_1;
-    ProgramListText program_list_row_2;
+    ProgramListText program_list_row_1, program_list_row_2;
     bool program_list_hide_no_icon;
 
     QList<UISettings::AppDir> program_dirs;
     QStringList recent_files;
-
-    bool confirm_close;
-    bool enable_discord_rpc;
 
     QString theme;
 
@@ -93,15 +78,9 @@ struct Values {
     std::vector<Shortcut> shortcuts;
 
     // Multiplayer settings
-    QString nickname;
-    QString ip;
-    QString port;
-    QString room_nickname;
-    QString room_name;
+    QString direct_connect_nickname, lobby_nickname, room_nickname, ip, room_name, room_description;
+    uint port, room_port, host_type;
     quint32 max_members;
-    QString room_port;
-    uint host_type;
-    QString room_description;
     std::vector<std::string> ban_list;
 
     // Logging

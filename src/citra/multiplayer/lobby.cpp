@@ -46,7 +46,7 @@ Lobby::Lobby(QWidget* parent, std::shared_ptr<Core::AnnounceMultiplayerSession> 
     ui->room_list->setExpandsOnDoubleClick(false);
     ui->room_list->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->nickname->setValidator(validation.GetNickname());
-    ui->nickname->setText(UISettings::values.nickname);
+    ui->nickname->setText(UISettings::values.lobby_nickname);
     // UI Buttons
     connect(ui->refresh_list, &QPushButton::released, this, &Lobby::RefreshLobby);
     connect(ui->hide_full, &QCheckBox::stateChanged, proxy, &LobbyFilterProxyModel::SetFilterFull);
@@ -111,9 +111,9 @@ void Lobby::OnJoinRoom(const QModelIndex& source) {
     watcher->setFuture(f);
     // TODO: disable widgets and display a connecting while we wait
     // Save settings
-    UISettings::values.nickname = ui->nickname->text();
+    UISettings::values.lobby_nickname = ui->nickname->text();
     UISettings::values.ip = proxy->data(connection_index, LobbyItemHost::HostIPRole).toString();
-    UISettings::values.port = proxy->data(connection_index, LobbyItemHost::HostPortRole).toString();
+    UISettings::values.port = proxy->data(connection_index, LobbyItemHost::HostPortRole).toUInt();
 }
 
 void Lobby::ResetModel() {

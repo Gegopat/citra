@@ -382,12 +382,14 @@ void Config::Load() {
     UISettings::values.show_status_bar = ReadSetting("showStatusBar", true).toBool();
     UISettings::values.show_console = ReadSetting("showConsole", false).toBool();
     settings->beginGroup("Multiplayer");
-    UISettings::values.nickname = ReadSetting("nickname", "").toString();
-    UISettings::values.ip = ReadSetting("ip", "").toString();
-    UISettings::values.port = ReadSetting("port", Network::DefaultRoomPort).toString();
+    UISettings::values.direct_connect_nickname =
+        ReadSetting("direct_connect_nickname", "").toString();
+    UISettings::values.lobby_nickname = ReadSetting("lobby_nickname", "").toString();
     UISettings::values.room_nickname = ReadSetting("room_nickname", "").toString();
+    UISettings::values.ip = ReadSetting("ip", "").toString();
+    UISettings::values.port = ReadSetting("port", Network::DefaultRoomPort).toUInt();
     UISettings::values.room_name = ReadSetting("room_name", "").toString();
-    UISettings::values.room_port = ReadSetting("room_port", Network::DefaultRoomPort).toString();
+    UISettings::values.room_port = ReadSetting("room_port", Network::DefaultRoomPort).toUInt();
     bool ok{};
     UISettings::values.host_type = ReadSetting("host_type", 0).toUInt(&ok);
     if (!ok)
@@ -579,10 +581,11 @@ void Config::Save() {
     WriteSetting("showStatusBar", UISettings::values.show_status_bar, true);
     WriteSetting("showConsole", UISettings::values.show_console, false);
     settings->beginGroup("Multiplayer");
-    WriteSetting("nickname", UISettings::values.nickname, "");
+    WriteSetting("direct_connect_nickname", UISettings::values.direct_connect_nickname, "");
+    WriteSetting("lobby_nickname", UISettings::values.lobby_nickname, "");
+    WriteSetting("room_nickname", UISettings::values.room_nickname, "");
     WriteSetting("ip", UISettings::values.ip, "");
     WriteSetting("port", UISettings::values.port, Network::DefaultRoomPort);
-    WriteSetting("room_nickname", UISettings::values.room_nickname, "");
     WriteSetting("room_name", UISettings::values.room_name, "");
     WriteSetting("room_port", UISettings::values.room_port, Network::DefaultRoomPort);
     WriteSetting("host_type", UISettings::values.host_type, 0);

@@ -15,7 +15,6 @@ const ConnectionError ROOMNAME_NOT_VALID{
 const ConnectionError NICKNAME_NOT_VALID_SERVER{
     "Nickname is already in use or not valid. Please choose another."};
 const ConnectionError IP_ADDRESS_NOT_VALID{"IP isn't a valid IPv4 address."};
-const ConnectionError PORT_NOT_VALID{"Port must be a number between 0 to 65535."};
 const ConnectionError NO_INTERNET{
     "Unable to find an internet connection. Check your internet settings."};
 const ConnectionError UNABLE_TO_CONNECT{

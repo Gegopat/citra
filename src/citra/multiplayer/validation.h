@@ -9,8 +9,7 @@
 
 class Validation {
 public:
-    Validation()
-        : room_name{room_name_regex}, nickname{nickname_regex}, ip{ip_regex}, port{0, 65535} {}
+    Validation() : room_name{room_name_regex}, nickname{nickname_regex}, ip{ip_regex} {}
 
     ~Validation() = default;
 
@@ -24,10 +23,6 @@ public:
 
     const QValidator* GetIP() const {
         return &ip;
-    }
-
-    const QValidator* GetPort() const {
-        return &port;
     }
 
 private:
@@ -45,7 +40,4 @@ private:
         "(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|"
         "2[0-4][0-9]|25[0-5])")};
     QRegExpValidator ip;
-
-    /// Port must be between 0 and 65535
-    QIntValidator port;
 };

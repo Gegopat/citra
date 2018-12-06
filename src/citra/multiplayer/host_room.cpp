@@ -32,11 +32,9 @@ HostRoomWindow::HostRoomWindow(QWidget* parent,
       ui{std::make_unique<Ui::HostRoom>()}, announce_multiplayer_session{session}, system{system} {
     ui->setupUi(this);
     ui->max_members->setMaximum(Network::MaxConcurrentConnections);
-    // Set up validation for all of the fields
+    // Set up validation for the text fields
     ui->room_name->setValidator(validation.GetRoomName());
     ui->nickname->setValidator(validation.GetNickname());
-    ui->port->setValidator(validation.GetPort());
-    ui->port->setPlaceholderText(QString::number(Network::DefaultRoomPort));
     // Disable editing replies text
     ui->tableReplies->setEditTriggers(QAbstractItemView::NoEditTriggers);
     // Connect all the widgets to the appropriate events
@@ -46,7 +44,7 @@ HostRoomWindow::HostRoomWindow(QWidget* parent,
     // Restore the settings
     ui->nickname->setText(UISettings::values.room_nickname);
     ui->room_name->setText(UISettings::values.room_name);
-    ui->port->setText(UISettings::values.room_port);
+    ui->port->setValue(UISettings::values.room_port);
     ui->max_members->setValue(UISettings::values.max_members);
     int index{static_cast<int>(UISettings::values.host_type)};
     if (index < ui->host_type->count())
@@ -65,10 +63,6 @@ void HostRoomWindow::Host() {
         NetworkMessage::ShowError(NetworkMessage::ROOMNAME_NOT_VALID);
         return;
     }
-    if (!ui->port->hasAcceptableInput()) {
-        NetworkMessage::ShowError(NetworkMessage::PORT_NOT_VALID);
-        return;
-    }
     auto& member{system.RoomMember()};
     if (member.GetState() == Network::RoomMember::State::Joining)
         return;
@@ -80,7 +74,7 @@ void HostRoomWindow::Host() {
         }
     }
     ui->host->setDisabled(true);
-    auto port{ui->port->isModified() ? ui->port->text().toInt() : Network::DefaultRoomPort};
+    auto port{ui->port->value()};
     auto password{ui->password->text().toStdString()};
     Network::Room::BanList ban_list;
     if (ui->load_ban_list->isChecked())
@@ -101,9 +95,7 @@ void HostRoomWindow::Host() {
     UISettings::values.room_name = ui->room_name->text();
     UISettings::values.max_members = ui->max_members->value();
     UISettings::values.host_type = ui->host_type->currentIndex();
-    UISettings::values.room_port = (ui->port->isModified() && !ui->port->text().isEmpty())
-                                       ? ui->port->text()
-                                       : QString::number(Network::DefaultRoomPort);
+    UISettings::values.room_port = ui->port->value();
     UISettings::values.room_description = ui->room_description->toPlainText();
     OnConnection();
 }

@@ -75,15 +75,9 @@
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="port">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Port number the host is listening on&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="maxLength">
-               <number>5</number>
-              </property>
-              <property name="placeholderText">
-               <string>24872</string>
+             <widget class="QSpinBox" name="port">
+              <property name="maximum">
+               <number>65535</number>
               </property>
              </widget>
             </item>
