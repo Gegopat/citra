@@ -46,9 +46,10 @@ void DSP_DSP::RecvDataIsReady(Kernel::HLERequestContext& ctx) {
 void DSP_DSP::SetSemaphore(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x07, 1, 0};
     const u16 semaphore_value{rp.Pop<u16>()};
+    system.DSP().SetSemaphore(semaphore_value);
     auto rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
-    LOG_WARNING(Service_DSP, "(stubbed) semaphore_value={:04X}", semaphore_value);
+    LOG_DEBUG(Service_DSP, "called, semaphore_value={:04X}", semaphore_value);
 }
 
 void DSP_DSP::ConvertProcessAddressFromDspDram(Kernel::HLERequestContext& ctx) {
@@ -67,7 +68,7 @@ void DSP_DSP::WriteProcessPipe(Kernel::HLERequestContext& ctx) {
     const u32 channel{rp.Pop<u32>()};
     const u32 size{rp.Pop<u32>()};
     auto buffer{rp.PopStaticBuffer()};
-    const DspPipe pipe{static_cast<DspPipe>(channel)};
+    const auto pipe{static_cast<DspPipe>(channel)};
     // This behaviour was confirmed by RE.
     // The likely reason for this is that games tend to pass in garbage at these bytes
     // because they read random bytes off the stack.
