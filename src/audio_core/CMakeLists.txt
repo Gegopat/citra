@@ -14,6 +14,8 @@ add_library(audio_core STATIC
     hle/shared_memory.h
     hle/source.cpp
     hle/source.h
+    lle/lle.cpp
+    lle/lle.h
     interpolate.cpp
     interpolate.h
     sink.cpp
