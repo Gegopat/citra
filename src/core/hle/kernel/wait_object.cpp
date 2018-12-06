@@ -74,10 +74,17 @@ void WaitObject::WakeupAllWaitingThreads() {
         thread->wait_objects.clear();
         thread->ResumeFromWait();
     }
+
+    if (hle_notifier)
+        hle_notifier();
 }
 
 const std::vector<SharedPtr<Thread>>& WaitObject::GetWaitingThreads() const {
     return waiting_threads;
+}
+
+void WaitObject::SetHLENotifier(std::function<void()> callback) {
+    hle_notifier = callback;
 }
 
 } // namespace Kernel

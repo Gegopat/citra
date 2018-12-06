@@ -56,6 +56,8 @@ private:
     /// Checks if we're trying to register more than 6 events
     bool HasTooManyEventsRegistered() const;
 
+    u16 preset_semaphore{};
+
     Kernel::SharedPtr<Kernel::Event> semaphore_event;
     Kernel::SharedPtr<Kernel::Event> interrupt_zero;
     Kernel::SharedPtr<Kernel::Event> interrupt_one; // Currently unknown purpose

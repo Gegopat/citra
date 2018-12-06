@@ -48,7 +48,7 @@ void DSP_DSP::SetSemaphore(Kernel::HLERequestContext& ctx) {
     system.DSP().SetSemaphore(semaphore_value);
     auto rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
-    LOG_DEBUG(Service_DSP, "called semaphore_value={:04X}", semaphore_value);
+    LOG_DEBUG(Service_DSP, "semaphore_value={:04X}", semaphore_value);
 }
 
 void DSP_DSP::ConvertProcessAddressFromDspDram(Kernel::HLERequestContext& ctx) {
@@ -158,8 +158,8 @@ void DSP_DSP::LoadComponent(Kernel::HLERequestContext& ctx) {
     std::vector<u8> component_data(size);
     buffer.Read(component_data.data(), 0, size);
     system.DSP().LoadComponent(component_data);
-    LOG_DEBUG(Service_DSP, "called size=0x{:X}, prog_mask=0x{:08X}, data_mask=0x{:08X}", size,
-              prog_mask, data_mask);
+    LOG_DEBUG(Service_DSP, "size=0x{:X}, prog_mask=0x{:08X}, data_mask=0x{:08X}", size, prog_mask,
+              data_mask);
 }
 
 void DSP_DSP::UnloadComponent(Kernel::HLERequestContext& ctx) {
@@ -231,10 +231,10 @@ void DSP_DSP::GetSemaphoreEventHandle(Kernel::HLERequestContext& ctx) {
 
 void DSP_DSP::SetSemaphoreMask(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x17, 1, 0};
-    const u32 mask{rp.Pop<u32>()};
+    preset_semaphore = rp.Pop<u16>();
     auto rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
-    LOG_WARNING(Service_DSP, "(stubbed) mask=0x{:08X}", mask);
+    LOG_DEBUG(Service_DSP, "preset_semaphore=0x{:04X}", preset_semaphore);
 }
 
 void DSP_DSP::GetHeadphoneStatus(Kernel::HLERequestContext& ctx) {
@@ -338,6 +338,9 @@ DSP_DSP::DSP_DSP(Core::System& system) : ServiceFramework{"dsp::DSP"}, system{sy
     RegisterHandlers(functions);
     semaphore_event =
         system.Kernel().CreateEvent(Kernel::ResetType::OneShot, "DSP_DSP::semaphore_event");
+
+    semaphore_event->SetHLENotifier(
+        [this]() { this->system.DSP().SetSemaphore(preset_semaphore); });
 }
 
 DSP_DSP::~DSP_DSP() = default;
