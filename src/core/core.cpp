@@ -141,6 +141,7 @@ System::ResultStatus System::Load(Frontend& frontend, const std::string& filepat
     cheat_engine = std::make_unique<Cheats::CheatEngine>(*this);
     status = ResultStatus::Success;
     m_filepath = filepath;
+    Settings::Apply(*this);
     return status;
 }
 
