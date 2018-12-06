@@ -76,8 +76,9 @@ void LogSettings() {
             using_lle_modules = true;
             break;
         }
-    LogSetting("LLE_UsingLLEModules", using_lle_modules);
-    LogSetting("LLE_UseLLEApplets", values.use_lle_applets);
+    LogSetting("Lle_UsingLlModules", using_lle_modules);
+    LogSetting("Lle_UseLleApplets", values.use_lle_applets);
+    LogSetting("Lle_UseLleDsp", values.use_lle_dsp);
     LogSetting("Audio_EnableAudioStretching", values.enable_audio_stretching);
     LogSetting("Audio_OutputDevice", values.output_device);
     using namespace Service::CAM;

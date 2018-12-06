@@ -6,6 +6,7 @@
 #include <utility>
 #include <enet/enet.h>
 #include "audio_core/hle/hle.h"
+#include "audio_core/lle/lle.h"
 #include "common/logging/log.h"
 #include "core/cheats/cheats.h"
 #include "core/core.h"
@@ -174,8 +175,8 @@ System::ResultStatus System::Init(Frontend& frontend, u32 system_mode) {
     Service::CFG::InstallInterfaces(*this);
     kernel->MemoryInit(system_mode);
     cpu_core = std::make_unique<Cpu>(*this);
-    dsp_core = Settings::values.enable_dsp_lle ? std::make_unique<AudioCore::DspLle>(*this)
-                                               : std::make_unique<AudioCore::DspHle>(*this);
+    dsp_core = Settings::values.use_lle_dsp ? std::make_unique<AudioCore::DspLle>(*this)
+                                            : std::make_unique<AudioCore::DspHle>(*this);
     dsp_core->EnableStretching(Settings::values.enable_audio_stretching);
 #ifdef ENABLE_SCRIPTING
     rpc_server = std::make_unique<RPC::RPCServer>(*this);

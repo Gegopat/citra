@@ -23,6 +23,13 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QCheckBox" name="use_lle_dsp">
+       <property name="text">
+        <string>Use LLE DSP</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
@@ -44,7 +51,7 @@
              <x>0</x>
              <y>0</y>
              <width>372</width>
-             <height>192</height>
+             <height>177</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_4">
