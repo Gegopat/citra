@@ -39,7 +39,7 @@ void DSP_DSP::RecvDataIsReady(Kernel::HLERequestContext& ctx) {
     ASSERT_MSG(register_number == 0, "Unknown register_number {}", register_number);
     auto rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
-    rb.Push(true); /// 0 = not ready, 1 = ready to read
+    rb.Push(system.DSP().RecvDataIsReady(register_number));
     LOG_DEBUG(Service_DSP, "register_number={}", register_number);
 }
 
