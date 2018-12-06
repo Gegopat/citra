@@ -76,7 +76,7 @@ void ConfigurationHotkeys::Configure(QModelIndex index) {
     if (return_code == QDialog::Rejected || key_sequence.isEmpty())
         return;
     if (IsUsedKey(key_sequence) &&
-        key_sequence != QKeySequence(previous_key.toString(), QKeySequence::NativeText)) {
+        key_sequence != QKeySequence{previous_key.toString(), QKeySequence::NativeText}) {
         model->setData(index, previous_key);
         QMessageBox::critical(this, "Error in inputted key",
                               "You're using a key that's already bound.");
@@ -102,10 +102,9 @@ void ConfigurationHotkeys::ApplyConfiguration(HotkeyRegistry& registry) {
                     for (auto it2{key_iterator->second.begin()}; it2 != key_iterator->second.end();
                          ++it2)
                         if (it2->first == action->text())
-                            it2->second.keyseq = QKeySequence(keyseq->text());
+                            it2->second.keyseq = QKeySequence{keyseq->text()};
             }
         }
     }
     registry.SaveHotkeys();
-    Settings::Apply();
 }

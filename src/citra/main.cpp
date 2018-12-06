@@ -213,12 +213,16 @@ void GMainWindow::InitializeHotkeys() {
         hotkey_registry.GetKeySequence("Main Window", "Toggle Status Bar"));
     ui.action_Show_Status_Bar->setShortcutContext(
         hotkey_registry.GetShortcutContext("Main Window", "Toggle Status Bar"));
+    ui.action_Sleep_Mode->setShortcut(
+        hotkey_registry.GetKeySequence("Main Window", "Toggle Sleep Mode"));
+    ui.action_Sleep_Mode->setShortcutContext(
+        hotkey_registry.GetShortcutContext("Main Window", "Toggle Sleep Mode"));
     connect(hotkey_registry.GetHotkey("Main Window", "Load File", this), &QShortcut::activated,
             this, &GMainWindow::OnMenuLoadFile);
     connect(hotkey_registry.GetHotkey("Main Window", "Continue/Pause Emulation", this),
             &QShortcut::activated, this, [&] {
                 if (system.IsPoweredOn())
-                    if (emu_thread->IsRunning())
+                    if (system.IsRunning())
                         OnPauseProgram();
                     else
                         OnStartProgram();
@@ -229,13 +233,13 @@ void GMainWindow::InitializeHotkeys() {
                     return;
                 BootProgram(system.GetFilePath());
             });
-    connect(hotkey_registry.GetHotkey("Main Window", "Swap Screens", render_window),
+    connect(hotkey_registry.GetHotkey("Main Window", "Swap Screens", screens),
             &QShortcut::activated, ui.action_Screen_Layout_Swap_Screens, &QAction::trigger);
-    connect(hotkey_registry.GetHotkey("Main Window", "Toggle Screen Layout", render_window),
+    connect(hotkey_registry.GetHotkey("Main Window", "Toggle Screen Layout", screens),
             &QShortcut::activated, this, &GMainWindow::ToggleScreenLayout);
-    connect(hotkey_registry.GetHotkey("Main Window", "Fullscreen", render_window),
-            &QShortcut::activated, ui.action_Fullscreen, &QAction::trigger);
-    connect(hotkey_registry.GetHotkey("Main Window", "Fullscreen", render_window),
+    connect(hotkey_registry.GetHotkey("Main Window", "Fullscreen", screens), &QShortcut::activated,
+            ui.action_Fullscreen, &QAction::trigger);
+    connect(hotkey_registry.GetHotkey("Main Window", "Fullscreen", screens),
             &QShortcut::activatedAmbiguously, ui.action_Fullscreen, &QAction::trigger);
     connect(hotkey_registry.GetHotkey("Main Window", "Exit Fullscreen", this),
             &QShortcut::activated, this, [&] {
@@ -280,11 +284,9 @@ void GMainWindow::InitializeHotkeys() {
             });
     connect(hotkey_registry.GetHotkey("Main Window", "Capture Screenshot", this),
             &QShortcut::activated, this, [&] {
-                if (emu_thread->IsRunning())
+                if (system.IsPoweredOn())
                     OnCaptureScreenshot();
             });
-    connect(hotkey_registry.GetHotkey("Main Window", "Toggle Sleep Mode", this),
-            &QShortcut::activated, ui.action_Sleep_Mode, &QAction::trigger);
     connect(hotkey_registry.GetHotkey("Main Window", "Change CPU Ticks", this),
             &QShortcut::activated, this, [&] {
                 auto str{QInputDialog::getText(this, "Change CPU Ticks", "Ticks:")};
@@ -381,7 +383,6 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Dump_RAM, &QAction::triggered, this, &GMainWindow::OnDumpRAM);
 
     // View
-    ui.action_Show_Filter_Bar->setShortcut(QKeySequence("CTRL+F"));
     connect(ui.action_Show_Filter_Bar, &QAction::triggered, this, &GMainWindow::OnToggleFilterBar);
     connect(ui.action_Show_Status_Bar, &QAction::triggered, statusBar(), &QStatusBar::setVisible);
     ui.action_Fullscreen->setShortcut(
@@ -622,8 +623,10 @@ void GMainWindow::ShutdownProgram() {
     // Disable status bar updates
     status_bar_update_timer.stop();
     message_label->setVisible(false);
-    perf_stats_label->setVisible(false);
-    touch_label->setVisible(false);
+    emu_speed_label->setVisible(false);
+    fps_label->setVisible(false);
+    emu_frametime_label->setVisible(false);
+    touch_screen_pos_label->setVisible(false);
 
     short_title.clear();
     UpdateTitle();

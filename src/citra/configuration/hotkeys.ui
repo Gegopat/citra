@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ConfigureHotkeys</class>
- <widget class="QWidget" name="ConfigureHotkeys">
+ <class>ConfigurationHotkeys</class>
+ <widget class="QWidget" name="ConfigurationHotkeys">
   <property name="geometry">
    <rect>
     <x>0</x>

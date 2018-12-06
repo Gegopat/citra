@@ -15,7 +15,7 @@ ConfigurationDialog::ConfigurationDialog(QWidget* parent, HotkeyRegistry& hotkey
     : QDialog{parent}, ui{std::make_unique<Ui::ConfigurationDialog>()}, system{system},
       hotkey_registry{hotkey_registry} {
     ui->setupUi(this);
-    ui->hotkeysTab->Populate(registry);
+    ui->hotkeysTab->Populate(hotkey_registry);
     PopulateSelectionList();
     connect(ui->generalTab, &ConfigurationGeneral::RestoreDefaultsRequested, [this] {
         restore_defaults_requested = true;

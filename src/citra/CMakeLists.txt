@@ -109,7 +109,6 @@ set(UIS
     configuration/system.ui
     configuration/ui.ui
     aboutdialog.ui
-    hotkeys.ui
     cheats.ui
     main.ui
     multiplayer/chat_room.ui

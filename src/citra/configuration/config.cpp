@@ -3,7 +3,6 @@
 // Refer to the license.txt file included.
 
 #include <array>
-#include <QKeySequence>
 #include <QSettings>
 #include "citra/configuration/config.h"
 #include "citra/ui_settings.h"
@@ -327,9 +326,7 @@ void Config::Load() {
     settings->endGroup();
     settings->beginGroup("Shortcuts");
     const std::array<UISettings::Shortcut, 21> default_hotkeys{{
-        {"Load File", "Main Window",
-         UISettings::ContextualShortcut{QKeySequence{QKeySequence::Open}.toString(),
-                                        Qt::WindowShortcut}},
+        {"Load File", "Main Window", UISettings::ContextualShortcut{"CTRL+O", Qt::WindowShortcut}},
         {"Exit Citra", "Main Window", UISettings::ContextualShortcut{"Ctrl+Q", Qt::WindowShortcut}},
         {"Continue/Pause Emulation", "Main Window",
          UISettings::ContextualShortcut{"F4", Qt::WindowShortcut}},
@@ -344,8 +341,7 @@ void Config::Load() {
         {"Toggle Status Bar", "Main Window",
          UISettings::ContextualShortcut{"Ctrl+S", Qt::WindowShortcut}},
         {"Fullscreen", "Main Window",
-         UISettings::ContextualShortcut{QKeySequence{QKeySequence::FullScreen}.toString(),
-                                        Qt::WindowShortcut}},
+         UISettings::ContextualShortcut{"CTRL+F11", Qt::WindowShortcut}},
         {"Exit Fullscreen", "Main Window",
          UISettings::ContextualShortcut{"Escape", Qt::WindowShortcut}},
         {"Toggle Speed Limit", "Main Window",
@@ -354,10 +350,6 @@ void Config::Load() {
          UISettings::ContextualShortcut{"+", Qt::ApplicationShortcut}},
         {"Decrease Speed Limit", "Main Window",
          UISettings::ContextualShortcut{"-", Qt::ApplicationShortcut}},
-        {"Toggle Sleep Mode", "Main Window",
-         UISettings::ContextualShortcut{"F2", Qt::ApplicationShortcut}},
-        {"Change CPU Ticks", "Main Window",
-         UISettings::ContextualShortcut{"CTRL+T", Qt::ApplicationShortcut}},
         {"Advance Frame", "Main Window",
          UISettings::ContextualShortcut{"\\", Qt::ApplicationShortcut}},
         {"Toggle Frame Advancing", "Main Window",
@@ -368,6 +360,10 @@ void Config::Load() {
          UISettings::ContextualShortcut{"F3", Qt::ApplicationShortcut}},
         {"Capture Screenshot", "Main Window",
          UISettings::ContextualShortcut{"Ctrl+P", Qt::ApplicationShortcut}},
+        {"Toggle Sleep Mode", "Main Window",
+         UISettings::ContextualShortcut{"F7", Qt::ApplicationShortcut}},
+        {"Change CPU Ticks", "Main Window",
+         UISettings::ContextualShortcut{"CTRL+T", Qt::ApplicationShortcut}},
     }};
     for (int i{}; i < default_hotkeys.size(); i++) {
         settings->beginGroup(default_hotkeys[i].group);
@@ -391,7 +387,7 @@ void Config::Load() {
     UISettings::values.port = ReadSetting("port", Network::DefaultRoomPort).toString();
     UISettings::values.room_nickname = ReadSetting("room_nickname", "").toString();
     UISettings::values.room_name = ReadSetting("room_name", "").toString();
-    UISettings::values.room_port = ReadSetting("room_port", "24872").toString();
+    UISettings::values.room_port = ReadSetting("room_port", Network::DefaultRoomPort).toString();
     bool ok{};
     UISettings::values.host_type = ReadSetting("host_type", 0).toUInt(&ok);
     if (!ok)
@@ -413,15 +409,15 @@ void Config::LogErrors() {
 
 void Config::Save() {
     settings->beginGroup("ControlPanel");
-    WriteSetting("volume", Settings::values.volume);
-    WriteSetting("headphones_connected", Settings::values.headphones_connected);
-    WriteSetting("factor_3d", Settings::values.factor_3d);
-    WriteSetting("p_adapter_connected", Settings::values.p_adapter_connected);
-    WriteSetting("p_battery_charging", Settings::values.p_battery_charging);
-    WriteSetting("p_battery_level", Settings::values.p_battery_level);
-    WriteSetting("n_wifi_status", Settings::values.n_wifi_status);
-    WriteSetting("n_wifi_link_level", Settings::values.n_wifi_link_level);
-    WriteSetting("n_state", Settings::values.n_state);
+    WriteSetting("volume", Settings::values.volume, 1);
+    WriteSetting("headphones_connected", Settings::values.headphones_connected, false);
+    WriteSetting("factor_3d", Settings::values.factor_3d, 0);
+    WriteSetting("p_adapter_connected", Settings::values.p_adapter_connected, true);
+    WriteSetting("p_battery_charging", Settings::values.p_battery_charging, true);
+    WriteSetting("p_battery_level", Settings::values.p_battery_level, 5);
+    WriteSetting("n_wifi_status", Settings::values.n_wifi_status, 0);
+    WriteSetting("n_wifi_link_level", Settings::values.n_wifi_link_level, 0);
+    WriteSetting("n_state", Settings::values.n_state, 0);
     settings->endGroup();
     settings->beginGroup("Controls");
     settings->beginWriteArray("profiles");
@@ -614,11 +610,10 @@ QVariant Config::ReadSetting(const QString& name) {
 
 QVariant Config::ReadSetting(const QString& name, const QVariant& default_value) {
     QVariant result;
-    if (settings->value(name + "/default", false).toBool()) {
+    if (settings->value(name + "/default", false).toBool())
         result = default_value;
-    } else {
+    else
         result = settings->value(name, default_value);
-    }
     return result;
 }
 

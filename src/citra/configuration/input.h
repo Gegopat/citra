@@ -74,9 +74,6 @@ private:
                      std::function<void(const Common::ParamPackage&)> new_input_setter,
                      InputCommon::Polling::DeviceType type);
 
-    /// Generates list of all used keys
-    QList<QKeySequence> GetUsedKeyboardKeys();
-
     std::unique_ptr<Ui::ConfigurationInput> ui;
     std::unique_ptr<QTimer> timeout_timer;
     std::unique_ptr<QTimer> poll_timer;

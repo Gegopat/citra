@@ -34,7 +34,7 @@ static QString getKeyName(int key_code) {
     case Qt::Key_Meta:
         return "";
     default:
-        return QKeySequence(key_code).toString();
+        return QKeySequence{key_code}.toString();
     }
 }
 
@@ -239,21 +239,20 @@ ConfigurationInput::ConfigurationInput(QWidget* parent)
     LoadConfiguration();
 }
 
-void ConfigureInput::EmitInputKeysChanged() {
+void ConfigurationInput::EmitInputKeysChanged() {
     emit InputKeysChanged(GetUsedKeyboardKeys());
 }
 
-void ConfigureInput::OnHotkeysChanged(QList<QKeySequence> new_key_list) {
+void ConfigurationInput::OnHotkeysChanged(QList<QKeySequence> new_key_list) {
     hotkey_list = new_key_list;
 }
 
-QList<QKeySequence> ConfigureInput::GetUsedKeyboardKeys() {
+QList<QKeySequence> ConfigurationInput::GetUsedKeyboardKeys() {
     QList<QKeySequence> list;
-    for (int button = 0; button < Settings::NativeButton::NumButtons; button++) {
-        auto button_param = buttons_param[button];
-        if (button_param.Get("engine", "") == "keyboard") {
-            list << QKeySequence(button_param.Get("code", 0));
-        }
+    for (int button{}; button < Settings::NativeButton::NumButtons; button++) {
+        auto button_param{buttons_param[button]};
+        if (button_param.Get("engine", "") == "keyboard")
+            list << QKeySequence{button_param.Get("code", 0)};
     }
     return list;
 }
@@ -357,8 +356,8 @@ void ConfigurationInput::keyPressEvent(QKeyEvent* event) {
     if (event->key() != Qt::Key_Escape && event->key() != previous_key_code) {
         if (want_keyboard_keys) {
             // Check if key is already bound
-            if (hotkey_list.contains(QKeySequence(event->key())) ||
-                GetUsedKeyboardKeys().contains(QKeySequence(event->key()))) {
+            if (hotkey_list.contains(QKeySequence{event->key()}) ||
+                GetUsedKeyboardKeys().contains(QKeySequence{event->key()})) {
                 SetPollingResult({}, true);
                 QMessageBox::critical(this, "Error!", "You're using a key that's already bound.");
                 return;

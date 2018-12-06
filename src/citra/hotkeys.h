@@ -12,7 +12,7 @@ class QShortcut;
 
 class HotkeyRegistry final {
 public:
-    friend class ConfigureHotkeys;
+    friend class ConfigurationHotkeys;
 
     explicit HotkeyRegistry();
     ~HotkeyRegistry();

@@ -23,7 +23,8 @@ public:
     explicit ConfigurationHotkeys(QWidget* parent = nullptr);
     ~ConfigurationHotkeys();
 
-    void ApplyConfiguration(HotkeyRegistry& registry) : void EmitHotkeysChanged();
+    void ApplyConfiguration(HotkeyRegistry& registry);
+    void EmitHotkeysChanged();
 
     /**
      * Populates the hotkey list widget using data from the provided registry.
