@@ -13,6 +13,8 @@ public:
     explicit DspLle(Core::System& system);
     ~DspLle();
 
+    u16 RecvData(u32 register_number) override;
+
 private:
     struct Impl;
     friend struct Impl;
