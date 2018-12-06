@@ -54,7 +54,9 @@ void ShowError(const ConnectionError& e) {
     QMessageBox::critical(nullptr, "Error", QString::fromStdString(e.GetString()));
 }
 
-bool WarnCloseRoom() {
+bool WarnCloseRoom(bool confirm) {
+    if (!confirm)
+        return true;
     return WarnMessage("Leave Room",
                        "You're about to close the room. Any network connections will be closed.");
 }

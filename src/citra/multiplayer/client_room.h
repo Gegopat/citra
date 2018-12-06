@@ -17,6 +17,7 @@ public:
     explicit ClientRoomWindow(QWidget* parent, Core::System& system);
     ~ClientRoomWindow();
 
+    void Disconnect(bool confirm = true);
     void SetModPerms(bool is_mod);
 
     Core::System& system;
@@ -31,7 +32,6 @@ signals:
     void ShowNotification();
 
 private:
-    void Disconnect();
     void UpdateView();
 
     QStandardItemModel* member_list;

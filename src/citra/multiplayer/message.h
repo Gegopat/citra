@@ -49,7 +49,7 @@ void ShowError(const ConnectionError& e);
  * Show a standard QMessageBox with a warning message about leaving the room
  * return true if the user wants to close the network connection
  */
-bool WarnCloseRoom();
+bool WarnCloseRoom(bool confirm = true);
 
 /**
  * Show a standard QMessageBox with a warning message about disconnecting from the room

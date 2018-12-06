@@ -96,6 +96,8 @@ void MultiplayerState::OnNetworkError(const Network::RoomMember::Error& error) {
         NetworkMessage::ShowError(NetworkMessage::LOST_CONNECTION);
         break;
     case Network::RoomMember::Error::HostKicked:
+        if (client_room)
+            client_room->Disconnect(false);
         NetworkMessage::ShowError(NetworkMessage::HOST_KICKED);
         break;
     case Network::RoomMember::Error::CouldNotConnect:
@@ -120,6 +122,8 @@ void MultiplayerState::OnNetworkError(const Network::RoomMember::Error& error) {
         NetworkMessage::ShowError(NetworkMessage::WRONG_VERSION);
         break;
     case Network::RoomMember::Error::HostBanned:
+        if (client_room)
+            client_room->Disconnect(false);
         NetworkMessage::ShowError(NetworkMessage::HOST_BANNED);
         break;
     case Network::RoomMember::Error::UnknownError:
@@ -170,8 +174,8 @@ void MultiplayerState::OnCreateRoom() {
     BringWidgetToFront(host_room);
 }
 
-bool MultiplayerState::OnCloseRoom() {
-    if (!NetworkMessage::WarnCloseRoom())
+bool MultiplayerState::OnCloseRoom(bool confirm) {
+    if (!NetworkMessage::WarnCloseRoom(confirm))
         return false;
     auto& room{system.Room()};
     auto& member{system.RoomMember()};

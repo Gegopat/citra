@@ -49,7 +49,7 @@ public slots:
     void OnNetworkError(const Network::RoomMember::Error& error);
     void OnViewLobby();
     void OnCreateRoom();
-    bool OnCloseRoom();
+    bool OnCloseRoom(bool confirm = true);
     void OnOpenRoom();
     void OnDirectConnect();
     void OnAnnounceFailed(const Common::WebResult&);
