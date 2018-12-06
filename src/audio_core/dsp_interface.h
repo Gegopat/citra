@@ -90,6 +90,9 @@ public:
     /// Sets the DSP_DSP class that we trigger interrupts for
     virtual void SetServiceToInterrupt(std::weak_ptr<Service::DSP::DSP_DSP> dsp) = 0;
 
+    /// Loads the DSP program
+    virtual void LoadComponent(const std::vector<u8>& buffer) = 0;
+
     /// Creates a new sink to change the audio device
     void UpdateSink();
 

@@ -4,7 +4,6 @@
 
 #include "audio_core/audio_types.h"
 #include "common/assert.h"
-#include "common/hash.h"
 #include "common/logging/log.h"
 #include "core/core.h"
 #include "core/hle/ipc_helpers.h"
@@ -154,8 +153,9 @@ void DSP_DSP::LoadComponent(Kernel::HLERequestContext& ctx) {
     auto& buffer{rp.PopMappedBuffer()};
     auto rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
-    rb.Push(true); /// Pretend that we actually loaded the DSP firmware
+    rb.Push(true);
     rb.PushMappedBuffer(buffer);
+<<<<<<< HEAD
     // TODO: Implement real DSP firmware loading
     std::vector<u8> component_data(size);
     buffer.Read(component_data.data(), 0, size);
@@ -167,6 +167,16 @@ void DSP_DSP::LoadComponent(Kernel::HLERequestContext& ctx) {
                  Common::ComputeHash64(component_data.data() + 0x340, 60));
     LOG_WARNING(Service_DSP, "(stubbed) size=0x{:X}, prog_mask=0x{:08X}, data_mask=0x{:08X}", size,
                 prog_mask, data_mask);
+=======
+
+    std::vector<u8> component_data(size);
+    buffer.Read(component_data.data(), 0, size);
+
+    system.DSP().LoadComponent(component_data);
+
+    LOG_INFO(Service_DSP, "(STUBBED) called size=0x{:X}, prog_mask=0x{:08X}, data_mask=0x{:08X}",
+             size, prog_mask, data_mask);
+>>>>>>> 5af7d7301... audio_core/hle: move implementation of LoadComponent
 }
 
 void DSP_DSP::UnloadComponent(Kernel::HLERequestContext& ctx) {
