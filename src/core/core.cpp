@@ -137,7 +137,7 @@ System::ResultStatus System::Load(Frontend& frontend, const std::string& filepat
             return ResultStatus::ErrorLoader;
         }
     }
-    Memory::SetCurrentPageTable(&kernel->GetCurrentProcess()->vm_manager.page_table);
+    memory->SetCurrentPageTable(&kernel->GetCurrentProcess()->vm_manager.page_table);
     cheat_engine = std::make_unique<Cheats::CheatEngine>(*this);
     status = ResultStatus::Success;
     m_filepath = filepath;
@@ -161,8 +161,9 @@ void System::Reschedule() {
 }
 
 System::ResultStatus System::Init(Frontend& frontend, u32 system_mode) {
-    LOG_DEBUG(HW_Memory, "initialized OK");
     m_frontend = &frontend;
+    memory = std::make_unique<Memory::MemorySystem>(*this);
+    LOG_DEBUG(HW_Memory, "initialized OK");
     timing = std::make_unique<Core::Timing>();
     kernel = std::make_unique<Kernel::KernelSystem>(*this);
     // Initialize FS, CFG and memory
@@ -255,6 +256,14 @@ Movie& System::MovieSystem() {
     return *movie;
 }
 
+const Memory::MemorySystem& System::Memory() const {
+    return *memory;
+}
+
+Memory::MemorySystem& System::Memory() {
+    return *memory;
+}
+
 const Frontend& System::GetFrontend() const {
     return *m_frontend;
 }
@@ -277,6 +286,7 @@ void System::Shutdown() {
     dsp_core.reset();
     timing.reset();
     program_loader.reset();
+    memory.reset();
     room_member->SendProgram(std::string{});
     LOG_DEBUG(Core, "Shutdown OK");
 }

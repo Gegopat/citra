@@ -34,7 +34,7 @@ bool VirtualMemoryArea::CanBeMergedWith(const VirtualMemoryArea& next) const {
     return true;
 }
 
-VMManager::VMManager() {
+VMManager::VMManager(Memory::MemorySystem& memory) : memory{memory} {
     Reset();
 }
 
@@ -286,13 +286,13 @@ VMManager::VMAIter VMManager::MergeAdjacent(VMAIter iter) {
 void VMManager::UpdatePageTableForVMA(const VirtualMemoryArea& vma) {
     switch (vma.type) {
     case VMAType::Free:
-        Memory::UnmapRegion(page_table, vma.base, vma.size);
+        Memory::UnmapRegion(memory, page_table, vma.base, vma.size);
         break;
     case VMAType::BackingMemory:
-        Memory::MapMemoryRegion(page_table, vma.base, vma.size, vma.backing_memory);
+        Memory::MapMemoryRegion(memory, page_table, vma.base, vma.size, vma.backing_memory);
         break;
     case VMAType::MMIO:
-        Memory::MapIoRegion(page_table, vma.base, vma.size, vma.mmio_handler);
+        Memory::MapIoRegion(memory, page_table, vma.base, vma.size, vma.mmio_handler);
         break;
     }
 }

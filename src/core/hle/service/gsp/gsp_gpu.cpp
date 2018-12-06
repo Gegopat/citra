@@ -97,7 +97,6 @@ void GSP_GPU::ClientDisconnected(Kernel::SharedPtr<Kernel::ServerSession> server
 /**
  * Writes a single GSP GPU hardware registers with a single u32 value
  * (For internal use.)
- *
  * @param base_address The address of the register in question
  * @param data Data to be written
  */
@@ -109,7 +108,6 @@ static void WriteSingleHWReg(u32 base_address, u32 data) {
 
 /**
  * Writes sequential GSP GPU hardware registers using an array of source data
- *
  * @param base_address The address of the first register in the sequence
  * @param size_in_bytes The number of registers to update (size of data)
  * @param data A vector containing the source data
@@ -390,7 +388,7 @@ void GSP_GPU::SignalInterrupt(InterruptID interrupt_id) {
 }
 
 /// Executes the next GSP command
-static void ExecuteCommand(const Command& command, u32 thread_id) {
+void GSP_GPU::ExecuteCommand(const Command& command, u32 thread_id) {
     // Utility function to convert register ID to address
     static auto WriteGPURegister{
         [](u32 id, u32 data) { GPU::Write<u32>(0x1EF00000 + 4 * id, data); }};
@@ -399,16 +397,16 @@ static void ExecuteCommand(const Command& command, u32 thread_id) {
     case CommandID::REQUEST_DMA: {
         // TODO: Consider attempting rasterizer-accelerated surface blit if that usage is ever
         // possible/likely
-        Memory::RasterizerFlushVirtualRegion(command.dma_request.source_address,
-                                             command.dma_request.size, Memory::FlushMode::Flush);
-        Memory::RasterizerFlushVirtualRegion(command.dma_request.dest_address,
-                                             command.dma_request.size,
-                                             Memory::FlushMode::Invalidate);
+        auto& memory{system.Memory()};
+        memory.RasterizerFlushVirtualRegion(command.dma_request.source_address,
+                                            command.dma_request.size, Memory::FlushMode::Flush);
+        memory.RasterizerFlushVirtualRegion(command.dma_request.dest_address,
+                                            command.dma_request.size,
+                                            Memory::FlushMode::Invalidate);
         // TODO: These memory accesses shouldn't go through the program's memory mapping.
         // They should go through the GSP module's memory mapping.
-        Memory::CopyBlock(*Core::System::GetInstance().Kernel().GetCurrentProcess(),
-                          command.dma_request.dest_address, command.dma_request.source_address,
-                          command.dma_request.size);
+        memory.CopyBlock(*system.Kernel().GetCurrentProcess(), command.dma_request.dest_address,
+                         command.dma_request.source_address, command.dma_request.size);
         SignalInterrupt(InterruptID::DMA);
         break;
     }
@@ -466,7 +464,6 @@ static void ExecuteCommand(const Command& command, u32 thread_id) {
         WriteGPURegister(static_cast<u32>(GPU_REG_INDEX(display_transfer_config.trigger)), 1);
         break;
     }
-
     case CommandID::SET_TEXTURE_COPY: {
         auto& params{command.texture_copy};
         WriteGPURegister((u32)GPU_REG_INDEX(display_transfer_config.input_address),

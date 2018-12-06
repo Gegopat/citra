@@ -26,16 +26,20 @@
 #include "video_core/shader/shader.h"
 
 namespace Core {
-class Timing;
+class System;
 struct TimingEventType;
 } // namespace Core
+
+namespace Memory {
+class MemorySystem;
+} // namespace Memory
 
 class ShaderProgramManager;
 struct ScreenInfo;
 
 class Rasterizer {
 public:
-    explicit Rasterizer(Core::Timing& timing);
+    explicit Rasterizer(Core::System& system);
     ~Rasterizer();
 
     void AddTriangle(const Pica::Shader::OutputVertex& v0, const Pica::Shader::OutputVertex& v1,
@@ -62,6 +66,7 @@ private:
         /// Creates the sampler object, initializing its state so that it's in sync with the
         /// SamplerInfo struct.
         void Create();
+
         /// Syncs the sampler object with the config, updating any necessary state.
         void SyncWithConfig(const TextureConfig& config);
 
@@ -99,12 +104,9 @@ private:
             view[0] = v.view.x.ToFloat32();
             view[1] = v.view.y.ToFloat32();
             view[2] = v.view.z.ToFloat32();
-
-            if (flip_quaternion) {
-                for (float& x : normquat) {
+            if (flip_quaternion)
+                for (float& x : normquat)
                     x = -x;
-                }
-            }
         }
 
         GLvec4 position;
@@ -306,5 +308,6 @@ private:
     bool allow_shadow;
 
     Core::Timing& timing;
+    Memory::MemorySystem& memory;
     Core::TimingEventType* cache_clear_event{};
 };

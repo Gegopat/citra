@@ -205,6 +205,10 @@ void GMainWindow::InitializeHotkeys() {
     ui.action_Stop->setShortcut(hotkey_registry.GetKeySequence("Main Window", "Stop Emulation"));
     ui.action_Stop->setShortcutContext(
         hotkey_registry.GetShortcutContext("Main Window", "Stop Emulation"));
+    ui.action_Restart->setShortcut(
+        hotkey_registry.GetKeySequence("Main Window", "Restart Emulation"));
+    ui.action_Restart->setShortcutContext(
+        hotkey_registry.GetShortcutContext("Main Window", "Restart Emulation"));
     ui.action_Show_Filter_Bar->setShortcut(
         hotkey_registry.GetKeySequence("Main Window", "Toggle Filter Bar"));
     ui.action_Show_Filter_Bar->setShortcutContext(
@@ -226,12 +230,6 @@ void GMainWindow::InitializeHotkeys() {
                         OnPauseProgram();
                     else
                         OnStartProgram();
-            });
-    connect(hotkey_registry.GetHotkey("Main Window", "Restart Emulation", this),
-            &QShortcut::activated, this, [this] {
-                if (!system.IsPoweredOn())
-                    return;
-                BootProgram(system.GetFilePath());
             });
     connect(hotkey_registry.GetHotkey("Main Window", "Swap Screens", screens),
             &QShortcut::activated, ui.action_Screen_Layout_Swap_Screens, &QAction::trigger);
@@ -1346,7 +1344,8 @@ void GMainWindow::OnDumpRAM() {
     OnPauseProgram();
     UISettings::values.ram_dumps_dir = QFileInfo(path).path();
     FileUtil::IOFile file{path.toStdString(), "wb"};
-    file.WriteBytes(Memory::fcram.data(), Memory::fcram.size());
+    auto& memory{system.Memory()};
+    file.WriteBytes(memory.fcram.data(), memory.fcram.size());
     OnStartProgram();
     LOG_INFO(Frontend, "Memory dump finished.");
 }

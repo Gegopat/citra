@@ -62,11 +62,12 @@ static void MemoryFill(const Regs::MemoryFillConfig& config) {
     const PAddr start_addr{config.GetStartAddress()};
     const PAddr end_addr{config.GetEndAddress()};
     // TODO: do hwtest with these cases
-    if (!Memory::IsValidPhysicalAddress(start_addr)) {
+    auto& memory{Core::System::GetInstance().Memory()};
+    if (!memory.IsValidPhysicalAddress(start_addr)) {
         LOG_ERROR(HW_GPU, "invalid start address {:#010X}", start_addr);
         return;
     }
-    if (!Memory::IsValidPhysicalAddress(end_addr)) {
+    if (!memory.IsValidPhysicalAddress(end_addr)) {
         LOG_ERROR(HW_GPU, "invalid end address {:#010X}", end_addr);
         return;
     }
@@ -74,20 +75,20 @@ static void MemoryFill(const Regs::MemoryFillConfig& config) {
         LOG_ERROR(HW_GPU, "invalid memory range from {:#010X} to {:#010X}", start_addr, end_addr);
         return;
     }
-    u8* start{Memory::GetPhysicalPointer(start_addr)};
-    u8* end{Memory::GetPhysicalPointer(end_addr)};
+    u8* start{memory.GetPhysicalPointer(start_addr)};
+    u8* end{memory.GetPhysicalPointer(end_addr)};
     if (VideoCore::g_renderer->GetRasterizer()->AccelerateFill(config))
         return;
-    Memory::RasterizerInvalidateRegion(config.GetStartAddress(),
-                                       config.GetEndAddress() - config.GetStartAddress());
-    if (config.fill_24bit) {
+    memory.RasterizerInvalidateRegion(config.GetStartAddress(),
+                                      config.GetEndAddress() - config.GetStartAddress());
+    if (config.fill_24bit)
         // Fill with 24-bit values
         for (u8* ptr{start}; ptr < end; ptr += 3) {
             ptr[0] = config.value_24bit_r;
             ptr[1] = config.value_24bit_g;
             ptr[2] = config.value_24bit_b;
         }
-    } else if (config.fill_32bit) {
+    else if (config.fill_32bit) {
         // Fill with 32-bit values
         if (end > start) {
             u32 value = config.value_32bit;
@@ -107,11 +108,12 @@ static void DisplayTransfer(const Regs::DisplayTransferConfig& config) {
     const PAddr src_addr{config.GetPhysicalInputAddress()};
     const PAddr dst_addr{config.GetPhysicalOutputAddress()};
     // TODO: do hwtest with these cases
-    if (!Memory::IsValidPhysicalAddress(src_addr)) {
+    auto& memory{Core::System::GetInstance().Memory()};
+    if (!memory.IsValidPhysicalAddress(src_addr)) {
         LOG_ERROR(HW_GPU, "invalid input address {:#010X}", src_addr);
         return;
     }
-    if (!Memory::IsValidPhysicalAddress(dst_addr)) {
+    if (!memory.IsValidPhysicalAddress(dst_addr)) {
         LOG_ERROR(HW_GPU, "invalid output address {:#010X}", dst_addr);
         return;
     }
@@ -133,8 +135,8 @@ static void DisplayTransfer(const Regs::DisplayTransferConfig& config) {
     }
     if (VideoCore::g_renderer->GetRasterizer()->AccelerateDisplayTransfer(config))
         return;
-    u8* src_pointer{Memory::GetPhysicalPointer(src_addr)};
-    u8* dst_pointer{Memory::GetPhysicalPointer(dst_addr)};
+    u8* src_pointer{memory.GetPhysicalPointer(src_addr)};
+    u8* dst_pointer{memory.GetPhysicalPointer(dst_addr)};
     if (config.scaling > config.ScaleXY) {
         LOG_ERROR(HW_GPU, "Unimplemented display transfer scaling mode {}", config.scaling.Value());
         UNIMPLEMENTED();
@@ -152,8 +154,8 @@ static void DisplayTransfer(const Regs::DisplayTransferConfig& config) {
     u32 input_size{config.input_width * config.input_height *
                    GPU::Regs::BytesPerPixel(config.input_format)};
     u32 output_size{output_width * output_height * GPU::Regs::BytesPerPixel(config.output_format)};
-    Memory::RasterizerFlushRegion(config.GetPhysicalInputAddress(), input_size);
-    Memory::RasterizerInvalidateRegion(config.GetPhysicalOutputAddress(), output_size);
+    memory.RasterizerFlushRegion(config.GetPhysicalInputAddress(), input_size);
+    memory.RasterizerInvalidateRegion(config.GetPhysicalOutputAddress(), output_size);
     for (u32 y{}; y < output_height; ++y) {
         for (u32 x{}; x < output_width; ++x) {
             Math::Vec4<u8> src_color;
@@ -246,18 +248,19 @@ static void TextureCopy(const Regs::DisplayTransferConfig& config) {
     const PAddr src_addr{config.GetPhysicalInputAddress()};
     const PAddr dst_addr{config.GetPhysicalOutputAddress()};
     // TODO: do hwtest with invalid addresses
-    if (!Memory::IsValidPhysicalAddress(src_addr)) {
+    auto& memory{Core::System::GetInstance().Memory()};
+    if (!memory.IsValidPhysicalAddress(src_addr)) {
         LOG_ERROR(HW_GPU, "invalid input address {:#010X}", src_addr);
         return;
     }
-    if (!Memory::IsValidPhysicalAddress(dst_addr)) {
+    if (!memory.IsValidPhysicalAddress(dst_addr)) {
         LOG_ERROR(HW_GPU, "invalid output address {:#010X}", dst_addr);
         return;
     }
     if (VideoCore::g_renderer->GetRasterizer()->AccelerateTextureCopy(config))
         return;
-    u8* src_pointer{Memory::GetPhysicalPointer(src_addr)};
-    u8* dst_pointer{Memory::GetPhysicalPointer(dst_addr)};
+    u8* src_pointer{memory.GetPhysicalPointer(src_addr)};
+    u8* dst_pointer{memory.GetPhysicalPointer(dst_addr)};
     u32 remaining_size{Common::AlignDown(config.texture_copy.size, 16)};
     if (remaining_size == 0)
         // Real hardware freezes in this case. we do the same
@@ -269,26 +272,26 @@ static void TextureCopy(const Regs::DisplayTransferConfig& config) {
     // width is assigned with the total size if gap = 0.
     u32 input_width{input_gap == 0 ? remaining_size : config.texture_copy.input_width * 16};
     u32 output_width{output_gap == 0 ? remaining_size : config.texture_copy.output_width * 16};
-    if (input_width == 0) {
+    if (input_width == 0)
         // Real hardware freezes in this case. we do the same
         for (;;)
             ;
-    }
-    if (output_width == 0) {
+    if (output_width == 0)
         // Real hardware freezes in this case. we do the same
         for (;;)
             ;
-    }
     std::size_t contiguous_input_size{config.texture_copy.size / input_width *
                                       (input_width + input_gap)};
-    Memory::RasterizerFlushRegion(config.GetPhysicalInputAddress(),
-                                  static_cast<u32>(contiguous_input_size));
+    memory.RasterizerFlushRegion(config.GetPhysicalInputAddress(),
+                                 static_cast<u32>(contiguous_input_size));
     std::size_t contiguous_output_size{config.texture_copy.size / output_width *
                                        (output_width + output_gap)};
     // Only need to flush output if it has a gap
-    const auto FlushInvalidate_fn{(output_gap != 0) ? Memory::RasterizerFlushAndInvalidateRegion
-                                                    : Memory::RasterizerInvalidateRegion};
-    FlushInvalidate_fn(config.GetPhysicalOutputAddress(), static_cast<u32>(contiguous_output_size));
+    (output_gap != 0)
+        ? memory.RasterizerFlushAndInvalidateRegion(config.GetPhysicalOutputAddress(),
+                                                    static_cast<u32>(contiguous_output_size))
+        : memory.RasterizerInvalidateRegion(config.GetPhysicalOutputAddress(),
+                                            static_cast<u32>(contiguous_output_size));
     u32 remaining_input{input_width};
     u32 remaining_output{output_width};
     while (remaining_size > 0) {
@@ -375,7 +378,8 @@ inline void Write(u32 addr, const T data) {
     case GPU_REG_INDEX(command_processor_config.trigger): {
         const auto& config{g_regs.command_processor_config};
         if (config.trigger & 1) {
-            u32* buffer{(u32*)Memory::GetPhysicalPointer(config.GetPhysicalAddress())};
+            u32* buffer{(u32*)Core::System::GetInstance().Memory().GetPhysicalPointer(
+                config.GetPhysicalAddress())};
             Pica::CommandProcessor::ProcessCommandList(buffer, config.size);
             g_regs.command_processor_config.trigger = 0;
         }

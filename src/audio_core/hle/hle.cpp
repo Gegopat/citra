@@ -23,7 +23,7 @@ using Service::DSP::DSP_DSP;
 
 namespace AudioCore {
 
-static constexpr u64 audio_frame_ticks{1310252ull}; ///< Units: ARM11 cycles
+constexpr u64 audio_frame_ticks{1310252ull}; ///< Units: ARM11 cycles
 
 static const std::unordered_set<u64> ids_output_allowed_shell_closed{{
     // Nintendo 3DS Sound
@@ -70,11 +70,11 @@ private:
     HLE::DspMemory dsp_memory;
 
     std::array<HLE::Source, HLE::num_sources> sources{{
-        HLE::Source(0),  HLE::Source(1),  HLE::Source(2),  HLE::Source(3),  HLE::Source(4),
-        HLE::Source(5),  HLE::Source(6),  HLE::Source(7),  HLE::Source(8),  HLE::Source(9),
-        HLE::Source(10), HLE::Source(11), HLE::Source(12), HLE::Source(13), HLE::Source(14),
-        HLE::Source(15), HLE::Source(16), HLE::Source(17), HLE::Source(18), HLE::Source(19),
-        HLE::Source(20), HLE::Source(21), HLE::Source(22), HLE::Source(23),
+        HLE::Source{0},  HLE::Source{1},  HLE::Source{2},  HLE::Source{3},  HLE::Source{4},
+        HLE::Source{5},  HLE::Source{6},  HLE::Source{7},  HLE::Source{8},  HLE::Source{9},
+        HLE::Source{10}, HLE::Source{11}, HLE::Source{12}, HLE::Source{13}, HLE::Source{14},
+        HLE::Source{15}, HLE::Source{16}, HLE::Source{17}, HLE::Source{18}, HLE::Source{19},
+        HLE::Source{20}, HLE::Source{21}, HLE::Source{22}, HLE::Source{23},
     }};
 
     HLE::Mixers mixers;
@@ -88,6 +88,9 @@ private:
 };
 
 DspHle::Impl::Impl(DspHle& parent_, Core::System& system_) : parent{parent_}, system{system_} {
+    auto& memory{system.Memory()};
+    for (auto& s : sources)
+        s.SetMemory(memory);
     dsp_memory.raw_memory.fill(0);
     Core::Timing& timing{system.CoreTiming()};
     tick_event = timing.RegisterEvent(

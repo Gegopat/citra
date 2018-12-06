@@ -249,7 +249,7 @@ bool Source::DequeueBuffer() {
     }
     // This physical address masking occurs due to how the DSP DMA hardware is configured by the
     // firmware.
-    const u8* memory{Memory::GetPhysicalPointer(buf.physical_address & 0xFFFFFFFC)};
+    const u8* memory{this->memory->GetPhysicalPointer(buf.physical_address & 0xFFFFFFFC)};
     if (memory) {
         const auto num_channels{
             static_cast<unsigned>(buf.mono_or_stereo == MonoOrStereo::Stereo ? 2 : 1)};

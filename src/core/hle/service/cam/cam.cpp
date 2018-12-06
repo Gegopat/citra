@@ -109,7 +109,7 @@ void Module::CompletionEventCallback(u64 port_id, s64) {
             int copy_length{std::min({line_bytes, dest_size_left, src_size_left})};
             if (copy_length <= 0)
                 break;
-            Memory::WriteBlock(*port.dest_process, dest_ptr, src_ptr, copy_length);
+            system.Memory().WriteBlock(*port.dest_process, dest_ptr, src_ptr, copy_length);
             dest_ptr += copy_length;
             dest_size_left -= copy_length;
             src_ptr += original_width;
@@ -120,15 +120,15 @@ void Module::CompletionEventCallback(u64 port_id, s64) {
         if (port.dest_size != buffer_size)
             LOG_ERROR(Service_CAM, "The destination size ({}) doesn't match the source ({})!",
                       port.dest_size, buffer_size);
-        Memory::WriteBlock(*port.dest_process, port.dest, buffer.data(),
-                           std::min<std::size_t>(port.dest_size, buffer_size));
+        system.Memory().WriteBlock(*port.dest_process, port.dest, buffer.data(),
+                                   std::min<std::size_t>(port.dest_size, buffer_size));
     }
     port.is_receiving = false;
     port.completion_event->Signal();
 }
 
 void Module::StartReceiving(int port_id) {
-    PortConfig& port{ports[port_id]};
+    auto& port{ports[port_id]};
     port.is_receiving = true;
     // Launches a capture task asynchronously
     CameraConfig& camera{cameras[port.camera_id]};
@@ -197,11 +197,11 @@ void Module::Interface::StartCapture(Kernel::HLERequestContext& ctx) {
     if (port_select.IsValid()) {
         for (int i : port_select) {
             if (!cam->ports[i].is_busy) {
-                if (!cam->ports[i].is_active) {
+                if (!cam->ports[i].is_active)
                     // This doesn't return an error, but seems to put the camera in an undefined
                     // state
                     LOG_ERROR(Service_CAM, "port {} hasn't been activated", i);
-                } else {
+                else {
                     cam->cameras[cam->ports[i].camera_id].impl->StartCapture();
                     cam->ports[i].is_busy = true;
                     if (cam->ports[i].is_pending_receiving) {

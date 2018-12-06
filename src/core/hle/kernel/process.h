@@ -152,7 +152,7 @@ public:
     /// Current status of the process
     ProcessStatus status;
 
-    /// The id of this process
+    /// The ID of this process
     u32 process_id;
 
     /**
@@ -161,9 +161,7 @@ public:
      */
     void ParseKernelCaps(const u32* kernel_caps, std::size_t len);
 
-    /**
-     * Applies address space changes and launches the process main thread.
-     */
+    /// Applies address space changes and launches the process main thread.
     void Run(s32 main_thread_priority, u32 stack_size);
 
     // Memory Management

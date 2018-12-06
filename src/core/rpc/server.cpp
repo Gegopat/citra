@@ -15,7 +15,7 @@
 namespace RPC {
 
 struct Server::Impl {
-    Impl(std::function<void(std::unique_ptr<Packet>)> callback);
+    explicit Impl(std::function<void(std::unique_ptr<Packet>)> callback);
     ~Impl();
 
     void WorkerLoop();

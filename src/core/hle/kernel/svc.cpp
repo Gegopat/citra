@@ -317,7 +317,7 @@ ResultCode SVC::ConnectToPort(Handle* out_handle, VAddr port_name_address) {
         return ERR_NOT_FOUND;
     constexpr std::size_t PortNameMaxLength{11};
     // Read 1 char beyond the max allowed port name to detect names that are too long.
-    auto port_name{Memory::ReadCString(port_name_address, PortNameMaxLength + 1)};
+    auto port_name{system.Memory().ReadCString(port_name_address, PortNameMaxLength + 1)};
     if (port_name.size() > PortNameMaxLength)
         return ERR_PORT_NAME_TOO_LONG;
     LOG_TRACE(Kernel_SVC, "port_name={}", port_name);
@@ -402,8 +402,9 @@ ResultCode SVC::WaitSynchronizationN(s32* out, VAddr handles_address, s32 handle
         return ERR_OUT_OF_RANGE;
     using ObjectPtr = SharedPtr<WaitObject>;
     std::vector<ObjectPtr> objects(handle_count);
+    auto& memory{system.Memory()};
     for (int i{}; i < handle_count; ++i) {
-        Handle handle{Memory::Read32(handles_address + i * sizeof(Handle))};
+        Handle handle{memory.Read32(handles_address + i * sizeof(Handle))};
         auto object{kernel.GetCurrentProcess()->handle_table.Get<WaitObject>(handle)};
         if (!object)
             return ERR_INVALID_HANDLE;
@@ -530,8 +531,9 @@ ResultCode SVC::ReplyAndReceive(s32* index, VAddr handles_address, s32 handle_co
     using ObjectPtr = SharedPtr<WaitObject>;
     std::vector<ObjectPtr> objects(handle_count);
     auto current_process{kernel.GetCurrentProcess()};
+    auto& memory{system.Memory()};
     for (int i{}; i < handle_count; ++i) {
-        Handle handle{Memory::Read32(handles_address + i * sizeof(Handle))};
+        Handle handle{memory.Read32(handles_address + i * sizeof(Handle))};
         auto object{current_process->handle_table.Get<WaitObject>(handle)};
         if (!object)
             return ERR_INVALID_HANDLE;
@@ -540,7 +542,7 @@ ResultCode SVC::ReplyAndReceive(s32* index, VAddr handles_address, s32 handle_co
     // We're also sending a command reply.
     // Don't send a reply if the command id in the command buffer is 0xFFFF.
     auto thread{kernel.GetThreadManager().GetCurrentThread()};
-    u32 cmd_buff_header{Memory::Read32(thread->GetCommandBufferAddress())};
+    u32 cmd_buff_header{memory.Read32(thread->GetCommandBufferAddress())};
     IPC::Header header{cmd_buff_header};
     if (reply_target != 0 && header.command_id != 0xFFFF) {
         auto session{current_process->handle_table.Get<ServerSession>(reply_target)};
@@ -663,7 +665,7 @@ void SVC::OutputDebugString(VAddr address, s32 len) {
     if (len <= 0)
         return;
     std::string string(len, ' ');
-    Memory::ReadBlock(*kernel.GetCurrentProcess(), address, string.data(), len);
+    system.Memory().ReadBlock(*kernel.GetCurrentProcess(), address, string.data(), len);
     LOG_DEBUG(Debug_Emulated, "{}", string);
 }
 
@@ -687,10 +689,11 @@ ResultCode SVC::GetResourceLimitCurrentValues(VAddr values, Handle resource_limi
         kernel.GetCurrentProcess()->handle_table.Get<ResourceLimit>(resource_limit_handle)};
     if (!resource_limit)
         return ERR_INVALID_HANDLE;
+    auto& memory{system.Memory()};
     for (unsigned int i{}; i < name_count; ++i) {
-        u32 name{Memory::Read32(names + i * sizeof(u32))};
+        u32 name{memory.Read32(names + i * sizeof(u32))};
         s64 value{resource_limit->GetCurrentResourceValue(name)};
-        Memory::Write64(values + i * sizeof(u64), value);
+        memory.Write64(values + i * sizeof(u64), value);
     }
     return RESULT_SUCCESS;
 }
@@ -704,10 +707,11 @@ ResultCode SVC::GetResourceLimitLimitValues(VAddr values, Handle resource_limit_
         kernel.GetCurrentProcess()->handle_table.Get<ResourceLimit>(resource_limit_handle)};
     if (!resource_limit)
         return ERR_INVALID_HANDLE;
+    auto& memory{system.Memory()};
     for (unsigned int i{}; i < name_count; ++i) {
-        u32 name{Memory::Read32(names + i * sizeof(u32))};
+        u32 name{memory.Read32(names + i * sizeof(u32))};
         s64 value{resource_limit->GetMaxResourceValue(name)};
-        Memory::Write64(values + i * sizeof(u64), value);
+        memory.Write64(values + i * sizeof(u64), value);
     }
     return RESULT_SUCCESS;
 }
@@ -1174,7 +1178,6 @@ ResultCode SVC::GetProcessInfo(s64* out, Handle process_handle, u32 type) {
         LOG_ERROR(Kernel_SVC, "unknown GetProcessInfo type={}", type);
         return ERR_INVALID_ENUM_VALUE;
     }
-
     return RESULT_SUCCESS;
 }
 
@@ -1338,7 +1341,7 @@ void SVC::SetReg(std::size_t n, u32 value) {
     system.CPU().SetReg(static_cast<int>(n), value);
 }
 
-SVCContext::SVCContext(Core::System& system) : impl(std::make_unique<SVC>(system)) {}
+SVCContext::SVCContext(Core::System& system) : impl{std::make_unique<SVC>(system)} {}
 SVCContext::~SVCContext() = default;
 
 void SVCContext::CallSVC(u32 immediate) {

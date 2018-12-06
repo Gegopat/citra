@@ -120,7 +120,7 @@ static void MortonCopy(u32 stride, u32 height, u8* gl_buffer, PAddr base, PAddr 
             gl_buffer -= stride * 9 * gl_bytes_per_pixel;
         }
     }};
-    u8* tile_buffer{Memory::GetPhysicalPointer(start)};
+    u8* tile_buffer{Core::System::GetInstance().Memory().GetPhysicalPointer(start)};
     if (start < aligned_start && !morton_to_gl) {
         std::array<u8, tile_size> tmp_buf;
         MortonCopyTile<morton_to_gl, format>(stride, &tmp_buf[0], gl_buffer);
@@ -534,14 +534,14 @@ void RasterizerCache::CopySurface(const Surface& src_surface, const Surface& dst
 
 void CachedSurface::LoadGLBuffer(PAddr load_start, PAddr load_end) {
     ASSERT(type != SurfaceType::Fill);
-    const u8* texture_src_data{Memory::GetPhysicalPointer(addr)};
+    const u8* texture_src_data{Core::System::GetInstance().Memory().GetPhysicalPointer(addr)};
     if (!texture_src_data)
         return;
     if (!gl_buffer) {
         gl_buffer_size = width * height * GetGLBytesPerPixel(pixel_format);
         gl_buffer.reset(new u8[gl_buffer_size]);
     }
-    // TODO: Should probably be done in ::Memory:: and check for other regions too
+    // TODO: Should probably be done in memory and check for other regions too
     if (load_start < Memory::VRAM_N3DS_VADDR_END && load_end > Memory::VRAM_N3DS_VADDR_END)
         load_end = Memory::VRAM_N3DS_VADDR_END;
     if (load_start < Memory::VRAM_VADDR && load_end > Memory::VRAM_VADDR)
@@ -578,11 +578,12 @@ void CachedSurface::LoadGLBuffer(PAddr load_start, PAddr load_end) {
 }
 
 void CachedSurface::FlushGLBuffer(PAddr flush_start, PAddr flush_end) {
-    u8* dst_buffer{Memory::GetPhysicalPointer(addr)};
+    u8* dst_buffer{memory.GetPhysicalPointer(addr)};
     if (!dst_buffer)
         return;
-    ASSERT(gl_buffer_size == width * height * GetGLBytesPerPixel(pixel_format));
-    // TODO: Should probably be done in ::Memory:: and check for other regions too
+    if (!(gl_buffer_size == width * height * GetGLBytesPerPixel(pixel_format)))
+        return;
+    // TODO: Should probably be done in memory and check for other regions too
     // same as LoadGLBuffer()
     if (flush_start < Memory::VRAM_N3DS_VADDR_END && flush_end > Memory::VRAM_N3DS_VADDR_END)
         flush_end = Memory::VRAM_N3DS_VADDR_END;
@@ -666,7 +667,7 @@ void CachedSurface::DownloadGLTexture(const MathUtil::Rectangle<u32>& rect, GLui
         gl_buffer_size = width * height * GetGLBytesPerPixel(pixel_format);
         gl_buffer.reset(new u8[gl_buffer_size]);
     }
-    OpenGLState state{OpenGLState::GetCurState()};
+    auto state{OpenGLState::GetCurState()};
     auto prev_state{state};
     SCOPE_EXIT({ prev_state.Apply(); });
     const FormatTuple& tuple{GetFormatTuple(pixel_format)};
@@ -809,7 +810,8 @@ Surface FindMatch(const SurfaceCache& surface_cache, const SurfaceParams& params
     return match_surface;
 }
 
-RasterizerCache::RasterizerCache() : resolution_factor{Settings::values.resolution_factor} {
+RasterizerCache::RasterizerCache(Memory::MemorySystem& memory)
+    : resolution_factor{Settings::values.resolution_factor}, memory{memory} {
     read_framebuffer.Create();
     draw_framebuffer.Create();
     attributeless_vao.Create();
@@ -838,11 +840,11 @@ void main() {
 }
 )"};
     d24s8_abgr_shader.Create(vs_source, fs_source);
-    OpenGLState state{OpenGLState::GetCurState()};
+    auto state{OpenGLState::GetCurState()};
     auto old_program{state.draw.shader_program};
     state.draw.shader_program = d24s8_abgr_shader.handle;
     state.Apply();
-    GLint tbo_u_id{glGetUniformLocation(d24s8_abgr_shader.handle, "tbo")};
+    auto tbo_u_id{glGetUniformLocation(d24s8_abgr_shader.handle, "tbo")};
     ASSERT(tbo_u_id != -1);
     glUniform1i(tbo_u_id, 0);
     state.draw.shader_program = old_program;
@@ -1198,7 +1200,7 @@ SurfaceSurfaceRect_Tuple RasterizerCache::GetFramebufferSurfaces(
 }
 
 Surface RasterizerCache::GetFillSurface(const GPU::Regs::MemoryFillConfig& config) {
-    Surface new_surface{std::make_shared<CachedSurface>()};
+    auto new_surface{std::make_shared<CachedSurface>(memory)};
     new_surface->addr = config.GetStartAddress();
     new_surface->end = config.GetEndAddress();
     new_surface->size = new_surface->end - new_surface->addr;
@@ -1318,7 +1320,7 @@ void RasterizerCache::FlushRegion(PAddr addr, u32 size, Surface flush_surface) {
     const SurfaceInterval flush_interval{addr, addr + size};
     SurfaceRegions flushed_intervals;
     for (auto& pair : RangeFromInterval(dirty_regions, flush_interval)) {
-        // small sizes imply that this most likely comes from the cpu, flush the entire region
+        // Small sizes imply that this most likely comes from the cpu, flush the entire region
         // the point is to avoid thousands of small writes every frame if the cpu decides to access
         // that region, anything higher than 8 you're guaranteed it comes from a service
         const auto interval{size <= 8 ? pair.first : pair.first & flush_interval};
@@ -1328,7 +1330,7 @@ void RasterizerCache::FlushRegion(PAddr addr, u32 size, Surface flush_surface) {
         // Sanity check, this surface is the last one that marked this region dirty
         ASSERT(surface->IsRegionValid(interval));
         if (surface->type != SurfaceType::Fill) {
-            SurfaceParams params{surface->FromInterval(interval)};
+            auto params{surface->FromInterval(interval)};
             surface->DownloadGLTexture(surface->GetSubRect(params), read_framebuffer.handle,
                                        draw_framebuffer.handle);
         }
@@ -1401,7 +1403,7 @@ void RasterizerCache::InvalidateRegion(PAddr addr, u32 size, const Surface& regi
 }
 
 Surface RasterizerCache::CreateSurface(const SurfaceParams& params) {
-    Surface surface{std::make_shared<CachedSurface>()};
+    auto surface{std::make_shared<CachedSurface>(memory)};
     static_cast<SurfaceParams&>(*surface) = params;
     surface->texture.Create();
     surface->gl_buffer_size = 0;
@@ -1443,9 +1445,9 @@ void RasterizerCache::UpdatePagesCachedCount(PAddr addr, u32 size, int delta) {
         const PAddr interval_end_addr{boost::icl::last_next(interval) << Memory::PAGE_BITS};
         const u32 interval_size{interval_end_addr - interval_start_addr};
         if (delta > 0 && count == delta)
-            Memory::RasterizerMarkRegionCached(interval_start_addr, interval_size, true);
+            memory.RasterizerMarkRegionCached(interval_start_addr, interval_size, true);
         else if (delta < 0 && count == -delta)
-            Memory::RasterizerMarkRegionCached(interval_start_addr, interval_size, false);
+            memory.RasterizerMarkRegionCached(interval_start_addr, interval_size, false);
         else
             ASSERT(count >= 0);
     }

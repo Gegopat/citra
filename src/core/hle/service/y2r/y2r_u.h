@@ -21,11 +21,13 @@ namespace Service::Y2R {
 enum class InputFormat : u8 {
     /// 8-bit input, with YUV components in separate planes and 4:2:2 subsampling.
     YUV422_Indiv8 = 0,
+
     /// 8-bit input, with YUV components in separate planes and 4:2:0 subsampling.
     YUV420_Indiv8 = 1,
 
     /// 16-bit input (only LSB used), with YUV components in separate planes and 4:2:2 subsampling.
     YUV422_Indiv16 = 2,
+
     /// 16-bit input (only LSB used), with YUV components in separate planes and 4:2:0 subsampling.
     YUV420_Indiv16 = 3,
 
@@ -50,6 +52,7 @@ enum class Rotation : u8 {
 enum class BlockAlignment : u8 {
     /// Image is output in linear format suitable for use as a framebuffer.
     Linear = 0,
+
     /// Image is output in tiled PICA format, suitable for use as a texture.
     Block8x8 = 1,
 };
@@ -57,10 +60,13 @@ enum class BlockAlignment : u8 {
 enum class StandardCoefficient : u8 {
     /// ITU Rec. BT.601 primaries, with PC ranges.
     ITU_Rec601 = 0,
+
     /// ITU Rec. BT.709 primaries, with PC ranges.
     ITU_Rec709 = 1,
+
     /// ITU Rec. BT.601 primaries, with TV ranges.
     ITU_Rec601_Scaling = 2,
+
     /// ITU Rec. BT.709 primaries, with TV ranges.
     ITU_Rec709_Scaling = 3,
 };
@@ -82,10 +88,13 @@ using CoefficientSet = std::array<s16, 8>;
 struct ConversionBuffer {
     /// Current reading/writing address of this buffer.
     VAddr address;
+
     /// Remaining amount of bytes to be DMAed, doesn't include the inter-trasfer gap.
     u32 image_size;
+
     /// Size of a single DMA transfer.
     u16 transfer_unit;
+
     /// Amount of bytes to be skipped between copying each `transfer_unit` bytes.
     u16 gap;
 };
@@ -103,6 +112,7 @@ struct ConversionConfiguration {
 
     /// Input parameters for the Y (luma) plane
     ConversionBuffer src_Y, src_U, src_V, src_YUYV;
+
     /// Output parameters for the conversion results
     ConversionBuffer dst;
 
@@ -201,6 +211,7 @@ private:
     bool temporal_dithering_enabled{};
     bool transfer_end_interrupt_enabled{};
     bool spacial_dithering_enabled{};
+    Core::System& system;
 };
 
 void InstallInterfaces(Core::System& system);

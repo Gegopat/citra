@@ -110,7 +110,8 @@ void ThreadManager::SwitchContext(Thread* new_thread) {
             new_thread->current_priority = new_thread->nominal_priority;
         if (previous_process != current_thread->owner_process) {
             kernel.SetCurrentProcess(current_thread->owner_process);
-            SetCurrentPageTable(&current_thread->owner_process->vm_manager.page_table);
+            system.Memory().SetCurrentPageTable(
+                &current_thread->owner_process->vm_manager.page_table);
         }
         auto& cpu{system.CPU()};
         cpu.LoadContext(new_thread->context);
@@ -284,10 +285,11 @@ ResultVal<SharedPtr<Thread>> KernelSystem::CreateThread(std::string name, VAddr 
     // Find the next available TLS index, and mark it as used
     auto& tls_slots{owner_process.tls_slots};
     auto [available_page, available_slot, needs_allocation]{GetFreeThreadLocalSlot(tls_slots)};
+    auto& memory{system.Memory()};
     if (needs_allocation) {
         // There are no already-allocated pages with free slots, lets allocate a new one.
         // TLS pages are allocated from the Bae region in the linear heap.
-        MemoryRegionInfo* memory_region{GetMemoryRegion(MemoryRegion::Base)};
+        auto memory_region{GetMemoryRegion(MemoryRegion::Base)};
         // Allocate some memory from the end of the linear heap for this region.
         auto offset{memory_region->LinearAllocate(Memory::PAGE_SIZE)};
         if (!offset) {
@@ -302,14 +304,14 @@ ResultVal<SharedPtr<Thread>> KernelSystem::CreateThread(std::string name, VAddr 
         auto& vm_manager{owner_process.vm_manager};
         // Map the page to the current process' address space.
         vm_manager.MapBackingMemory(Memory::TLS_AREA_VADDR + available_page * Memory::PAGE_SIZE,
-                                    Memory::fcram.data() + *offset, Memory::PAGE_SIZE,
+                                    memory.fcram.data() + *offset, Memory::PAGE_SIZE,
                                     MemoryState::Locked);
     }
     // Mark the slot as used
     tls_slots[available_page].set(available_slot);
     thread->tls_address = Memory::TLS_AREA_VADDR + available_page * Memory::PAGE_SIZE +
                           available_slot * Memory::TLS_ENTRY_SIZE;
-    Memory::ZeroBlock(owner_process, thread->tls_address, Memory::TLS_ENTRY_SIZE);
+    memory.ZeroBlock(owner_process, thread->tls_address, Memory::TLS_ENTRY_SIZE);
     // TODO: move to ScheduleThread() when scheduler is added so selected core is used
     // to initialize the context
     ResetThreadContext(thread->context, stack_top, entry_point, arg);

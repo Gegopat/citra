@@ -107,8 +107,8 @@ void Process::Run(s32 main_thread_priority, u32 stack_size) {
     auto MapSegment{
         [&](CodeSet::Segment& segment, VMAPermission permissions, MemoryState memory_state) {
             HeapAllocate(segment.addr, segment.size, permissions, memory_state, true);
-            Memory::WriteBlock(*this, segment.addr, codeset->memory->data() + segment.offset,
-                               segment.size);
+            system.Memory().WriteBlock(*this, segment.addr,
+                                       codeset->memory->data() + segment.offset, segment.size);
         }};
     // Map CodeSet segments
     MapSegment(codeset->CodeSegment(), VMAPermission::ReadExecute, MemoryState::Code);
@@ -120,7 +120,7 @@ void Process::Run(s32 main_thread_priority, u32 stack_size) {
     // Map special address mappings
     kernel.MapSharedPages(vm_manager);
     for (const auto& mapping : address_mappings)
-        HandleSpecialMapping(vm_manager, mapping);
+        HandleSpecialMapping(system.Memory(), vm_manager, mapping);
     status = ProcessStatus::Running;
     vm_manager.LogLayout(Log::Level::Debug);
     Kernel::SetupMainThread(kernel, codeset->entrypoint, main_thread_priority, this);
@@ -171,10 +171,11 @@ ResultVal<VAddr> Process::HeapAllocate(VAddr target, u32 size, VMAPermission per
         u32 interval_size{interval.upper() - interval.lower()};
         LOG_DEBUG(Kernel, "Allocated FCRAM region lower={:08X}, upper={:08X}", interval.lower(),
                   interval.upper());
-        std::fill(Memory::fcram.begin() + interval.lower(),
-                  Memory::fcram.begin() + interval.upper(), 0);
+        auto& memory{system.Memory()};
+        std::fill(memory.fcram.begin() + interval.lower(), memory.fcram.begin() + interval.upper(),
+                  0);
         auto vma{vm_manager.MapBackingMemory(
-            interval_target, Memory::fcram.data() + interval.lower(), interval_size, memory_state)};
+            interval_target, memory.fcram.data() + interval.lower(), interval_size, memory_state)};
         ASSERT(vma.Succeeded());
         vm_manager.Reprotect(vma.Unwrap(), perms);
         interval_target += interval_size;
@@ -196,7 +197,7 @@ ResultCode Process::HeapFree(VAddr target, u32 size) {
     // Free heaps block by block
     CASCADE_RESULT(auto backing_blocks, vm_manager.GetBackingBlocksForRange(target, size));
     for (const auto [backing_memory, block_size] : backing_blocks)
-        memory_region->Free(Memory::GetFCRAMOffset(backing_memory), block_size);
+        memory_region->Free(system.Memory().GetFCRAMOffset(backing_memory), block_size);
     auto result{vm_manager.UnmapRange(target, size)};
     ASSERT(result.IsSuccess());
     memory_used -= size;
@@ -233,7 +234,7 @@ ResultVal<VAddr> Process::LinearAllocate(VAddr target, u32 size, VMAPermission p
             return ERR_INVALID_ADDRESS_STATE;
         }
     }
-    u8* backing_memory{Memory::fcram.data() + physical_offset};
+    u8* backing_memory{system.Memory().fcram.data() + physical_offset};
     std::fill(backing_memory, backing_memory + size, 0);
     auto vma{vm_manager.MapBackingMemory(target, backing_memory, size, MemoryState::Continuous)};
     ASSERT(vma.Succeeded());
@@ -337,7 +338,7 @@ ResultCode Process::Unmap(VAddr target, VAddr source, u32 size, VMAPermission pe
 }
 
 Kernel::Process::Process(KernelSystem& kernel)
-    : Object{kernel}, handle_table{kernel}, kernel{kernel} {}
+    : Object{kernel}, handle_table{kernel}, kernel{kernel}, vm_manager{kernel.Parent().Memory()} {}
 Kernel::Process::~Process() {}
 
 SharedPtr<Process> KernelSystem::GetProcessByID(u32 process_id) const {

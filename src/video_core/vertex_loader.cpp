@@ -6,6 +6,7 @@
 #include "common/common_types.h"
 #include "common/logging/log.h"
 #include "common/vector_math.h"
+#include "core/core.h"
 #include "core/memory.h"
 #include "video_core/pica_state.h"
 #include "video_core/pica_types.h"
@@ -62,6 +63,7 @@ void VertexLoader::Setup(const PipelineRegs& regs) {
 void VertexLoader::LoadVertex(u32 base_address, int index, int vertex,
                               Shader::AttributeBuffer& input) {
     ASSERT_MSG(is_setup, "A VertexLoader needs to be setup before loading vertices.");
+    auto& memory{Core::System::GetInstance().Memory()};
     for (int i{}; i < num_total_attributes; ++i) {
         if (vertex_attribute_elements[i] != 0) {
             // Load per-vertex data from the loader arrays
@@ -70,28 +72,28 @@ void VertexLoader::LoadVertex(u32 base_address, int index, int vertex,
             switch (vertex_attribute_formats[i]) {
             case PipelineRegs::VertexAttributeFormat::Byte: {
                 const s8* srcdata{
-                    reinterpret_cast<const s8*>(Memory::GetPhysicalPointer(source_addr))};
+                    reinterpret_cast<const s8*>(memory.GetPhysicalPointer(source_addr))};
                 for (unsigned int comp{}; comp < vertex_attribute_elements[i]; ++comp)
                     input.attr[i][comp] = float24::FromFloat32(srcdata[comp]);
                 break;
             }
             case PipelineRegs::VertexAttributeFormat::UnsignedByte: {
                 const u8* srcdata{
-                    reinterpret_cast<const u8*>(Memory::GetPhysicalPointer(source_addr))};
+                    reinterpret_cast<const u8*>(memory.GetPhysicalPointer(source_addr))};
                 for (unsigned int comp{}; comp < vertex_attribute_elements[i]; ++comp)
                     input.attr[i][comp] = float24::FromFloat32(srcdata[comp]);
                 break;
             }
             case PipelineRegs::VertexAttributeFormat::Short: {
                 const s16* srcdata{
-                    reinterpret_cast<const s16*>(Memory::GetPhysicalPointer(source_addr))};
+                    reinterpret_cast<const s16*>(memory.GetPhysicalPointer(source_addr))};
                 for (unsigned int comp{}; comp < vertex_attribute_elements[i]; ++comp)
                     input.attr[i][comp] = float24::FromFloat32(srcdata[comp]);
                 break;
             }
             case PipelineRegs::VertexAttributeFormat::Float: {
                 const float* srcdata{
-                    reinterpret_cast<const float*>(Memory::GetPhysicalPointer(source_addr))};
+                    reinterpret_cast<const float*>(memory.GetPhysicalPointer(source_addr))};
                 for (unsigned int comp{}; comp < vertex_attribute_elements[i]; ++comp)
                     input.attr[i][comp] = float24::FromFloat32(srcdata[comp]);
                 break;

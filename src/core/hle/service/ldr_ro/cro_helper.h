@@ -43,7 +43,8 @@ public:
         : module_address{cro_address}, process{process} {}
 
     std::string ModuleName() const {
-        return Memory::ReadCString(GetField(ModuleNameOffset), GetField(ModuleNameSize));
+        return process.system.Memory().ReadCString(GetField(ModuleNameOffset),
+                                                   GetField(ModuleNameSize));
     }
 
     u32 GetFileSize() const {
@@ -318,18 +319,18 @@ private:
 
         void GetImportIndexedSymbolEntry(Kernel::Process& process, u32 index,
                                          ImportIndexedSymbolEntry& entry) {
-            Memory::ReadBlock(process,
-                              import_indexed_symbol_table_offset +
-                                  index * sizeof(ImportIndexedSymbolEntry),
-                              &entry, sizeof(ImportIndexedSymbolEntry));
+            process.system.Memory().ReadBlock(process,
+                                              import_indexed_symbol_table_offset +
+                                                  index * sizeof(ImportIndexedSymbolEntry),
+                                              &entry, sizeof(ImportIndexedSymbolEntry));
         }
 
         void GetImportAnonymousSymbolEntry(Kernel::Process& process, u32 index,
                                            ImportAnonymousSymbolEntry& entry) {
-            Memory::ReadBlock(process,
-                              import_anonymous_symbol_table_offset +
-                                  index * sizeof(ImportAnonymousSymbolEntry),
-                              &entry, sizeof(ImportAnonymousSymbolEntry));
+            process.system.Memory().ReadBlock(process,
+                                              import_anonymous_symbol_table_offset +
+                                                  index * sizeof(ImportAnonymousSymbolEntry),
+                                              &entry, sizeof(ImportAnonymousSymbolEntry));
         }
     };
     ASSERT_CRO_STRUCT(ImportModuleEntry, 20);
@@ -406,11 +407,11 @@ private:
     }
 
     u32 GetField(HeaderField field) const {
-        return Memory::Read32(Field(field));
+        return process.system.Memory().Read32(Field(field));
     }
 
     void SetField(HeaderField field, u32 value) {
-        Memory::Write32(Field(field), value);
+        process.system.Memory().Write32(Field(field), value);
     }
 
     /**
@@ -422,9 +423,9 @@ private:
      */
     template <typename T>
     void GetEntry(std::size_t index, T& data) const {
-        Memory::ReadBlock(process,
-                          GetField(T::TABLE_OFFSET_FIELD) + static_cast<u32>(index * sizeof(T)),
-                          &data, sizeof(T));
+        process.system.Memory().ReadBlock(
+            process, GetField(T::TABLE_OFFSET_FIELD) + static_cast<u32>(index * sizeof(T)), &data,
+            sizeof(T));
     }
 
     /**
@@ -436,9 +437,9 @@ private:
      */
     template <typename T>
     void SetEntry(std::size_t index, const T& data) {
-        Memory::WriteBlock(process,
-                           GetField(T::TABLE_OFFSET_FIELD) + static_cast<u32>(index * sizeof(T)),
-                           &data, sizeof(T));
+        process.system.Memory().WriteBlock(
+            process, GetField(T::TABLE_OFFSET_FIELD) + static_cast<u32>(index * sizeof(T)), &data,
+            sizeof(T));
     }
 
     /**

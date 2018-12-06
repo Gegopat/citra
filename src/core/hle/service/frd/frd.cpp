@@ -89,7 +89,6 @@ void Module::Interface::GetMyScreenName(Kernel::HLERequestContext& ctx) {
 void Module::Interface::UnscrambleLocalFriendCode(Kernel::HLERequestContext& ctx) {
     constexpr std::size_t scrambled_friend_code_size{12};
     constexpr std::size_t friend_code_size{8};
-
     IPC::RequestParser rp{ctx, 0x1C, 1, 2};
     const u32 friend_code_count{rp.Pop<u32>()};
     std::vector<u8> scrambled_friend_codes{rp.PopStaticBuffer()};
@@ -99,16 +98,15 @@ void Module::Interface::UnscrambleLocalFriendCode(Kernel::HLERequestContext& ctx
     // TODO: Unscramble the codes and compare them against the friend list
     //              Only write 0 if the code isn't in friend list, otherwise write the
     //              unscrambled one
-    //
     // Code for unscrambling (should be compared to HW):
     // std::array<u16, 6> scambled_friend_code;
-    // Memory::ReadBlock(scrambled_friend_codes + (current * scrambled_friend_code_size),
-    // scambled_friend_code.data(), scrambled_friend_code_size); std::array<u16, 4>
-    // unscrambled_friend_code; unscrambled_friend_code[0] = scambled_friend_code[0] ^
-    // scambled_friend_code[5]; unscrambled_friend_code[1] = scambled_friend_code[1] ^
-    // scambled_friend_code[5]; unscrambled_friend_code[2] = scambled_friend_code[2] ^
-    // scambled_friend_code[5]; unscrambled_friend_code[3] = scambled_friend_code[3] ^
-    // scambled_friend_code[5];
+    // frd->system.Memory().ReadBlock(scrambled_friend_codes + (current *
+    // scrambled_friend_code_size), scambled_friend_code.data(), scrambled_friend_code_size);
+    // std::array<u16, 4> unscrambled_friend_code; unscrambled_friend_code[0] =
+    // scambled_friend_code[0] ^ scambled_friend_code[5]; unscrambled_friend_code[1] =
+    // scambled_friend_code[1] ^ scambled_friend_code[5]; unscrambled_friend_code[2] =
+    // scambled_friend_code[2] ^ scambled_friend_code[5]; unscrambled_friend_code[3] =
+    // scambled_friend_code[3] ^ scambled_friend_code[5];
     auto rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushStaticBuffer(unscrambled_friend_codes, 0);
@@ -124,12 +122,12 @@ void Module::Interface::SetClientSdkVersion(Kernel::HLERequestContext& ctx) {
     LOG_WARNING(Service_FRD, "(stubbed) version: 0x{:08X}", version);
 }
 
-Module::Module() = default;
+Module::Module(Core::System& system) : system{system} {};
 Module::~Module() = default;
 
 void InstallInterfaces(Core::System& system) {
     auto& service_manager{system.ServiceManager()};
-    auto frd{std::make_shared<Module>()};
+    auto frd{std::make_shared<Module>(system)};
     std::make_shared<FRD_U>(frd)->InstallAsService(service_manager);
     std::make_shared<FRD_A>(frd)->InstallAsService(service_manager);
 }

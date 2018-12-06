@@ -67,11 +67,12 @@ ResultCode CROHelper::ApplyRelocation(VAddr target_address, RelocationType reloc
         break;
     case RelocationType::AbsoluteAddress:
     case RelocationType::AbsoluteAddress2:
-        Memory::Write32(target_address, symbol_address + addend);
+        process.system.Memory().Write32(target_address, symbol_address + addend);
         process.system.CPU().InvalidateCacheRange(target_address, sizeof(u32));
         break;
     case RelocationType::RelativeAddress:
-        Memory::Write32(target_address, symbol_address + addend - target_future_address);
+        process.system.Memory().Write32(target_address,
+                                        symbol_address + addend - target_future_address);
         process.system.CPU().InvalidateCacheRange(target_address, sizeof(u32));
         break;
     case RelocationType::ThumbBranch:
@@ -94,7 +95,7 @@ ResultCode CROHelper::ClearRelocation(VAddr target_address, RelocationType reloc
     case RelocationType::AbsoluteAddress:
     case RelocationType::AbsoluteAddress2:
     case RelocationType::RelativeAddress:
-        Memory::Write32(target_address, 0);
+        process.system.Memory().Write32(target_address, 0);
         process.system.CPU().InvalidateCacheRange(target_address, sizeof(u32));
         break;
     case RelocationType::ThumbBranch:
@@ -114,9 +115,10 @@ ResultCode CROHelper::ApplyRelocationBatch(VAddr batch, u32 symbol_address, bool
     if (symbol_address == 0 && !reset)
         return CROFormatError(0x10);
     auto relocation_address{batch};
+    auto& memory{process.system.Memory()};
     for (;;) {
         RelocationEntry relocation;
-        Memory::ReadBlock(process, relocation_address, &relocation, sizeof(RelocationEntry));
+        memory.ReadBlock(process, relocation_address, &relocation, sizeof(RelocationEntry));
         auto relocation_target{SegmentTagToAddress(relocation.target_position)};
         if (relocation_target == 0)
             return CROFormatError(0x12);
@@ -131,9 +133,9 @@ ResultCode CROHelper::ApplyRelocationBatch(VAddr batch, u32 symbol_address, bool
         relocation_address += sizeof(RelocationEntry);
     }
     RelocationEntry relocation;
-    Memory::ReadBlock(process, batch, &relocation, sizeof(RelocationEntry));
+    memory.ReadBlock(process, batch, &relocation, sizeof(RelocationEntry));
     relocation.is_batch_resolved = reset ? 0 : 1;
-    Memory::WriteBlock(process, batch, &relocation, sizeof(RelocationEntry));
+    memory.WriteBlock(process, batch, &relocation, sizeof(RelocationEntry));
     return RESULT_SUCCESS;
 }
 
@@ -167,7 +169,7 @@ VAddr CROHelper::FindExportNamedSymbol(const std::string& name) const {
     u32 export_strings_size{GetField(ExportStringsSize)};
     ExportNamedSymbolEntry symbol_entry;
     GetEntry(found_id, symbol_entry);
-    if (Memory::ReadCString(symbol_entry.name_offset, export_strings_size) != name)
+    if (process.system.Memory().ReadCString(symbol_entry.name_offset, export_strings_size) != name)
         return 0;
     return SegmentTagToAddress(symbol_entry.symbol_position);
 }
@@ -641,18 +643,18 @@ void CROHelper::UnrebaseHeader() {
 ResultCode CROHelper::ApplyImportNamedSymbol(VAddr crs_address) {
     u32 import_strings_size{GetField(ImportStringsSize)};
     u32 symbol_import_num{GetField(ImportNamedSymbolNum)};
+    auto& memory{process.system.Memory()};
     for (u32 i{}; i < symbol_import_num; ++i) {
         ImportNamedSymbolEntry entry;
         GetEntry(i, entry);
         auto relocation_addr{static_cast<VAddr>(entry.relocation_batch_offset)};
         ExternalRelocationEntry relocation_entry;
-        Memory::ReadBlock(process, relocation_addr, &relocation_entry,
-                          sizeof(ExternalRelocationEntry));
+        memory.ReadBlock(process, relocation_addr, &relocation_entry,
+                         sizeof(ExternalRelocationEntry));
         if (!relocation_entry.is_batch_resolved) {
             auto result{
                 ForEachAutoLinkCRO(process, crs_address, [&](CROHelper source) -> ResultVal<bool> {
-                    std::string symbol_name{
-                        Memory::ReadCString(entry.name_offset, import_strings_size)};
+                    auto symbol_name{memory.ReadCString(entry.name_offset, import_strings_size)};
                     u32 symbol_address{source.FindExportNamedSymbol(symbol_name)};
                     if (symbol_address != 0) {
                         LOG_TRACE(Service_LDR, "CRO {} imports {} from {}", ModuleName(),
@@ -682,8 +684,8 @@ ResultCode CROHelper::ResetImportNamedSymbol() {
         GetEntry(i, entry);
         auto relocation_addr{static_cast<VAddr>(entry.relocation_batch_offset)};
         ExternalRelocationEntry relocation_entry;
-        Memory::ReadBlock(process, relocation_addr, &relocation_entry,
-                          sizeof(ExternalRelocationEntry));
+        process.system.Memory().ReadBlock(process, relocation_addr, &relocation_entry,
+                                          sizeof(ExternalRelocationEntry));
         auto result{ApplyRelocationBatch(relocation_addr, unresolved_symbol, true)};
         if (result.IsError()) {
             LOG_ERROR(Service_LDR, "Error reseting relocation batch {:08X}", result.raw);
@@ -701,8 +703,8 @@ ResultCode CROHelper::ResetImportIndexedSymbol() {
         GetEntry(i, entry);
         auto relocation_addr{static_cast<VAddr>(entry.relocation_batch_offset)};
         ExternalRelocationEntry relocation_entry;
-        Memory::ReadBlock(process, relocation_addr, &relocation_entry,
-                          sizeof(ExternalRelocationEntry));
+        process.system.Memory().ReadBlock(process, relocation_addr, &relocation_entry,
+                                          sizeof(ExternalRelocationEntry));
         auto result{ApplyRelocationBatch(relocation_addr, unresolved_symbol, true)};
         if (result.IsError()) {
             LOG_ERROR(Service_LDR, "Error reseting relocation batch {:08X}", result.raw);
@@ -720,8 +722,8 @@ ResultCode CROHelper::ResetImportAnonymousSymbol() {
         GetEntry(i, entry);
         VAddr relocation_addr{static_cast<VAddr>(entry.relocation_batch_offset)};
         ExternalRelocationEntry relocation_entry;
-        Memory::ReadBlock(process, relocation_addr, &relocation_entry,
-                          sizeof(ExternalRelocationEntry));
+        process.system.Memory().ReadBlock(process, relocation_addr, &relocation_entry,
+                                          sizeof(ExternalRelocationEntry));
         ResultCode result = ApplyRelocationBatch(relocation_addr, unresolved_symbol, true);
         if (result.IsError()) {
             LOG_ERROR(Service_LDR, "Error reseting relocation batch {:08X}", result.raw);
@@ -737,7 +739,8 @@ ResultCode CROHelper::ApplyModuleImport(VAddr crs_address) {
     for (u32 i{}; i < import_module_num; ++i) {
         ImportModuleEntry entry;
         GetEntry(i, entry);
-        auto want_cro_name{Memory::ReadCString(entry.name_offset, import_strings_size)};
+        auto want_cro_name{
+            process.system.Memory().ReadCString(entry.name_offset, import_strings_size)};
         auto result{
             ForEachAutoLinkCRO(process, crs_address, [&](CROHelper source) -> ResultVal<bool> {
                 if (want_cro_name == source.ModuleName()) {
@@ -788,15 +791,16 @@ ResultCode CROHelper::ApplyExportNamedSymbol(CROHelper target) {
     LOG_DEBUG(Service_LDR, "CRO {} exports named symbols to {}", ModuleName(), target.ModuleName());
     u32 target_import_strings_size{target.GetField(ImportStringsSize)};
     u32 target_symbol_import_num{target.GetField(ImportNamedSymbolNum)};
+    auto& memory{process.system.Memory()};
     for (u32 i{}; i < target_symbol_import_num; ++i) {
         ImportNamedSymbolEntry entry;
         target.GetEntry(i, entry);
         auto relocation_addr{static_cast<VAddr>(entry.relocation_batch_offset)};
         ExternalRelocationEntry relocation_entry;
-        Memory::ReadBlock(process, relocation_addr, &relocation_entry,
-                          sizeof(ExternalRelocationEntry));
+        memory.ReadBlock(process, relocation_addr, &relocation_entry,
+                         sizeof(ExternalRelocationEntry));
         if (!relocation_entry.is_batch_resolved) {
-            auto symbol_name{Memory::ReadCString(entry.name_offset, target_import_strings_size)};
+            auto symbol_name{memory.ReadCString(entry.name_offset, target_import_strings_size)};
             u32 symbol_address{FindExportNamedSymbol(symbol_name)};
             if (symbol_address != 0) {
                 LOG_TRACE(Service_LDR, "exports symbol {}", symbol_name);
@@ -817,15 +821,16 @@ ResultCode CROHelper::ResetExportNamedSymbol(CROHelper target) {
     u32 unresolved_symbol{static_cast<u32>(target.GetOnUnresolvedAddress())};
     u32 target_import_strings_size{target.GetField(ImportStringsSize)};
     u32 target_symbol_import_num{target.GetField(ImportNamedSymbolNum)};
+    auto& memory{process.system.Memory()};
     for (u32 i{}; i < target_symbol_import_num; ++i) {
         ImportNamedSymbolEntry entry;
         target.GetEntry(i, entry);
         auto relocation_addr{static_cast<VAddr>(entry.relocation_batch_offset)};
         ExternalRelocationEntry relocation_entry;
-        Memory::ReadBlock(process, relocation_addr, &relocation_entry,
-                          sizeof(ExternalRelocationEntry));
+        memory.ReadBlock(process, relocation_addr, &relocation_entry,
+                         sizeof(ExternalRelocationEntry));
         if (relocation_entry.is_batch_resolved) {
-            auto symbol_name{Memory::ReadCString(entry.name_offset, target_import_strings_size)};
+            auto symbol_name{memory.ReadCString(entry.name_offset, target_import_strings_size)};
             u32 symbol_address{FindExportNamedSymbol(symbol_name)};
             if (symbol_address != 0) {
                 LOG_TRACE(Service_LDR, "unexports symbol {}", symbol_name);
@@ -847,7 +852,8 @@ ResultCode CROHelper::ApplyModuleExport(CROHelper target) {
     for (u32 i{}; i < target_import_module_num; ++i) {
         ImportModuleEntry entry;
         target.GetEntry(i, entry);
-        if (Memory::ReadCString(entry.name_offset, target_import_string_size) != module_name)
+        if (process.system.Memory().ReadCString(entry.name_offset, target_import_string_size) !=
+            module_name)
             continue;
         LOG_INFO(Service_LDR, "CRO {} exports {} indexed symbols to {}", module_name,
                  entry.import_indexed_symbol_num, target.ModuleName());
@@ -889,7 +895,8 @@ ResultCode CROHelper::ResetModuleExport(CROHelper target) {
     for (u32 i{}; i < target_import_module_num; ++i) {
         ImportModuleEntry entry;
         target.GetEntry(i, entry);
-        if (Memory::ReadCString(entry.name_offset, target_import_string_size) != module_name)
+        if (process.system.Memory().ReadCString(entry.name_offset, target_import_string_size) !=
+            module_name)
             continue;
         LOG_DEBUG(Service_LDR, "CRO {} unexports indexed symbols to {}", module_name,
                   target.ModuleName());
@@ -922,14 +929,15 @@ ResultCode CROHelper::ResetModuleExport(CROHelper target) {
 ResultCode CROHelper::ApplyExitRelocations(VAddr crs_address) {
     u32 import_strings_size{GetField(ImportStringsSize)};
     u32 symbol_import_num{GetField(ImportNamedSymbolNum)};
+    auto& memory{process.system.Memory()};
     for (u32 i{}; i < symbol_import_num; ++i) {
         ImportNamedSymbolEntry entry;
         GetEntry(i, entry);
         VAddr relocation_addr{static_cast<VAddr>(entry.relocation_batch_offset)};
         ExternalRelocationEntry relocation_entry;
-        Memory::ReadBlock(process, relocation_addr, &relocation_entry,
-                          sizeof(ExternalRelocationEntry));
-        if (Memory::ReadCString(entry.name_offset, import_strings_size) == "__aeabi_atexit") {
+        memory.ReadBlock(process, relocation_addr, &relocation_entry,
+                         sizeof(ExternalRelocationEntry));
+        if (memory.ReadCString(entry.name_offset, import_strings_size) == "__aeabi_atexit") {
             auto result{
                 ForEachAutoLinkCRO(process, crs_address, [&](CROHelper source) -> ResultVal<bool> {
                     u32 symbol_address{source.FindExportNamedSymbol("nnroAeabiAtexit_")};
@@ -964,9 +972,9 @@ ResultCode CROHelper::ApplyExitRelocations(VAddr crs_address) {
  * @param size the size of the string (table), including the terminating 0
  * @returns ResultCode RESULT_SUCCESS if the size matches, otherwise error code.
  */
-static ResultCode VerifyStringTableLength(VAddr address, u32 size) {
+static ResultCode VerifyStringTableLength(VAddr address, u32 size, Memory::MemorySystem& memory) {
     if (size != 0)
-        if (Memory::Read8(address + size - 1) != 0)
+        if (memory.Read8(address + size - 1) != 0)
             return CROFormatError(0x0B);
     return RESULT_SUCCESS;
 }
@@ -979,7 +987,8 @@ ResultCode CROHelper::Rebase(VAddr crs_address, u32 cro_size, VAddr data_segment
         LOG_ERROR(Service_LDR, "Error rebasing header {:08X}", result.raw);
         return result;
     }
-    result = VerifyStringTableLength(GetField(ModuleNameOffset), GetField(ModuleNameSize));
+    auto& memory{process.system.Memory()};
+    result = VerifyStringTableLength(GetField(ModuleNameOffset), GetField(ModuleNameSize), memory);
     if (result.IsError()) {
         LOG_ERROR(Service_LDR, "Error verifying module name {:08X}", result.raw);
         return result;
@@ -1004,7 +1013,8 @@ ResultCode CROHelper::Rebase(VAddr crs_address, u32 cro_size, VAddr data_segment
         LOG_ERROR(Service_LDR, "Error verifying export tree {:08X}", result.raw);
         return result;
     }
-    result = VerifyStringTableLength(GetField(ExportStringsOffset), GetField(ExportStringsSize));
+    result =
+        VerifyStringTableLength(GetField(ExportStringsOffset), GetField(ExportStringsSize), memory);
     if (result.IsError()) {
         LOG_ERROR(Service_LDR, "Error verifying export strings {:08X}", result.raw);
         return result;
@@ -1034,7 +1044,8 @@ ResultCode CROHelper::Rebase(VAddr crs_address, u32 cro_size, VAddr data_segment
         LOG_ERROR(Service_LDR, "Error rebasing offset import table {:08X}", result.raw);
         return result;
     }
-    result = VerifyStringTableLength(GetField(ImportStringsOffset), GetField(ImportStringsSize));
+    result =
+        VerifyStringTableLength(GetField(ImportStringsOffset), GetField(ImportStringsSize), memory);
     if (result.IsError()) {
         LOG_ERROR(Service_LDR, "Error verifying import strings {:08X}", result.raw);
         return result;

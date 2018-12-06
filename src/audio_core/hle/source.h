@@ -14,8 +14,11 @@
 #include "audio_core/interpolate.h"
 #include "common/common_types.h"
 
-namespace AudioCore {
-namespace HLE {
+namespace Memory {
+class MemorySystem;
+} // namespace Memory
+
+namespace AudioCore::HLE {
 
 /**
  * This module performs:
@@ -30,6 +33,11 @@ class Source final {
 public:
     explicit Source(std::size_t source_id_) : source_id{source_id_} {
         Reset();
+    }
+
+    /// Sets the memory.
+    void SetMemory(Memory::MemorySystem& memory) {
+        this->memory = &memory;
     }
 
     /// Resets internal state.
@@ -56,6 +64,7 @@ public:
 
 private:
     const std::size_t source_id;
+    Memory::MemorySystem* memory;
     StereoFrame16 current_frame;
 
     using Format = SourceConfiguration::Configuration::Format;
@@ -97,8 +106,8 @@ private:
 
         // Buffer queue
         std::priority_queue<Buffer, std::vector<Buffer>, BufferOrder> input_queue;
-        MonoOrStereo mono_or_stereo = MonoOrStereo::Mono;
-        Format format = Format::ADPCM;
+        MonoOrStereo mono_or_stereo{MonoOrStereo::Mono};
+        Format format{Format::ADPCM};
 
         // Current buffer
         u32 current_sample_number{};
@@ -138,5 +147,4 @@ private:
     SourceStatus::Status GetCurrentStatus();
 };
 
-} // namespace HLE
-} // namespace AudioCore
+} // namespace AudioCore::HLE

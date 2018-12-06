@@ -187,8 +187,9 @@ void Renderer::LoadFBToScreenInfo(const GPU::Regs::FramebufferConfig& framebuffe
         // Reset the screen info's display texture to its own permanent texture
         screen_info.display_texture = screen_info.texture.resource.handle;
         screen_info.display_texcoords = MathUtil::Rectangle<float>(0.f, 0.f, 1.f, 1.f);
-        Memory::RasterizerFlushRegion(framebuffer_addr, framebuffer.stride * framebuffer.height);
-        const u8* framebuffer_data{Memory::GetPhysicalPointer(framebuffer_addr)};
+        auto& memory{system.Memory()};
+        memory.RasterizerFlushRegion(framebuffer_addr, framebuffer.stride * framebuffer.height);
+        const u8* framebuffer_data{memory.GetPhysicalPointer(framebuffer_addr)};
         state.texture_units[0].texture_2d = screen_info.texture.resource.handle;
         state.Apply();
         glActiveTexture(GL_TEXTURE0);
@@ -459,7 +460,7 @@ Core::System::ResultStatus Renderer::Init() {
     if (!GLAD_GL_VERSION_3_3)
         return Core::System::ResultStatus::ErrorVideoCore_ErrorBelowGL33;
     InitOpenGLObjects();
-    rasterizer = std::make_unique<Rasterizer>(system.CoreTiming());
+    rasterizer = std::make_unique<Rasterizer>(system);
     return Core::System::ResultStatus::Success;
 }
 

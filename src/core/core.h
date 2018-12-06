@@ -50,6 +50,10 @@ class Room;
 class RoomMember;
 } // namespace Network
 
+namespace Memory {
+class MemorySystem;
+} // namespace Memory
+
 namespace Core {
 
 class Movie;
@@ -190,6 +194,12 @@ public:
     /// Gets a reference to the movie system.
     Movie& MovieSystem();
 
+    /// Gets a const reference to the memory system.
+    const Memory::MemorySystem& Memory() const;
+
+    /// Gets a reference to the memory system.
+    Memory::MemorySystem& Memory();
+
     /// Gets a const reference to the frontend.
     const Frontend& GetFrontend() const;
 
@@ -293,6 +303,9 @@ private:
     // Movie system
     std::unique_ptr<Movie> movie;
 
+    // Memory system
+    std::unique_ptr<Memory::MemorySystem> memory;
+
     static System s_instance;
 
     ResultStatus status;
@@ -307,9 +320,5 @@ private:
     std::mutex running_mutex;
     std::condition_variable running_cv;
 };
-
-inline AudioCore::DspHle& DSP() {
-    return System::GetInstance().DSP();
-}
 
 } // namespace Core

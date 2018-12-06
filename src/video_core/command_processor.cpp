@@ -212,7 +212,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
     case PICA_REG_INDEX_WORKAROUND(pipeline.command_buffer.trigger[1], 0x23d): {
         unsigned index{
             static_cast<unsigned>(id - PICA_REG_INDEX(pipeline.command_buffer.trigger[0]))};
-        u32* head_ptr{(u32*)Memory::GetPhysicalPointer(
+        u32* head_ptr{(u32*)Core::System::GetInstance().Memory().GetPhysicalPointer(
             regs.pipeline.command_buffer.GetPhysicalAddress(index))};
         g_state.cmd_list.head_ptr = g_state.cmd_list.current_ptr = head_ptr;
         g_state.cmd_list.length = regs.pipeline.command_buffer.GetSize(index) / sizeof(u32);
@@ -272,7 +272,8 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
         }
         // Load vertices
         const auto& index_info{regs.pipeline.index_array};
-        const u8* index_address_8{Memory::GetPhysicalPointer(base_address + index_info.offset)};
+        const u8* index_address_8{Core::System::GetInstance().Memory().GetPhysicalPointer(
+            base_address + index_info.offset)};
         const u16* index_address_16{reinterpret_cast<const u16*>(index_address_8)};
         bool index_u16{index_info.format != 0};
         auto VertexIndex{[&](unsigned int index) {

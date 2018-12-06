@@ -36,35 +36,35 @@ public:
     ~UserCallbacks() = default;
 
     std::uint8_t MemoryRead8(VAddr vaddr) override {
-        return Memory::Read8(vaddr);
+        return system.Memory().Read8(vaddr);
     }
 
     std::uint16_t MemoryRead16(VAddr vaddr) override {
-        return Memory::Read16(vaddr);
+        return system.Memory().Read16(vaddr);
     }
 
     std::uint32_t MemoryRead32(VAddr vaddr) override {
-        return Memory::Read32(vaddr);
+        return system.Memory().Read32(vaddr);
     }
 
     std::uint64_t MemoryRead64(VAddr vaddr) override {
-        return Memory::Read64(vaddr);
+        return system.Memory().Read64(vaddr);
     }
 
     void MemoryWrite8(VAddr vaddr, std::uint8_t value) override {
-        Memory::Write8(vaddr, value);
+        system.Memory().Write8(vaddr, value);
     }
 
     void MemoryWrite16(VAddr vaddr, std::uint16_t value) override {
-        Memory::Write16(vaddr, value);
+        system.Memory().Write16(vaddr, value);
     }
 
     void MemoryWrite32(VAddr vaddr, std::uint32_t value) override {
-        Memory::Write32(vaddr, value);
+        system.Memory().Write32(vaddr, value);
     }
 
     void MemoryWrite64(VAddr vaddr, std::uint64_t value) override {
-        Memory::Write64(vaddr, value);
+        system.Memory().Write64(vaddr, value);
     }
 
     void InterpreterFallback(VAddr pc, std::size_t num_instructions) override {
@@ -77,7 +77,7 @@ public:
     }
 
     void ExceptionRaised(VAddr pc, Dynarmic::A32::Exception exception) override {
-        ASSERT_MSG(false, "ExceptionRaised(exception = {}, pc = {:08X}, code = {:08X})",
+        ASSERT_MSG(false, "ExceptionRaised(exception={}, pc={:08X}, code={:08X})",
                    static_cast<std::size_t>(exception), pc, MemoryReadCode(pc));
     }
 
@@ -191,14 +191,15 @@ void ThreadContext::SetFpexc(u32 value) {
     fpexc = value;
 }
 
-Cpu::Cpu(Core::System& system) : cb{std::make_unique<UserCallbacks>(*this, system)} {
+Cpu::Cpu(Core::System& system)
+    : cb{std::make_unique<UserCallbacks>(*this, system)}, system{system} {
     PageTableChanged();
 }
 
 Cpu::~Cpu() = default;
 
 void Cpu::Run() {
-    ASSERT(Memory::GetCurrentPageTable() == current_page_table);
+    ASSERT(system.Memory().GetCurrentPageTable() == current_page_table);
     jit->Run();
 }
 
@@ -275,9 +276,8 @@ void Cpu::LoadContext(const std::unique_ptr<ThreadContext>& arg) {
 }
 
 void Cpu::PrepareReschedule() {
-    if (jit->IsExecuting()) {
+    if (jit->IsExecuting())
         jit->HaltExecution();
-    }
 }
 
 void Cpu::InvalidateCacheRange(u32 start_address, std::size_t length) {
@@ -285,7 +285,7 @@ void Cpu::InvalidateCacheRange(u32 start_address, std::size_t length) {
 }
 
 void Cpu::PageTableChanged() {
-    current_page_table = Memory::GetCurrentPageTable();
+    current_page_table = system.Memory().GetCurrentPageTable();
     auto iter{jits.find(current_page_table)};
     if (iter != jits.end()) {
         jit = iter->second.get();

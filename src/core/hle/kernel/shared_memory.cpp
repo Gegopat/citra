@@ -4,6 +4,7 @@
 
 #include <cstring>
 #include "common/logging/log.h"
+#include "core/core.h"
 #include "core/hle/kernel/errors.h"
 #include "core/hle/kernel/memory.h"
 #include "core/hle/kernel/shared_memory.h"
@@ -37,8 +38,9 @@ ResultVal<SharedPtr<SharedMemory>> KernelSystem::CreateSharedMemory(
         auto memory_region{GetMemoryRegion(region)};
         auto offset{memory_region->LinearAllocate(size)};
         ASSERT_MSG(offset, "Not enough space in region to allocate shared memory!");
-        std::fill(Memory::fcram.data() + *offset, Memory::fcram.data() + *offset + size, 0);
-        shared_memory->backing_blocks = {{Memory::fcram.data() + *offset, size}};
+        auto& memory{system.Memory()};
+        std::fill(memory.fcram.data() + *offset, memory.fcram.data() + *offset + size, 0);
+        shared_memory->backing_blocks = {{memory.fcram.data() + *offset, size}};
         shared_memory->holding_memory += MemoryRegionInfo::Interval(*offset, *offset + size);
         shared_memory->linear_heap_phys_offset = *offset;
         // Increase the amount of used linear heap memory for the owner process.
@@ -72,10 +74,11 @@ SharedPtr<SharedMemory> KernelSystem::CreateSharedMemoryForApplet(
     shared_memory->size = size;
     shared_memory->permissions = permissions;
     shared_memory->other_permissions = other_permissions;
+    auto& memory{system.Memory()};
     for (const auto& interval : backing_blocks) {
         shared_memory->backing_blocks.push_back(
-            {Memory::fcram.data() + interval.lower(), interval.upper() - interval.lower()});
-        std::fill(Memory::fcram.data() + interval.lower(), Memory::fcram.data() + interval.upper(),
+            {memory.fcram.data() + interval.lower(), interval.upper() - interval.lower()});
+        std::fill(memory.fcram.data() + interval.lower(), memory.fcram.data() + interval.upper(),
                   0);
     }
     shared_memory->base_address = Memory::HEAP_VADDR + offset;

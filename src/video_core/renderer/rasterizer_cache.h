@@ -29,7 +29,12 @@
 #include "video_core/renderer/resource_manager.h"
 #include "video_core/texture/texture_decode.h"
 
+namespace Memory {
+class MemorySystem;
+} // namespace Memory
+
 struct CachedSurface;
+
 using Surface = std::shared_ptr<CachedSurface>;
 using SurfaceSet = std::set<Surface>;
 
@@ -76,7 +81,8 @@ struct SurfaceParams {
 
         // Depth buffer-only formats
         D16 = 14,
-        // gap
+
+        // Gap
         D24 = 16,
         D24S8 = 17,
 
@@ -273,6 +279,8 @@ private:
 };
 
 struct CachedSurface : SurfaceParams, std::enable_shared_from_this<CachedSurface> {
+    explicit CachedSurface(Memory::MemorySystem& memory) : memory{memory} {}
+
     bool CanFill(const SurfaceParams& dest_surface, SurfaceInterval fill_interval) const;
     bool CanCopy(const SurfaceParams& dest_surface, SurfaceInterval copy_interval) const;
 
@@ -283,6 +291,8 @@ struct CachedSurface : SurfaceParams, std::enable_shared_from_this<CachedSurface
     bool IsSurfaceFullyInvalid() const {
         return (invalid_regions & GetInterval()) == SurfaceRegions(GetInterval());
     }
+
+    Memory::MemorySystem& memory;
 
     bool registered{};
     SurfaceRegions invalid_regions;
@@ -382,7 +392,7 @@ struct CachedTextureCube {
 
 class RasterizerCache : NonCopyable {
 public:
-    RasterizerCache();
+    explicit RasterizerCache(Memory::MemorySystem& memory);
     ~RasterizerCache();
 
     /// Blit one surface's texture to another
@@ -470,4 +480,6 @@ private:
     std::unordered_map<TextureCubeConfig, CachedTextureCube> texture_cube_cache;
 
     u16 resolution_factor;
+
+    Memory::MemorySystem& memory;
 };

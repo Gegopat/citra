@@ -8,6 +8,10 @@
 #include <boost/icl/interval_set.hpp>
 #include "common/common_types.h"
 
+namespace Memory {
+class MemorySystem;
+} // namespace Memory
+
 namespace Kernel {
 
 struct AddressMapping;
@@ -62,6 +66,7 @@ struct MemoryRegionInfo {
     void Free(u32 offset, u32 size);
 };
 
-void HandleSpecialMapping(VMManager& address_space, const AddressMapping& mapping);
+void HandleSpecialMapping(Memory::MemorySystem& memory, VMManager& address_space,
+                          const AddressMapping& mapping);
 
 } // namespace Kernel

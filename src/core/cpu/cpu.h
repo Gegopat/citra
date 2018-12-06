@@ -91,4 +91,5 @@ private:
     Memory::PageTable* current_page_table;
     std::map<Memory::PageTable*, std::unique_ptr<Dynarmic::A32::Jit>> jits;
     State state;
+    Core::System& system;
 };

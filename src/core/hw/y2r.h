@@ -4,10 +4,16 @@
 
 #pragma once
 
+namespace Memory {
+class MemorySystem;
+} // namespace Memory
+
 namespace Service::Y2R {
 struct ConversionConfiguration;
 } // namespace Service::Y2R
 
 namespace HW::Y2R {
-void PerformConversion(Service::Y2R::ConversionConfiguration& cvt);
+
+void PerformConversion(Service::Y2R::ConversionConfiguration& cvt, Memory::MemorySystem& memory);
+
 } // namespace HW::Y2R

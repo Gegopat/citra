@@ -161,7 +161,8 @@ void ServiceFrameworkBase::HandleSyncRequest(SharedPtr<ServerSession> server_ses
     auto& kernel{server_session->system.Kernel()};
     auto thread{kernel.GetThreadManager().GetCurrentThread()};
     // TODO: avoid GetPointer
-    u32* cmd_buf{reinterpret_cast<u32*>(Memory::GetPointer(thread->GetCommandBufferAddress()))};
+    u32* cmd_buf{reinterpret_cast<u32*>(
+        server_session->system.Memory().GetPointer(thread->GetCommandBufferAddress()))};
     u32 header_code{cmd_buf[0]};
     auto itr{handlers.find(header_code)};
     const auto info{itr == handlers.end() ? nullptr : &itr->second};

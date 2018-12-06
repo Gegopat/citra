@@ -5,6 +5,7 @@
 #pragma once
 
 #include <memory>
+#include "common/common_funcs.h"
 #include "common/common_types.h"
 #include "core/hle/service/service.h"
 
@@ -16,12 +17,12 @@ namespace Service::FRD {
 
 struct FriendKey {
     u32 friend_id;
-    u32 unknown;
+    INSERT_PADDING_WORDS(1);
     u64 friend_code;
 };
 
 struct MyPresence {
-    u8 unknown[0x12C];
+    INSERT_PADDING_BYTES(0x12C);
 };
 
 struct Profile {
@@ -34,7 +35,7 @@ struct Profile {
 
 class Module final {
 public:
-    Module();
+    explicit Module(Core::System& system);
     ~Module();
 
     class Interface : public ServiceFramework<Interface> {
@@ -59,6 +60,7 @@ public:
 private:
     FriendKey my_friend_key{0, 0, 0ull};
     MyPresence my_presence{};
+    Core::System& system;
 };
 
 void InstallInterfaces(Core::System& system);

@@ -231,6 +231,8 @@ private:
      */
     FrameBufferUpdate* GetFrameBufferInfo(u32 thread_id, u32 screen_index);
 
+    void ExecuteCommand(const Command& command, u32 thread_id);
+
     void SignalInterruptForThread(InterruptID interrupt_id, u32 thread_id);
     void WriteHWRegs(Kernel::HLERequestContext& ctx);
     void WriteHWRegsWithMask(Kernel::HLERequestContext& ctx);

@@ -393,9 +393,9 @@ void Y2R_U::StartConversion(Kernel::HLERequestContext& ctx) {
     // dst_image_size would seem to be perfect for this, but it doesn't include the gap :(
     u32 total_output_size{static_cast<u32>(conversion.input_lines *
                                            (conversion.dst.transfer_unit + conversion.dst.gap))};
-    Memory::RasterizerFlushVirtualRegion(conversion.dst.address, total_output_size,
-                                         Memory::FlushMode::FlushAndInvalidate);
-    HW::Y2R::PerformConversion(conversion);
+    system.Memory().RasterizerFlushVirtualRegion(conversion.dst.address, total_output_size,
+                                                 Memory::FlushMode::FlushAndInvalidate);
+    HW::Y2R::PerformConversion(conversion, system.Memory());
     completion_event->Signal();
     IPC::ResponseBuilder rb{ctx, 0x26, 1, 0};
     rb.Push(RESULT_SUCCESS);
@@ -486,7 +486,7 @@ void Y2R_U::GetPackageParameter(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_Y2R, "called");
 }
 
-Y2R_U::Y2R_U(Core::System& system) : ServiceFramework{"y2r:u", 1} {
+Y2R_U::Y2R_U(Core::System& system) : ServiceFramework{"y2r:u", 1}, system{system} {
     static const FunctionInfo functions[]{
         {0x00010040, &Y2R_U::SetInputFormat, "SetInputFormat"},
         {0x00020000, &Y2R_U::GetInputFormat, "GetInputFormat"},

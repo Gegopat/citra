@@ -13,6 +13,7 @@
 #include "common/math_util.h"
 #include "common/scope_exit.h"
 #include "common/vector_math.h"
+#include "core/core.h"
 #include "core/core_timing.h"
 #include "core/hw/gpu.h"
 #include "core/settings.h"
@@ -37,11 +38,12 @@ static bool IsVendorAmd() {
            gpu_renderer == "Intel(R) HD Graphics 4400";
 }
 
-Rasterizer::Rasterizer(Core::Timing& timing)
+Rasterizer::Rasterizer(Core::System& system)
     : is_amd{IsVendorAmd()}, vertex_buffer{GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE, is_amd},
       uniform_buffer{GL_UNIFORM_BUFFER, UNIFORM_BUFFER_SIZE, false},
       index_buffer{GL_ELEMENT_ARRAY_BUFFER, INDEX_BUFFER_SIZE, false},
-      texture_buffer{GL_TEXTURE_BUFFER, TEXTURE_BUFFER_SIZE, false}, timing{timing} {
+      texture_buffer{GL_TEXTURE_BUFFER, TEXTURE_BUFFER_SIZE, false}, timing{system.CoreTiming()},
+      memory{system.Memory()}, res_cache{system.Memory()} {
     allow_shadow = GLAD_GL_ARB_shader_image_load_store && GLAD_GL_ARB_shader_image_size &&
                    GLAD_GL_ARB_framebuffer_no_attachments;
     if (!allow_shadow)
@@ -131,7 +133,7 @@ Rasterizer::Rasterizer(Core::Timing& timing)
     SyncEntireState();
     if (Settings::values.enable_cache_clear) {
         cache_clear_event = timing.RegisterEvent(
-            "Rasterizer Cache Clear Event", [&timing, this](u64 userdata, s64 cycles_late) {
+            "Rasterizer Cache Clear Event", [this](u64 userdata, s64 cycles_late) {
                 res_cache.Clear();
                 timing.ScheduleEvent(msToCycles(ClearCacheMs), cache_clear_event);
             });
@@ -237,7 +239,7 @@ Rasterizer::VertexArrayInfo Rasterizer::AnalyzeVertexArray(bool is_indexed) {
     if (is_indexed) {
         const auto& index_info{regs.pipeline.index_array};
         PAddr address{vertex_attributes.GetPhysicalBaseAddress() + index_info.offset};
-        const u8* index_address_8{Memory::GetPhysicalPointer(address)};
+        const u8* index_address_8{memory.GetPhysicalPointer(address)};
         const u16* index_address_16{reinterpret_cast<const u16*>(index_address_8)};
         bool index_u16{index_info.format != 0};
         vertex_min = 0xFFFF;
@@ -305,7 +307,7 @@ void Rasterizer::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset, GLuint 
         u32 vertex_num{vs_input_index_max - vs_input_index_min + 1};
         u32 data_size{loader.byte_count * vertex_num};
         res_cache.FlushRegion(data_addr, data_size, nullptr);
-        std::memcpy(array_ptr, Memory::GetPhysicalPointer(data_addr), data_size);
+        std::memcpy(array_ptr, memory.GetPhysicalPointer(data_addr), data_size);
         array_ptr += data_size;
         buffer_offset += data_size;
     }
@@ -418,8 +420,8 @@ bool Rasterizer::AccelerateDrawBatchInternal(bool is_indexed, bool use_gs) {
             return false;
         }
         const u8* index_data{
-            Memory::GetPhysicalPointer(regs.pipeline.vertex_attributes.GetPhysicalBaseAddress() +
-                                       regs.pipeline.index_array.offset)};
+            memory.GetPhysicalPointer(regs.pipeline.vertex_attributes.GetPhysicalBaseAddress() +
+                                      regs.pipeline.index_array.offset)};
         std::tie(buffer_ptr, buffer_offset, std::ignore) = index_buffer.Map(index_buffer_size, 4);
         std::memcpy(buffer_ptr, index_data, index_buffer_size);
         index_buffer.Unmap(index_buffer_size);

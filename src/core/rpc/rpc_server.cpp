@@ -27,15 +27,15 @@ RPCServer::~RPCServer() {
 
 void RPCServer::HandleReadMemory(Packet& packet, u32 address, u32 data_size) {
     // Note: Memory read occurs asynchronously from the state of the emulator
-    Memory::ReadBlock(*system.Kernel().GetCurrentProcess(), address, packet.GetPacketData().data(),
-                      data_size);
+    system.Memory().ReadBlock(*system.Kernel().GetCurrentProcess(), address,
+                              packet.GetPacketData().data(), data_size);
     packet.SetPacketDataSize(data_size);
     packet.SendReply();
 }
 
 void RPCServer::HandleWriteMemory(Packet& packet, u32 address, const u8* data, u32 data_size) {
     // Note: Memory write occurs asynchronously from the state of the emulator
-    Memory::WriteBlock(*system.Kernel().GetCurrentProcess(), address, data, data_size);
+    system.Memory().WriteBlock(*system.Kernel().GetCurrentProcess(), address, data, data_size);
     // If the memory happens to be executable code, make sure the changes become visible
     system.CPU().InvalidateCacheRange(address, data_size);
     packet.SetPacketDataSize(0);

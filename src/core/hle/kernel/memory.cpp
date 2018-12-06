@@ -89,7 +89,8 @@ MemoryRegionInfo* KernelSystem::GetMemoryRegion(MemoryRegion region) {
     }
 }
 
-void HandleSpecialMapping(VMManager& address_space, const AddressMapping& mapping) {
+void HandleSpecialMapping(Memory::MemorySystem& memory, VMManager& address_space,
+                          const AddressMapping& mapping) {
     using namespace Memory;
     struct MemoryArea {
         VAddr vaddr_base;
@@ -126,7 +127,7 @@ void HandleSpecialMapping(VMManager& address_space, const AddressMapping& mappin
                   area->paddr_base + offset_into_region);
         return;
     }
-    u8* target_pointer{Memory::GetPhysicalPointer(area->paddr_base + offset_into_region)};
+    u8* target_pointer{memory.GetPhysicalPointer(area->paddr_base + offset_into_region)};
     // TODO: This flag seems to have some other effect, but it's unknown what
     MemoryState memory_state{mapping.unk_flag ? MemoryState::Static : MemoryState::IO};
     auto vma{
