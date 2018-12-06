@@ -29,18 +29,7 @@ void DSP_DSP::RecvData(Kernel::HLERequestContext& ctx) {
     // or slept.
     auto rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
-    switch (system.DSP().GetDspState()) {
-    case AudioCore::DspState::On:
-        rb.Push<u32>(0);
-        break;
-    case AudioCore::DspState::Off:
-    case AudioCore::DspState::Sleeping:
-        rb.Push<u32>(1);
-        break;
-    default:
-        UNREACHABLE();
-        break;
-    }
+    rb.Push(system.DSP().RecvData(register_number));
     LOG_DEBUG(Service_DSP, "register_number={}", register_number);
 }
 
@@ -214,8 +203,8 @@ void DSP_DSP::RegisterInterruptEvents(Kernel::HLERequestContext& ctx) {
     auto event{rp.PopObject<Kernel::Event>()};
     ASSERT_MSG(interrupt < NUM_INTERRUPT_TYPE && channel < AudioCore::num_dsp_pipe,
                "Invalid type or pipe: interrupt={}, channel={}", interrupt, channel);
-    const InterruptType type{static_cast<InterruptType>(interrupt)};
-    const DspPipe pipe{static_cast<DspPipe>(channel)};
+    const auto type{static_cast<InterruptType>(interrupt)};
+    const auto pipe{static_cast<DspPipe>(channel)};
     auto rb{rp.MakeBuilder(1, 0)};
     if (event) { /// Register interrupt event
         if (HasTooManyEventsRegistered()) {

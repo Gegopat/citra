@@ -56,10 +56,9 @@ private:
     /// Checks if we're trying to register more than 6 events
     bool HasTooManyEventsRegistered() const;
 
-    Kernel::SharedPtr<Kernel::Event> semaphore_event{};
-
-    Kernel::SharedPtr<Kernel::Event> interrupt_zero{};
-    Kernel::SharedPtr<Kernel::Event> interrupt_one{}; // Currently unknown purpose
+    Kernel::SharedPtr<Kernel::Event> semaphore_event;
+    Kernel::SharedPtr<Kernel::Event> interrupt_zero;
+    Kernel::SharedPtr<Kernel::Event> interrupt_one; // Currently unknown purpose
 
     /// Each DSP pipe has an associated interrupt
     std::array<Kernel::SharedPtr<Kernel::Event>, AudioCore::num_dsp_pipe> pipes{};
