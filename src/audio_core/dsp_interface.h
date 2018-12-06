@@ -93,6 +93,9 @@ public:
     /// Loads the DSP program
     virtual void LoadComponent(const std::vector<u8>& buffer) = 0;
 
+    /// Unloads the DSP program
+    virtual void UnloadComponent() = 0;
+
     /// Creates a new sink to change the audio device
     void UpdateSink();
 

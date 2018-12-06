@@ -380,4 +380,8 @@ void DspHle::LoadComponent(const std::vector<u8>& component_data) {
     }
 }
 
+void DspHle::UnloadComponent() {
+    // Do nothing
+}
+
 } // namespace AudioCore
