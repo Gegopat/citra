@@ -1030,6 +1030,7 @@ void GMainWindow::OnOpenConfiguration() {
     auto result{configuration_dialog.exec()};
     if (result == QDialog::Accepted) {
         if (configuration_dialog.restore_defaults_requested) {
+            Settings::values.disable_mh_2xmsaa = old_disable_mh_2xmsaa;
             config.RestoreDefaults();
             UpdateUITheme();
             emit UpdateThemedIcons();

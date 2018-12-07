@@ -23,7 +23,9 @@ ConfigurationGeneral::ConfigurationGeneral(QWidget* parent)
 #endif
     connect(ui->restore_defaults, &QPushButton::released, this, [this] {
         auto answer{QMessageBox::question(
-            this, "Citra", "Are you sure you want to <b>restore your settings to default</b>?",
+            this, "Citra",
+            "Are you sure you want to <b>restore your settings to default except Disable Monster "
+            "Hunter's 2x multi-sample anti-aliasing</b>?",
             QMessageBox::Yes | QMessageBox::No, QMessageBox::No)};
         if (answer == QMessageBox::No)
             return;
