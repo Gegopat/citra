@@ -63,7 +63,7 @@
              <string>Hacks</string>
             </attribute>
            </widget>
-           <widget class="ConfigurationLLE" name="lleTab">
+           <widget class="ConfigurationLle" name="lleTab">
             <attribute name="title">
              <string>LLE</string>
             </attribute>
@@ -122,7 +122,7 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>ConfigurationLLE</class>
+   <class>ConfigurationLle</class>
    <extends>QWidget</extends>
    <header>configuration/lle.h</header>
    <container>1</container>

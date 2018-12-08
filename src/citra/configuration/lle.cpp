@@ -8,14 +8,14 @@
 #include "core/settings.h"
 #include "ui_lle.h"
 
-ConfigurationLLE::ConfigurationLLE(QWidget* parent)
-    : QWidget{parent}, ui{std::make_unique<Ui::ConfigurationLLE>()} {
+ConfigurationLle::ConfigurationLle(QWidget* parent)
+    : QWidget{parent}, ui{std::make_unique<Ui::ConfigurationLle>()} {
     ui->setupUi(this);
 }
 
-ConfigurationLLE::~ConfigurationLLE() {}
+ConfigurationLle::~ConfigurationLle() {}
 
-void ConfigurationLLE::LoadConfiguration(Core::System& system) {
+void ConfigurationLle::LoadConfiguration(Core::System& system) {
     bool allow_changes{!system.IsPoweredOn()};
     ui->use_lle_applets->setEnabled(allow_changes);
     ui->use_lle_dsp->setEnabled(allow_changes);
@@ -30,7 +30,7 @@ void ConfigurationLLE::LoadConfiguration(Core::System& system) {
     }
 }
 
-void ConfigurationLLE::ApplyConfiguration() {
+void ConfigurationLle::ApplyConfiguration() {
     Settings::values.use_lle_applets = ui->use_lle_applets->isChecked();
     Settings::values.use_lle_dsp = ui->use_lle_dsp->isChecked();
     for (const auto& checkbox : module_checkboxes)

@@ -193,10 +193,11 @@ struct DspLle::Impl final {
         std::vector<u8> data(bsize);
         u8* buffer_ptr{data.data()};
         while (bsize != 0) {
-            u16 x{pipe_status.read_bptr ^ pipe_status.write_bptr};
+            u16 x{static_cast<u16>(pipe_status.read_bptr ^ pipe_status.write_bptr)};
             ASSERT_MSG(x != 0, "Pipe is empty");
-            u16 read_bend{x >= 0x8000 ? pipe_status.bsize : pipe_status.write_bptr & 0x7FFF};
-            u16 read_bbegin{pipe_status.read_bptr & 0x7FFF};
+            u16 read_bend{static_cast<u16>(x >= 0x8000 ? pipe_status.bsize
+                                                       : pipe_status.write_bptr & 0x7FFF)};
+            u16 read_bbegin{static_cast<u16>(pipe_status.read_bptr & 0x7FFF)};
             ASSERT(read_bend > read_bbegin);
             u16 read_bsize{std::min<u16>(bsize, read_bend - read_bbegin)};
             std::memcpy(buffer_ptr, GetDspDataPointer(pipe_status.waddress * 2 + read_bbegin),
@@ -334,8 +335,8 @@ void DspLle::SetServiceToInterrupt(std::weak_ptr<Service::DSP::DSP_DSP> dsp) {
         if (impl->semaphore_signaled && impl->data_signaled) {
             impl->semaphore_signaled = impl->data_signaled = false;
             u16 slot{teakra.RecvData(2)};
-            u16 side{slot % 2};
-            u16 pipe{slot / 2};
+            u16 side{static_cast<u16>(slot % 2)};
+            u16 pipe{static_cast<u16>(slot / 2)};
             ASSERT(pipe < 16);
             if (side != static_cast<u16>(PipeDirection::DSPtoCPU))
                 return;
@@ -359,7 +360,7 @@ void DspLle::UnloadComponent() {
     impl->UnloadComponent();
 }
 
-DspLle::DspLle(Core::System& system) : DspInterface{system}, impl{std::make_unique<Impl>()} {
+DspLle::DspLle(Core::System& system) : DspInterface{system}, impl{std::make_unique<Impl>(system)} {
     Teakra::AHBMCallback ahbm;
     ahbm.read8 = [&system](u32 address) -> u8 {
         return *system.Memory().GetFCRAMPointer(address - Memory::FCRAM_PADDR);

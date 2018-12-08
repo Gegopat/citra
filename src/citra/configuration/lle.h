@@ -12,24 +12,24 @@ class System;
 } // namespace Core
 
 namespace Ui {
-class ConfigurationLLE;
+class ConfigurationLle;
 } // namespace Ui
 
 template <typename>
 class QList;
 class QCheckBox;
 
-class ConfigurationLLE : public QWidget {
+class ConfigurationLle : public QWidget {
     Q_OBJECT
 
 public:
-    explicit ConfigurationLLE(QWidget* parent = nullptr);
-    ~ConfigurationLLE();
+    explicit ConfigurationLle(QWidget* parent = nullptr);
+    ~ConfigurationLle();
 
     void LoadConfiguration(Core::System& system);
     void ApplyConfiguration();
 
 private:
-    std::unique_ptr<Ui::ConfigurationLLE> ui;
+    std::unique_ptr<Ui::ConfigurationLle> ui;
     QList<QCheckBox*> module_checkboxes;
 };
