@@ -304,7 +304,7 @@ ResultVal<SharedPtr<Thread>> KernelSystem::CreateThread(std::string name, VAddr 
         auto& vm_manager{owner_process.vm_manager};
         // Map the page to the current process' address space.
         vm_manager.MapBackingMemory(Memory::TLS_AREA_VADDR + available_page * Memory::PAGE_SIZE,
-                                    memory.fcram.data() + *offset, Memory::PAGE_SIZE,
+                                    memory.GetFCRAMPointer(*offset), Memory::PAGE_SIZE,
                                     MemoryState::Locked);
     }
     // Mark the slot as used

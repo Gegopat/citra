@@ -263,6 +263,9 @@ public:
     /// Gets offset in FCRAM from a pointer inside FCRAM range
     u32 GetFCRAMOffset(u8* pointer);
 
+    /// Gets pointer in FCRAM with given offset
+    u8* GetFCRAMPointer(u32 offset);
+
     std::array<u8, FCRAM_N3DS_SIZE> fcram{};
 
 private:

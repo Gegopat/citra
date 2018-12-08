@@ -174,8 +174,9 @@ ResultVal<VAddr> Process::HeapAllocate(VAddr target, u32 size, VMAPermission per
         auto& memory{system.Memory()};
         std::fill(memory.fcram.begin() + interval.lower(), memory.fcram.begin() + interval.upper(),
                   0);
-        auto vma{vm_manager.MapBackingMemory(
-            interval_target, memory.fcram.data() + interval.lower(), interval_size, memory_state)};
+        auto vma{vm_manager.MapBackingMemory(interval_target,
+                                             memory.GetFCRAMPointer(interval.lower()),
+                                             interval_size, memory_state)};
         ASSERT(vma.Succeeded());
         vm_manager.Reprotect(vma.Unwrap(), perms);
         interval_target += interval_size;
@@ -234,7 +235,7 @@ ResultVal<VAddr> Process::LinearAllocate(VAddr target, u32 size, VMAPermission p
             return ERR_INVALID_ADDRESS_STATE;
         }
     }
-    u8* backing_memory{system.Memory().fcram.data() + physical_offset};
+    u8* backing_memory{system.Memory().GetFCRAMPointer(physical_offset))};
     std::fill(backing_memory, backing_memory + size, 0);
     auto vma{vm_manager.MapBackingMemory(target, backing_memory, size, MemoryState::Continuous)};
     ASSERT(vma.Succeeded());

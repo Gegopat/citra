@@ -659,4 +659,9 @@ u32 MemorySystem::GetFCRAMOffset(u8* pointer) {
     return pointer - fcram.data();
 }
 
+u8* MemorySystem::GetFCRAMPointer(u32 offset) {
+    ASSERT(offset <= Memory::FCRAM_N3DS_SIZE);
+    return impl->fcram.get() + offset;
+}
+
 } // namespace Memory
