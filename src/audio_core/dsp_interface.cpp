@@ -21,6 +21,7 @@ static const std::unordered_set<u64> ids_output_allowed_shell_closed{{
     0x0004001000027500,
     0x0004001000028500,
 }};
+
 DspInterface::DspInterface(Core::System& system_) : system{system_} {
     UpdateSink();
 }
