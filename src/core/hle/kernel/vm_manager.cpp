@@ -181,13 +181,14 @@ ResultCode VMManager::ReprotectRange(VAddr target, u32 size, VMAPermission new_p
 
 void VMManager::LogLayout(Log::Level log_level) const {
     for (const auto& p : vma_map) {
-        const VirtualMemoryArea& vma{p.second};
-        LOG_GENERIC(Kernel, log_level, "{:08X} - {:08X} size: {:08X} {}{}{} {}", vma.base,
-                    vma.base + vma.size, vma.size,
-                    (u8)vma.permissions & (u8)VMAPermission::Read ? 'R' : '-',
-                    (u8)vma.permissions & (u8)VMAPermission::Write ? 'W' : '-',
-                    (u8)vma.permissions & (u8)VMAPermission::Execute ? 'X' : '-',
-                    GetMemoryStateName(vma.meminfo_state));
+        const auto& vma{p.second};
+        LOG_GENERIC(
+            Kernel, log_level, "{:08X} - {:08X} size: {:08X} {}{}{} {}", vma.base,
+            vma.base + vma.size, vma.size,
+            static_cast<u8>(vma.permissions) & static_cast<u8>(VMAPermission::Read) ? 'R' : '-',
+            static_cast<u8>(vma.permissions) & static_cast<u8>(VMAPermission::Write) ? 'W' : '-',
+            static_cast<u8>(vma.permissions) & static_cast<u8>(VMAPermission::Execute) ? 'X' : '-',
+            GetMemoryStateName(vma.meminfo_state));
     }
 }
 

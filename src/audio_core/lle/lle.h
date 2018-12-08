@@ -29,7 +29,7 @@ public:
 
 private:
     struct Impl;
-    friend struct Impl;
+
     std::unique_ptr<Impl> impl;
 };
 

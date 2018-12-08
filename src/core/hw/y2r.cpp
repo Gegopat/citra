@@ -98,7 +98,8 @@ static void SendData(Memory::MemorySystem& memory, const u32* input, ConversionB
         u8* unit_end{output + buf.transfer_unit};
         while (output < unit_end) {
             u32 color{*input++};
-            Math::Vec4<u8> col_vec{(u8)(color >> 24), (u8)(color >> 16), (u8)(color >> 8), alpha};
+            Math::Vec4<u8> col_vec{static_cast<u8>(color >> 24), static_cast<u8>(color >> 16),
+                                   static_cast<u8>(color >> 8), alpha};
             switch (output_format) {
             case OutputFormat::RGBA8:
                 Color::EncodeRGBA8(col_vec, output);
@@ -325,7 +326,7 @@ void PerformConversion(ConversionConfiguration& cvt, Memory::MemorySystem& memor
         // Note: If additional optimization is required, output_format can be moved to a
         // template parameter, so that its dispatch can be moved to outside the inner loop.
         SendData(memory, reinterpret_cast<u32*>(data_buffer.get()), cvt.dst, (int)row_data_size,
-                 cvt.output_format, (u8)cvt.alpha);
+                 cvt.output_format, static_cast<u8>(cvt.alpha));
     }
 }
 

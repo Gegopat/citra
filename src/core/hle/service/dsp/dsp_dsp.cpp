@@ -337,10 +337,9 @@ DSP_DSP::DSP_DSP(Core::System& system) : ServiceFramework{"dsp::DSP"}, system{sy
     };
     RegisterHandlers(functions);
     semaphore_event =
-        system.Kernel().CreateEvent(Kernel::ResetType::OneShot, "DSP_DSP::semaphore_event");
-
+        system.Kernel().CreateEvent(Kernel::ResetType::OneShot, "dsp::DSP Semaphore Event");
     semaphore_event->SetHLENotifier(
-        [this]() { this->system.DSP().SetSemaphore(preset_semaphore); });
+        [&system, this]() { system.DSP().SetSemaphore(preset_semaphore); });
 }
 
 DSP_DSP::~DSP_DSP() = default;

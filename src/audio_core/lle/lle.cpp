@@ -72,7 +72,7 @@ Dsp1::Dsp1(const std::vector<u8>& raw) {
                             raw.begin() + header.segments[i].offset + header.segments[i].size);
         segment.memory_type = header.segments[i].memory_type;
         segment.target = header.segments[i].address;
-        segments.push_back(segment);
+        segments.emplace_back(std::move(segment));
     }
 }
 
@@ -93,7 +93,7 @@ enum class PipeDirection : u8 {
 };
 
 static u8 PipeIndexToSlotIndex(u8 pipe_index, PipeDirection direction) {
-    return (pipe_index << 1) + (u8)direction;
+    return (pipe_index << 1) + static_cast<u8>(direction);
 }
 
 struct DspLle::Impl final {

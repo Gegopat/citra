@@ -98,10 +98,8 @@ DspState DspHle::Impl::GetDspState() const {
 
 u16 DspHle::Impl::RecvData(u32 register_number) {
     ASSERT_MSG(register_number == 0, "Unknown register_number {}", register_number);
-
-    // Application reads this after requesting DSP shutdown, to verify the DSP has indeed shutdown
+    // Program reads this after requesting DSP shutdown, to verify the DSP has indeed shutdown
     // or slept.
-
     switch (GetDspState()) {
     case AudioCore::DspState::On:
         return 0;
@@ -115,7 +113,7 @@ u16 DspHle::Impl::RecvData(u32 register_number) {
 }
 
 bool DspHle::Impl::RecvDataIsReady(u32 register_number) const {
-    ASSERT_MSG(register_number == 0, "Unknown register_number {}", register_number);
+    ASSERT_MSG(register_number == 0, "Unknown register {}", register_number);
     return true;
 }
 
