@@ -42,15 +42,14 @@ void DspInterface::EnableStretching(bool enable) {
 }
 
 void DspInterface::OutputFrame(StereoFrame16& frame) {
-    if (!sink)
+    if (!IsOutputAllowed())
         return;
     fifo.Push(frame.data(), frame.size());
 }
 
 void DspInterface::OutputSample(std::array<s16, 2> sample) {
-    if (!sink)
+    if (!IsOutputAllowed())
         return;
-
     fifo.Push(&sample, 1);
 }
 
@@ -84,7 +83,9 @@ void DspInterface::OutputCallback(s16* buffer, std::size_t num_frames) {
 }
 
 bool DspInterface::IsOutputAllowed() {
-    if (!system.IsSleepModeEnabled())
+    if (!sink)
+        return false;
+    else if (!system.IsSleepModeEnabled())
         return true;
     else
         return ids_output_allowed_shell_closed.count(

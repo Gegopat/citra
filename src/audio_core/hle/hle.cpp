@@ -308,8 +308,6 @@ StereoFrame16 DspHle::Impl::GenerateCurrentFrame() {
 }
 
 bool DspHle::Impl::Tick() {
-    if (!parent.IsOutputAllowed())
-        return false;
     // TODO: Check dsp::DSP semaphore (which indicates emulated program has finished writing to
     // shared memory region)
     auto frame{GenerateCurrentFrame()};
