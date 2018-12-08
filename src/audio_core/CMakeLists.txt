@@ -2,6 +2,8 @@ add_library(audio_core STATIC
     audio_types.h
     codec.cpp
     codec.h
+    dsp_interface.cpp
+    dsp_interface.h
     hle/common.h
     hle/filter.cpp
     hle/filter.h

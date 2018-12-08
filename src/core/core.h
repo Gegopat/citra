@@ -20,7 +20,7 @@ class Cpu;
 class Frontend;
 
 namespace AudioCore {
-class DspHle;
+class DspInterface;
 } // namespace AudioCore
 
 namespace Cheats {
@@ -142,7 +142,7 @@ public:
     }
 
     /// Gets a reference to the emulated DSP.
-    AudioCore::DspHle& DSP() {
+    AudioCore::DspInterface& DSP() {
         return *dsp_core;
     }
 
@@ -269,7 +269,7 @@ private:
     std::unique_ptr<Cpu> cpu_core;
 
     /// DSP core
-    std::unique_ptr<AudioCore::DspHle> dsp_core;
+    std::unique_ptr<AudioCore::DspInterface> dsp_core;
 
     /// When true, signals that a reschedule should happen
     bool reschedule_pending{};
