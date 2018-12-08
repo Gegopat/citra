@@ -33,7 +33,7 @@ ConfigurationGeneral::ConfigurationGeneral(QWidget* parent)
     });
 }
 
-ConfigurationGeneral::~ConfigurationGeneral() {}
+ConfigurationGeneral::~ConfigurationGeneral() = default;
 
 void ConfigurationGeneral::LoadConfiguration(Core::System& system) {
     ui->toggle_console->setEnabled(!system.IsPoweredOn());

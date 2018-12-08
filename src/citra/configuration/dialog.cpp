@@ -40,7 +40,7 @@ ConfigurationDialog::ConfigurationDialog(QWidget* parent, HotkeyRegistry& hotkey
     ui->hotkeysTab->EmitHotkeysChanged();
 }
 
-ConfigurationDialog::~ConfigurationDialog() {}
+ConfigurationDialog::~ConfigurationDialog() = default;
 
 void ConfigurationDialog::ApplyConfiguration() {
     ui->generalTab->ApplyConfiguration();

@@ -20,7 +20,7 @@ class ConfigurationGeneral : public QWidget {
 
 public:
     explicit ConfigurationGeneral(QWidget* parent = nullptr);
-    ~ConfigurationGeneral();
+    ~ConfigurationGeneral() override;
 
     void LoadConfiguration(Core::System& system);
     void ApplyConfiguration();

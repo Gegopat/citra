@@ -12,7 +12,7 @@ ConfigurationHacks::ConfigurationHacks(QWidget* parent)
     ui->setupUi(this);
 }
 
-ConfigurationHacks::~ConfigurationHacks() {}
+ConfigurationHacks::~ConfigurationHacks() = default;
 
 void ConfigurationHacks::LoadConfiguration(Core::System& system) {
     ui->toggle_priority_boost->setChecked(Settings::values.priority_boost);

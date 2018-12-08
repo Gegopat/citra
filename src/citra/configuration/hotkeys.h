@@ -21,7 +21,7 @@ class ConfigurationHotkeys : public QWidget {
 
 public:
     explicit ConfigurationHotkeys(QWidget* parent = nullptr);
-    ~ConfigurationHotkeys();
+    ~ConfigurationHotkeys() override;
 
     void ApplyConfiguration(HotkeyRegistry& registry);
     void EmitHotkeysChanged();

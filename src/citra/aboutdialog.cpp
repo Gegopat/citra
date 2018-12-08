@@ -16,4 +16,4 @@ AboutDialog::AboutDialog(QWidget* parent)
         Common::g_scm_branch, Common::g_scm_desc, QString(Common::g_build_date).left(10)));
 }
 
-AboutDialog::~AboutDialog() {}
+AboutDialog::~AboutDialog() = default;

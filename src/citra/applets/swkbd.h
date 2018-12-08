@@ -18,7 +18,7 @@ class SoftwareKeyboardDialog : public QDialog {
 public:
     explicit SoftwareKeyboardDialog(QWidget* parent, HLE::Applets::SoftwareKeyboardConfig& config,
                                     std::u16string& text);
-    ~SoftwareKeyboardDialog();
+    ~SoftwareKeyboardDialog() override;
 
 private:
     std::unique_ptr<Ui::SoftwareKeyboardDialog> ui;

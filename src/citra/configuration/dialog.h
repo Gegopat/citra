@@ -23,7 +23,7 @@ class ConfigurationDialog : public QDialog {
 public:
     explicit ConfigurationDialog(QWidget* parent, HotkeyRegistry& hotkey_registry,
                                  Core::System& system);
-    ~ConfigurationDialog();
+    ~ConfigurationDialog() override;
 
     void ApplyConfiguration();
 

@@ -13,7 +13,7 @@ ConfigurationLle::ConfigurationLle(QWidget* parent)
     ui->setupUi(this);
 }
 
-ConfigurationLle::~ConfigurationLle() {}
+ConfigurationLle::~ConfigurationLle() = default;
 
 void ConfigurationLle::LoadConfiguration(Core::System& system) {
     bool allow_changes{!system.IsPoweredOn()};

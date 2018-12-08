@@ -30,6 +30,7 @@ class ConfigurationInput : public QWidget {
 
 public:
     explicit ConfigurationInput(QWidget* parent = nullptr);
+    ~ConfigurationInput() override;
 
     /// Save all button configurations
     void ApplyConfiguration();

@@ -20,7 +20,7 @@ class ConfigurationHacks : public QWidget {
 
 public:
     explicit ConfigurationHacks(QWidget* parent = nullptr);
-    ~ConfigurationHacks();
+    ~ConfigurationHacks() override;
 
     void LoadConfiguration(Core::System& system);
     void ApplyConfiguration(Core::System& system);

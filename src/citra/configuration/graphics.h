@@ -20,7 +20,7 @@ class ConfigurationGraphics : public QWidget {
 
 public:
     explicit ConfigurationGraphics(QWidget* parent = nullptr);
-    ~ConfigurationGraphics();
+    ~ConfigurationGraphics() override;
 
     void LoadConfiguration(Core::System& system);
     void ApplyConfiguration();

@@ -235,7 +235,7 @@ ResultVal<VAddr> Process::LinearAllocate(VAddr target, u32 size, VMAPermission p
             return ERR_INVALID_ADDRESS_STATE;
         }
     }
-    u8* backing_memory{system.Memory().GetFCRAMPointer(physical_offset))};
+    u8* backing_memory{system.Memory().GetFCRAMPointer(physical_offset)};
     std::fill(backing_memory, backing_memory + size, 0);
     auto vma{vm_manager.MapBackingMemory(target, backing_memory, size, MemoryState::Continuous)};
     ASSERT(vma.Succeeded());

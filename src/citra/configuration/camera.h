@@ -16,17 +16,17 @@ class ConfigurationCamera : public QWidget {
 
 public:
     explicit ConfigurationCamera(QWidget* parent = nullptr);
-    ~ConfigurationCamera();
+    ~ConfigurationCamera() override;
+
     void ApplyConfiguration();
     void timerEvent(QTimerEvent*) override;
-
-public slots:
-    void LoadConfiguration();
-    void OnToolButtonClicked();
 
 private:
     enum class CameraPosition { RearRight, Front, RearLeft, RearBoth, Null };
     static const std::array<std::string, 3> Implementations;
+
+    void LoadConfiguration();
+    void OnToolButtonClicked();
     void RecordConfig();        ///< Record the current configuration
     void UpdateCameraMode();    ///< Updates camera mode
     void UpdateImageSourceUI(); ///< Updates image source

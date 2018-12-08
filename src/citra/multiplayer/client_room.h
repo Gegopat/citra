@@ -22,16 +22,14 @@ public:
 
     Core::System& system;
 
-public slots:
-    void OnRoomUpdate(const Network::RoomInformation&);
-    void OnStateChange(const Network::RoomMember::State&);
-
 signals:
     void RoomInformationChanged(const Network::RoomInformation&);
     void StateChanged(const Network::RoomMember::State&);
     void ShowNotification();
 
 private:
+    void OnRoomUpdate(const Network::RoomInformation&);
+    void OnStateChange(const Network::RoomMember::State&);
     void UpdateView();
 
     QStandardItemModel* member_list;

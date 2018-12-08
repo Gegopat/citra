@@ -230,7 +230,7 @@ ConfigurationSystem::ConfigurationSystem(QWidget* parent)
             ui->combo_country->addItem(country_names.at(i), i);
 }
 
-ConfigurationSystem::~ConfigurationSystem() {}
+ConfigurationSystem::~ConfigurationSystem() = default;
 
 void ConfigurationSystem::LoadConfiguration(Core::System& system) {
     QDateTime dt;

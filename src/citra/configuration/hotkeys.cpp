@@ -26,7 +26,7 @@ ConfigurationHotkeys::ConfigurationHotkeys(QWidget* parent)
     ui->hotkey_list->setEditTriggers(QTreeView::NoEditTriggers);
 }
 
-ConfigurationHotkeys::~ConfigurationHotkeys() {}
+ConfigurationHotkeys::~ConfigurationHotkeys() = default;
 
 void ConfigurationHotkeys::EmitHotkeysChanged() {
     emit HotkeysChanged(GetUsedKeyList());

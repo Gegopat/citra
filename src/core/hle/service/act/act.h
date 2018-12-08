@@ -57,15 +57,15 @@ struct Birthday {
 };
 
 struct InfoBlock {
-    u32 PersistentID;
+    u32 persistent_id;
     u32 padding;
-    u64 TransferableIDBase;
-    u8 MiiData[0x60];
-    char16_t MachinUserName[0xB];
-    char AccountID[0x11];
+    u64 transferable_id_base;
+    std::array<u8, 0x60> mii_data;
+    std::array<char16_t, 0xB> username;
+    std::array<char, 0x11> account_id;
     u8 padding2;
     Birthday birthday;
-    u32 PrincipalID;
+    u32 principal_id;
 };
 
 class Module final {

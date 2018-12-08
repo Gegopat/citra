@@ -24,7 +24,7 @@ class ConfigurationLle : public QWidget {
 
 public:
     explicit ConfigurationLle(QWidget* parent = nullptr);
-    ~ConfigurationLle();
+    ~ConfigurationLle() override;
 
     void LoadConfiguration(Core::System& system);
     void ApplyConfiguration();

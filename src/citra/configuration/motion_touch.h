@@ -24,7 +24,7 @@ class CalibrationConfigurationDialog : public QDialog {
 public:
     explicit CalibrationConfigurationDialog(QWidget* parent, const std::string& host, u16 port,
                                             u8 pad_index, u16 client_id);
-    ~CalibrationConfigurationDialog();
+    ~CalibrationConfigurationDialog() override;
 
 private:
     Q_INVOKABLE void UpdateLabelText(QString text);
@@ -47,7 +47,7 @@ class ConfigurationMotionTouch : public QDialog {
 
 public:
     explicit ConfigurationMotionTouch(QWidget* parent = nullptr);
-    ~ConfigurationMotionTouch();
+    ~ConfigurationMotionTouch() override;
 
 public slots:
     void ApplyConfiguration();

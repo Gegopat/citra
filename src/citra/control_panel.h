@@ -20,7 +20,7 @@ class ControlPanel : public QDialog {
 
 public:
     explicit ControlPanel(Core::System& system, QWidget* parent = nullptr);
-    ~ControlPanel();
+    ~ControlPanel() override;
 
     void Update3D();
     void UpdateNetwork();

@@ -15,7 +15,7 @@ ConfigurationAudio::ConfigurationAudio(QWidget* parent)
     LoadConfiguration();
 }
 
-ConfigurationAudio::~ConfigurationAudio() {}
+ConfigurationAudio::~ConfigurationAudio() = default;
 
 void ConfigurationAudio::LoadConfiguration() {
     ui->toggle_audio_stretching->setChecked(Settings::values.enable_audio_stretching);

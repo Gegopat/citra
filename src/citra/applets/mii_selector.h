@@ -20,10 +20,11 @@ class MiiSelectorDialog : public QDialog {
 public:
     explicit MiiSelectorDialog(QWidget* parent, const HLE::Applets::MiiConfig& config,
                                HLE::Applets::MiiResult& result);
-    ~MiiSelectorDialog();
+    ~MiiSelectorDialog() override;
+
     void ShowNoSelectableMiiCharacters(HLE::Applets::MiiResult& result);
 
 private:
     std::unique_ptr<Ui::MiiSelectorDialog> ui;
-    std::unordered_map<int, MiiData> miis;
+    std::unordered_map<int, HLE::Applets::MiiData> miis;
 };

@@ -27,10 +27,10 @@ void ProgramListWorker::AddFstEntriesToProgramList(const std::string& dir_path,
     const auto callback{[this, recursion, parent_dir](u64* num_entries_out,
                                                       const std::string& directory,
                                                       const std::string& virtual_name) -> bool {
-        auto physical_name{fmt::format("{}/{}", directory, virtual_name)};
         if (stop_processing)
             return false; // Breaks the callback loop.
-        bool is_dir{FileUtil::IsDirectory(physical_name)};
+        const auto physical_name{fmt::format("{}/{}", directory, virtual_name)};
+        const bool is_dir{FileUtil::IsDirectory(physical_name)};
         if (!is_dir && HasSupportedFileExtension(physical_name)) {
             auto loader{Loader::GetLoader(system, physical_name)};
             if (!loader)

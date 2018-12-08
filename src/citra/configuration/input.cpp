@@ -23,7 +23,7 @@ const std::array<std::string, ConfigurationInput::ANALOG_SUB_BUTTONS_NUM>
         "modifier",
     }};
 
-static QString getKeyName(int key_code) {
+static QString GetKeyName(int key_code) {
     switch (key_code) {
     case Qt::Key_Shift:
         return "Shift";
@@ -40,12 +40,11 @@ static QString getKeyName(int key_code) {
 
 static void SetAnalogButton(const Common::ParamPackage& input_param,
                             Common::ParamPackage& analog_param, const std::string& button_name) {
-    if (analog_param.Get("engine", "") != "analog_from_button") {
+    if (analog_param.Get("engine", "") != "analog_from_button")
         analog_param = {
             {"engine", "analog_from_button"},
             {"modifier_scale", "0.5"},
         };
-    }
     analog_param.Set(button_name, input_param.Serialize());
 }
 
@@ -53,7 +52,7 @@ static QString ButtonToText(const Common::ParamPackage& param) {
     if (!param.Has("engine"))
         return "[not set]";
     else if (param.Get("engine", "") == "keyboard")
-        return getKeyName(param.Get("code", 0));
+        return GetKeyName(param.Get("code", 0));
     else if (param.Get("engine", "") == "sdl") {
         if (param.Has("hat"))
             return QString("Hat %1 %2")
@@ -238,6 +237,8 @@ ConfigurationInput::ConfigurationInput(QWidget* parent)
     });
     LoadConfiguration();
 }
+
+ConfigurationInput::~ConfigurationInput() = default;
 
 void ConfigurationInput::EmitInputKeysChanged() {
     emit InputKeysChanged(GetUsedKeyboardKeys());

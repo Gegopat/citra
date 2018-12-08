@@ -20,7 +20,7 @@ ConfigurationGraphics::ConfigurationGraphics(QWidget* parent)
     ui->resolution_factor_combobox->addItems(UISettings::resolutions);
 }
 
-ConfigurationGraphics::~ConfigurationGraphics() {}
+ConfigurationGraphics::~ConfigurationGraphics() = default;
 
 void ConfigurationGraphics::LoadConfiguration(Core::System& system) {
     ui->enable_shadows->setEnabled(!system.IsPoweredOn());

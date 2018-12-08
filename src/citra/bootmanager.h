@@ -52,7 +52,7 @@ class Screens : public QWidget, public Frontend {
 
 public:
     explicit Screens(GMainWindow* parent, EmuThread* emu_thread, Core::System& system);
-    ~Screens();
+    ~Screens() override;
 
     void SwapBuffers() override;
     void MakeCurrent() override;
@@ -107,7 +107,7 @@ public:
     void UpdateFrameAdvancing() override;
 
 public slots:
-    void moveContext(); // overridden
+    void moveContext(); // Overridden
 
     void OnEmulationStarting(EmuThread* emu_thread);
     void OnEmulationStopping();

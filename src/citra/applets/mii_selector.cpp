@@ -40,17 +40,15 @@ MiiSelectorDialog::MiiSelectorDialog(QWidget* parent, const HLE::Applets::MiiCon
     auto file{std::move(file_result).Unwrap()};
     u32 id;
     u32 offset{0x8};
-    MiiData mii;
+    HLE::Applets::MiiData mii;
     for (int i{}; i < 100; ++i) {
-        file->Read(offset, mii.size(), mii.data());
-        std::memcpy(&id, mii.data(), sizeof(u32));
-        if (id != 0 && config.user_mii_whitelist[i] != 0) {
-            std::u16string name(10, '\0');
-            std::memcpy(&name[0], mii.data() + 0x1A, 0x14);
+        file->Read(offset, sizeof(mii), reinterpret_cast<u8*>(&mii));
+        if (mii.mii_id != 0 && config.user_mii_whitelist[i] != 0) {
             miis.emplace(ui->mii->count(), mii);
-            ui->mii->addItem(QString::fromStdU16String(name));
+            ui->mii->addItem(QString::fromStdU16String(
+                std::u16string(reinterpret_cast<char16_t*>(mii.mii_name.data()))));
         }
-        offset += mii.size();
+        offset += sizeof(mii);
     }
     if (miis.empty()) {
         ShowNoSelectableMiiCharacters(result);
@@ -64,13 +62,13 @@ MiiSelectorDialog::MiiSelectorDialog(QWidget* parent, const HLE::Applets::MiiCon
     });
     connect(ui->confirm, &QPushButton::released, this, [&] {
         auto mii{miis.at(ui->mii->currentIndex())};
-        std::memcpy(result.selected_mii_data.data(), mii.data(), mii.size());
+        result.selected_mii_data = std::move(mii);
         result.selected_guest_mii_index = 0xFFFFFFFF;
         close();
     });
 }
 
-MiiSelectorDialog::~MiiSelectorDialog() {}
+MiiSelectorDialog::~MiiSelectorDialog() = default;
 
 void MiiSelectorDialog::ShowNoSelectableMiiCharacters(HLE::Applets::MiiResult& result) {
     QMessageBox message_box;

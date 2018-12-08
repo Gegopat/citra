@@ -43,14 +43,14 @@ void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0006, 3, 2};
     u8 unk{rp.Pop<u8>()};
     u32 size{rp.Pop<u32>()};
-    BlkID id{rp.PopEnum<BlkID>()};
+    auto id{rp.PopEnum<BlkID>()};
     auto& buffer{rp.PopMappedBuffer()};
     switch (id) {
     case BlkID::NNID: {
-        std::string nnid{Common::UTF16ToUTF8(act->system.ServiceManager()
-                                                 .GetService<CFG::Module::Interface>("cfg:u")
-                                                 ->GetModule()
-                                                 ->GetUsername())};
+        auto nnid{Common::UTF16ToUTF8(act->system.ServiceManager()
+                                          .GetService<CFG::Module::Interface>("cfg:u")
+                                          ->GetModule()
+                                          ->GetUsername())};
         nnid.resize(0x11);
         nnid = Common::ReplaceAll(nnid, " ", "_");
         buffer.Write(nnid.c_str(), 0, nnid.length());
@@ -62,10 +62,10 @@ void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
         break;
     }
     case BlkID::U16MiiName: {
-        std::u16string username{act->system.ServiceManager()
-                                    .GetService<CFG::Module::Interface>("cfg:u")
-                                    ->GetModule()
-                                    ->GetUsername()};
+        auto username{act->system.ServiceManager()
+                          .GetService<CFG::Module::Interface>("cfg:u")
+                          ->GetModule()
+                          ->GetUsername()};
         buffer.Write(username.c_str(), 0, username.length());
         break;
     }
@@ -95,11 +95,11 @@ void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
     }
     case BlkID::InfoStruct: {
         InfoBlock info{};
-        std::u16string username{act->system.ServiceManager()
-                                    .GetService<Service::CFG::Module::Interface>("cfg:u")
-                                    ->GetModule()
-                                    ->GetUsername()};
-        username.copy(info.MachinUserName, username.length());
+        auto username{act->system.ServiceManager()
+                          .GetService<Service::CFG::Module::Interface>("cfg:u")
+                          ->GetModule()
+                          ->GetUsername()};
+        username.copy(info.username.data(), username.length());
         buffer.Write(&info, 0, username.length());
         break;
     }

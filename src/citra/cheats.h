@@ -20,7 +20,7 @@ class CheatDialog : public QDialog {
 
 public:
     explicit CheatDialog(Core::System& system, QWidget* parent = nullptr);
-    ~CheatDialog();
+    ~CheatDialog() override;
 
 private:
     void LoadCheats();

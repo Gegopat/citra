@@ -107,7 +107,7 @@ ControlPanel::ControlPanel(Core::System& system, QWidget* parent)
     setWindowTitle("Control Panel");
 }
 
-ControlPanel::~ControlPanel() {}
+ControlPanel::~ControlPanel() = default;
 
 void ControlPanel::Update3D() {
     ui->slider_3d->setEnabled(!Settings::values.disable_mh_2xmsaa);

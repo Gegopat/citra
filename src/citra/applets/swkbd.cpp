@@ -101,4 +101,4 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent,
     });
 }
 
-SoftwareKeyboardDialog::~SoftwareKeyboardDialog() {}
+SoftwareKeyboardDialog::~SoftwareKeyboardDialog() = default;

@@ -38,7 +38,7 @@ class GMainWindow : public QMainWindow {
 
 public:
     explicit GMainWindow(Config& config, Core::System& system);
-    ~GMainWindow();
+    ~GMainWindow() override;
 
     void filterBarSetChecked(bool state);
     void UpdateUITheme();
