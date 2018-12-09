@@ -18,7 +18,7 @@ namespace AudioCore {
 class DspHle final : public DspInterface {
 public:
     explicit DspHle(Core::System& system);
-    ~DspHle();
+    ~DspHle() override;
 
     u16 RecvData(u32 register_number) override;
     bool RecvDataIsReady(u32 register_number) const override;
