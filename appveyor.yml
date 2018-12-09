@@ -36,13 +36,13 @@ install:
   - git submodule update --init --recursive
   - ps: |
         if ($env:BUILD_TYPE -eq 'mingw') {
-          $dependencies = "mingw64/mingw-w64-x86_64-qt5"
-          # redirect err to null to prevent warnings from becoming errors
-          # workaround to prevent pacman from failing due to cyclical dependencies
+          $dependencies = "mingw64/mingw-w64-x86_64-qt5 mingw64/mingw-w64-x86_64-ffmpeg"
+          # Redirect stderr to null to prevent warnings from becoming errors
+          # Workaround to prevent pacman from failing due to cyclical dependencies
           C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S mingw64/mingw-w64-x86_64-freetype mingw64/mingw-w64-x86_64-fontconfig" 2> $null
           C:\msys64\usr\bin\bash -lc "pacman --noconfirm -U http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-SDL2-2.0.5-2-any.pkg.tar.xz" 2> $null
           C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S $dependencies" 2> $null
-          # freeze the cmake to a stable version, on version < 3.9.6 cmake may generate a Makefile links against gcc_eh instead of gcc_s_eh
+          # Freeze the cmake to a stable version, on version < 3.9.6 cmake may generate a Makefile links against gcc_eh instead of gcc_s_eh
           C:\msys64\usr\bin\bash -lc "pacman --noconfirm -U http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-cmake-3.11.1-2-any.pkg.tar.xz" 2> $null
         }
 
@@ -51,10 +51,10 @@ before_build:
   - cd %BUILD_TYPE%_build
   - ps: |
         if ($env:BUILD_TYPE -eq 'msvc') {
-          # redirect stderr and change the exit code to prevent powershell from cancelling the build if cmake prints a warning
-          cmd /C 'cmake -G "Visual Studio 15 2017 Win64" -DCITRA_USE_BUNDLED_QT=1 -DCITRA_USE_BUNDLED_SDL2=1 -DENABLE_DISCORD_RPC=ON -DENABLE_SCRIPTING=ON .. 2>&1 && exit 0'
+          # Redirect stderr and change the exit code to prevent powershell from cancelling the build if CMake prints a warning
+          cmd /C 'cmake -G "Visual Studio 15 2017 Win64" -DCITRA_USE_BUNDLED_QT=1 -DCITRA_USE_BUNDLED_SDL2=1 -DENABLE_DISCORD_RPC=ON -DENABLE_SCRIPTING=ON -DENABLE_FFMPEG=ON .. 2>&1 && exit 0'
         } else {
-          C:\msys64\usr\bin\bash.exe -lc "cmake -G 'MSYS Makefiles' -DCMAKE_BUILD_TYPE=Release -DENABLE_DISCORD_RPC=ON -DENABLE_SCRIPTING=ON .. 2>&1"
+          C:\msys64\usr\bin\bash.exe -lc "cmake -G 'MSYS Makefiles' -DCMAKE_BUILD_TYPE=Release -DENABLE_DISCORD_RPC=ON -DENABLE_SCRIPTING=ON -DENABLE_FFMPEG=ON .. 2>&1"
         }
   - cd ..
 
@@ -85,7 +85,7 @@ after_build:
           $MSVC_BUILD_ZIP = "citra-windows-msvc-$GITDATE-$GITREV.zip" -replace " ", ""
           $MSVC_SEVENZIP = "citra-windows-msvc-$GITDATE-$GITREV.7z" -replace " ", ""
 
-          # set the build names as env vars so the artifacts can upload them
+          # Set the build names as env vars so the artifacts can upload them
           $env:BUILD_ZIP = $MSVC_BUILD_ZIP
           $env:BUILD_UPDATE = $MSVC_SEVENZIP
 
@@ -102,7 +102,7 @@ after_build:
           $MINGW_BUILD_ZIP = "citra-windows-mingw-$GITDATE-$GITREV.zip" -replace " ", ""
           $MINGW_SEVENZIP = "citra-windows-mingw-$GITDATE-$GITREV.7z" -replace " ", ""
 
-          # store the build information in env vars so we can use them as artifacts
+          # Store the build information in env vars so we can use them as artifacts
           $env:BUILD_ZIP = $MINGW_BUILD_ZIP
           $env:BUILD_UPDATE = $MINGW_SEVENZIP
 
@@ -116,24 +116,24 @@ after_build:
           mkdir $RELEASE_DIST/styles
           mkdir $RELEASE_DIST/imageformats
 
-          # copy the compiled binaries and other release files to the release folder
+          # Copy the compiled binaries and other release files to the release folder
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra*.exe" | Copy-Item -destination $RELEASE_DIST
           Copy-Item -path "$CMAKE_SOURCE_DIR/license.txt" -destination $RELEASE_DIST
           Copy-Item -path "$CMAKE_SOURCE_DIR/README.md" -destination $RELEASE_DIST
 
-          # copy the qt windows plugin dll to platforms
+          # Copy the Qt Windows plugin DLL to platforms
           Copy-Item -path "C:/msys64/mingw64/share/qt5/plugins/platforms/qwindows.dll" -force -destination "$RELEASE_DIST/platforms"
 
-          # copy the qt mediaservice plugin dll
+          # Copy the Qt mediaservice plugin DLL
           Copy-Item -path "C:/msys64/mingw64/share/qt5/plugins/mediaservice/dsengine.dll" -force -destination "$RELEASE_DIST/mediaservice"
 
-          # copy the qt windows vista style dll to platforms
+          # Copy the Qt Windows Vista style DLL to platforms
           Copy-Item -path "C:/msys64/mingw64/share/qt5/plugins/styles/qwindowsvistastyle.dll" -force -destination "$RELEASE_DIST/styles"
 
-          # copy the qt imageformats plugin dlls to imageformats
+          # Copy the Qt imageformats plugin DLLs to imageformats
           Get-ChildItem "C:/msys64/mingw64/share/qt5/plugins/imageformats" -Exclude "*d.dll" | Copy-Item -force -destination "$RELEASE_DIST/imageformats"
 
-          # copy all the dll dependencies to the release folder
+          # Copy all the DLL dependencies to the release folder
           . "./.appveyor/FindDependencies.ps1"
           $DLLSearchPath = "C:\msys64\mingw64\bin;$env:PATH"
           $MingwDLLs = RecursivelyGetDeps $DLLSearchPath "$RELEASE_DIST\citra.exe"

@@ -182,7 +182,7 @@ void AppletManager::CancelAndSendParameter(const MessageParameter& parameter) {
 }
 
 ResultCode AppletManager::SendParameter(const MessageParameter& parameter) {
-    // A new parameter can not be sent if the previous one hasn't been consumed yet
+    // A new parameter can't be sent if the previous one hasn't been consumed yet
     if (next_parameter)
         return ResultCode(ErrCodes::ParameterPresent, ErrorModule::Applet,
                           ErrorSummary::InvalidState, ErrorLevel::Status);

@@ -93,7 +93,7 @@ private:
     bool started{};
 
     static std::array<std::shared_ptr<QtMultimediaCameraHandler>, 3> handlers;
-    static std::array<bool, 3> status;
+    static std::array<bool, 3> statuses;
     static std::unordered_map<std::string, std::shared_ptr<QtMultimediaCameraHandler>> loaded;
 
     friend class QtMultimediaCamera; // For access to camera_surface (and camera)

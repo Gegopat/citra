@@ -299,7 +299,6 @@ void RoomMember::RoomMemberImpl::HandleJoinPacket(const ENetEvent* event) {
     packet.IgnoreBytes(sizeof(u8)); // Ignore the message type
     // Parse the MAC address from the packet
     packet >> mac_address;
-    SetState(State::Joined);
 }
 
 void RoomMember::RoomMemberImpl::HandleWifiPacket(const ENetEvent* event) {

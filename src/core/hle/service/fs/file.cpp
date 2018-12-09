@@ -81,7 +81,7 @@ void File::Write(Kernel::HLERequestContext& ctx) {
               length, flush);
     auto rb{rp.MakeBuilder(2, 2)};
     const FileSessionSlot* file{GetSessionData(ctx.Session())};
-    // Subfiles can not be written to
+    // Subfiles can't be written to
     if (file->subfile) {
         rb.Push(FileSys::ERROR_UNSUPPORTED_OPEN_FLAGS);
         rb.Push<u32>(0);
@@ -113,7 +113,7 @@ void File::SetSize(Kernel::HLERequestContext& ctx) {
     u64 size{rp.Pop<u64>()};
     FileSessionSlot* file{GetSessionData(ctx.Session())};
     auto rb{rp.MakeBuilder(1, 0)};
-    // SetSize can not be called on subfiles.
+    // SetSize can't be called on subfiles.
     if (file->subfile) {
         rb.Push(FileSys::ERROR_UNSUPPORTED_OPEN_FLAGS);
         return;
@@ -136,7 +136,7 @@ void File::Close(Kernel::HLERequestContext& ctx) {
 void File::Flush(Kernel::HLERequestContext& ctx) {
     const FileSessionSlot* file{GetSessionData(ctx.Session())};
     IPC::ResponseBuilder rb{ctx, 0x0809, 1, 0};
-    // Subfiles can not be flushed.
+    // Subfiles can't be flushed.
     if (file->subfile) {
         rb.Push(FileSys::ERROR_UNSUPPORTED_OPEN_FLAGS);
         return;
@@ -186,7 +186,7 @@ void File::OpenSubFile(Kernel::HLERequestContext& ctx) {
     auto rb{rp.MakeBuilder(1, 2)};
     const FileSessionSlot* original_file{GetSessionData(ctx.Session())};
     if (original_file->subfile) {
-        // OpenSubFile can not be called on a file which is already as subfile
+        // OpenSubFile can't be called on a file which is already as subfile
         rb.Push(FileSys::ERROR_UNSUPPORTED_OPEN_FLAGS);
         return;
     }

@@ -3,7 +3,10 @@
 // Refer to the license.txt file included.
 
 #include "audio_core/audio_types.h"
-#include "audio_core/hle/common.h"
+#ifdef HAVE_FFMPEG
+#include "audio_core/hle/ffmpeg_decoder.h"
+#endif
+#include "audio_core/hle/decoder.h"
 #include "audio_core/hle/hle.h"
 #include "audio_core/hle/mixers.h"
 #include "audio_core/hle/shared_memory.h"
@@ -59,7 +62,7 @@ private:
     std::array<std::vector<u8>, num_dsp_pipe> pipe_data;
     HLE::DspMemory dsp_memory;
 
-    std::array<HLE::Source, HLE::num_sources> sources{{
+    std::array<HLE::Source, num_sources> sources{{
         HLE::Source{0},  HLE::Source{1},  HLE::Source{2},  HLE::Source{3},  HLE::Source{4},
         HLE::Source{5},  HLE::Source{6},  HLE::Source{7},  HLE::Source{8},  HLE::Source{9},
         HLE::Source{10}, HLE::Source{11}, HLE::Source{12}, HLE::Source{13}, HLE::Source{14},
@@ -72,6 +75,8 @@ private:
     DspHle& parent;
     Core::TimingEventType* tick_event;
 
+    std::unique_ptr<HLE::DecoderBase> decoder;
+
     std::weak_ptr<DSP_DSP> dsp_dsp;
 
     Core::System& system;
@@ -81,6 +86,12 @@ DspHle::Impl::Impl(DspHle& parent, Core::System& system) : system{system}, paren
     auto& memory{system.Memory()};
     for (auto& s : sources)
         s.SetMemory(memory);
+#ifdef HAVE_FFMPEG
+    decoder = std::make_unique<HLE::FFmpegDecoder>(memory);
+#else
+    LOG_WARNING(Audio_DSP, "FFmpeg missing, this could lead to missing audio");
+    decoder = std::make_unique<HLE::NullDecoder>();
+#endif // HAVE_FFMPEG
     dsp_memory.raw_memory.fill(0);
     auto& timing{system.CoreTiming()};
     tick_event = timing.RegisterEvent(
@@ -201,10 +212,28 @@ void DspHle::Impl::PipeWrite(DspPipe pipe_number, const std::vector<u8>& buffer)
                   std::back_inserter(pipe_data[static_cast<std::size_t>(DspPipe::Binary)]));
         return;
     }
-    case DspPipe::Binary:
-        std::copy(buffer.begin(), buffer.end(),
-                  std::back_inserter(pipe_data[static_cast<std::size_t>(DspPipe::Binary)]));
-        return;
+    case DspPipe::Binary: {
+        // TODO: Make this async, and signal the interrupt
+        HLE::BinaryRequest request;
+        if (sizeof(request) != buffer.size()) {
+            LOG_CRITICAL(Audio_DSP, "got binary pipe with wrong size {}", buffer.size());
+            UNIMPLEMENTED();
+            return;
+        }
+        std::memcpy(&request, buffer.data(), buffer.size());
+        if (request.codec != HLE::DecoderCodec::AAC) {
+            LOG_CRITICAL(Audio_DSP, "got unknown codec {}", static_cast<u16>(request.codec));
+            UNIMPLEMENTED();
+            return;
+        }
+        auto response{decoder->ProcessRequest(request)};
+        if (response) {
+            const auto& value{*response};
+            pipe_data[static_cast<u32>(pipe_number)].resize(sizeof(value));
+            std::memcpy(pipe_data[static_cast<u32>(pipe_number)].data(), &value, sizeof(value));
+        }
+        break;
+    }
     default:
         UNIMPLEMENTED_MSG("pipe_number={} unimplemented", static_cast<std::size_t>(pipe_number));
         return;
@@ -226,8 +255,8 @@ void DspHle::Impl::ResetPipes() {
 }
 
 void DspHle::Impl::WriteU16(DspPipe pipe_number, u16 value) {
-    const std::size_t pipe_index{static_cast<std::size_t>(pipe_number)};
-    std::vector<u8>& data{pipe_data.at(pipe_index)};
+    const auto pipe_index{static_cast<std::size_t>(pipe_number)};
+    auto& data{pipe_data.at(pipe_index)};
     // Little endian
     data.emplace_back(value & 0xFF);
     data.emplace_back(value >> 8);
@@ -290,8 +319,8 @@ StereoFrame16 DspHle::Impl::GenerateCurrentFrame() {
     auto& write{WriteRegion()};
     std::array<QuadFrame32, 3> intermediate_mixes{};
     // Generate intermediate mixes
-    for (std::size_t i{}; i < HLE::num_sources; i++) {
-        write.source_statuses.status[i] =
+    for (std::size_t i{}; i < num_sources; i++) {
+        write.source_statuses.statuses[i] =
             sources[i].Tick(read.source_configurations.config[i], read.adpcm_coefficients.coeff[i]);
         for (std::size_t mix{}; mix < 3; mix++)
             sources[i].MixInto(intermediate_mixes[mix], mix);

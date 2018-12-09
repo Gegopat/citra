@@ -9,7 +9,6 @@
 #include <queue>
 #include "audio_core/audio_types.h"
 #include "audio_core/codec.h"
-#include "audio_core/hle/common.h"
 #include "audio_core/hle/filter.h"
 #include "audio_core/interpolate.h"
 #include "common/common_types.h"

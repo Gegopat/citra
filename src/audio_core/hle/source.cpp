@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <array>
 #include "audio_core/codec.h"
-#include "audio_core/hle/common.h"
 #include "audio_core/hle/source.h"
 #include "audio_core/interpolate.h"
 #include "common/assert.h"

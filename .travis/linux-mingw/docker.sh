@@ -6,7 +6,7 @@ cd /citra
 echo 'max_size = 3.0G' > "$HOME/.ccache/ccache.conf"
 
 mkdir build && cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$(pwd)/../CMakeModules/MinGWCross.cmake" -DUSE_CCACHE=ON -DCMAKE_BUILD_TYPE=Release -DENABLE_DISCORD_RPC=ON -DENABLE_SCRIPTING=ON
+cmake .. -DCMAKE_TOOLCHAIN_FILE="$(pwd)/../CMakeModules/MinGWCross.cmake" -DUSE_CCACHE=ON -DCMAKE_BUILD_TYPE=Release -DENABLE_DISCORD_RPC=ON -DENABLE_SCRIPTING=ON -DENABLE_FFMPEG=ON
 make -j4
 
 ccache -s

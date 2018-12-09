@@ -5,10 +5,10 @@ import os
 import queue
 import shutil
 
-# constant definitions
+# Constant definitions
 KNOWN_SYS_DLLS = ['WINMM.DLL', 'MSVCRT.DLL', 'VERSION.DLL', 'MPR.DLL',
                   'DWMAPI.DLL', 'UXTHEME.DLL', 'DNSAPI.DLL', 'IPHLPAPI.DLL']
-# below is for Ubuntu 18.04 with specified PPA enabled, if you are using
+# Below is for Ubuntu 18.04 with specified PPA enabled, if you are using
 # other distro or different repositories, change the following accordingly
 DLL_PATH = [
     '/usr/x86_64-w64-mingw32/bin/',
@@ -27,8 +27,8 @@ def parse_imports(file_name):
     for entry in pe.DIRECTORY_ENTRY_IMPORT:
         current = entry.dll.decode()
         current_u = current.upper()  # b/c Windows is often case insensitive
-        # here we filter out system dlls
-        # dll w/ names like *32.dll are likely to be system dlls
+        # Here we filter out system DLLs
+        # DLLs w/ names like *32.dll are likely to be system DLLs
         if current_u.upper() not in KNOWN_SYS_DLLS and not re.match(string=current_u, pattern=r'.*32\.DLL'):
             results.append(current)
 
@@ -36,7 +36,7 @@ def parse_imports(file_name):
 
 
 def parse_imports_recursive(file_name, path_list=[]):
-    q = queue.Queue()  # create a FIFO queue
+    q = queue.Queue()  # Create a FIFO queue
     # file_name can be a string or a list for the convience
     if isinstance(file_name, str):
         q.put(file_name)
@@ -48,14 +48,14 @@ def parse_imports_recursive(file_name, path_list=[]):
         current = q.get_nowait()
         print('> %s' % current)
         deps = parse_imports(current)
-        # if this dll does not have any import, ignore it
+        # If this dll does not have any import, ignore it
         if not deps:
             continue
         for dep in deps:
-            # the dependency already included in the list, skip
+            # The dependency already included in the list, skip
             if dep in full_list:
                 continue
-            # find the requested dll in the provided paths
+            # Find the requested dll in the provided paths
             full_path = find_dll(dep)
             if not full_path:
                 missing.append(dep)

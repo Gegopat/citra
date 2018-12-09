@@ -5,12 +5,21 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
-#include "audio_core/hle/common.h"
 #include "audio_core/hle/filter.h"
 #include "audio_core/hle/shared_memory.h"
 #include "common/common_types.h"
 
 namespace AudioCore::HLE {
+
+/**
+ * This performs the filter operation defined by FilterT::ProcessSample on the frame in-place.
+ * FilterT::ProcessSample is called sequentially on the samples.
+ */
+template <typename FrameT, typename FilterT>
+static void FilterFrame(FrameT& frame, FilterT& filter) {
+    std::transform(frame.begin(), frame.end(), frame.begin(),
+                   [&filter](const auto& sample) { return filter.ProcessSample(sample); });
+}
 
 void SourceFilters::Reset() {
     Enable(false, false);
@@ -37,14 +46,10 @@ void SourceFilters::Configure(SourceConfiguration::Configuration::BiquadFilter c
 void SourceFilters::ProcessFrame(StereoFrame16& frame) {
     if (!simple_filter_enabled && !biquad_filter_enabled)
         return;
-
-    if (simple_filter_enabled) {
+    if (simple_filter_enabled)
         FilterFrame(frame, simple_filter);
-    }
-
-    if (biquad_filter_enabled) {
+    if (biquad_filter_enabled)
         FilterFrame(frame, biquad_filter);
-    }
 }
 
 // SimpleFilter

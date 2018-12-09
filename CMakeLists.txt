@@ -7,15 +7,19 @@ include(CMakeDependentOption)
 
 project(citra)
 
-# Set bundled sdl2/qt as dependent options.
+# Set bundled SDL2/Qt as dependent options.
 # OFF by default, but if MSVC is true then ON
 CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_SDL2 "Download bundled SDL2 binaries" ON "MSVC" OFF)
 
 CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_QT "Download bundled Qt binaries" ON "MSVC" OFF)
 
+CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_FFMPEG "Download bundled FFmpeg binaries" ON "MSVC" OFF)
+
 option(ENABLE_DISCORD_RPC "Enable Discord Rich Presence integration" OFF)
 
 option(ENABLE_SCRIPTING "Enable scripting support" OFF)
+
+option(ENABLE_FFMPEG "Enable FFmpeg decoder/encoder" OFF)
 
 # Sanity check : Check that all submodules are present
 # =======================================================================
@@ -94,8 +98,10 @@ if (NOT MSVC)
 else()
     # Silence "deprecation" warnings
     add_definitions(/D_CRT_SECURE_NO_WARNINGS /D_CRT_NONSTDC_NO_DEPRECATE /D_SCL_SECURE_NO_WARNINGS)
+
     # Avoid windows.h junk
     add_definitions(/DNOMINMAX)
+
     # Avoid windows.h from including some usually unused libs like winsocks.h, since this might cause some redefinition errors.
     add_definitions(/DWIN32_LEAN_AND_MEAN)
 
@@ -211,6 +217,33 @@ else()
 endif()
 
 find_package(Qt5 REQUIRED COMPONENTS Widgets OpenGL Multimedia ${QT_PREFIX_HINT})
+
+if (ENABLE_FFMPEG)
+    if (CITRA_USE_BUNDLED_FFMPEG)
+        if ((MSVC_VERSION GREATER_EQUAL 1910 AND MSVC_VERSION LESS 1920) AND ARCHITECTURE_x86_64)
+            set(FFmpeg_VER "ffmpeg-4.0.2-msvc")
+        else()
+            message(FATAL_ERROR "No bundled FFmpeg binaries for your toolchain. Disable CITRA_USE_BUNDLED_FFMPEG and provide your own.")
+        endif()
+
+        if (DEFINED FFmpeg_VER)
+            download_bundled_external("ffmpeg/" ${FFmpeg_VER} FFmpeg_PREFIX)
+            set(FFMPEG_DIR "${FFmpeg_PREFIX}")
+            set(FFMPEG_FOUND YES)
+        endif()
+    else()
+        find_package(FFmpeg REQUIRED COMPONENTS avcodec avformat)
+        if ("${FFmpeg_avcodec_VERSION}" VERSION_LESS "57.48.101")
+            message(FATAL_ERROR "Found version for libavcodec is too low. The required version is at least 57.48.101 (included in FFmpeg 3.1 and later).")
+        elseif("${FFmpeg_avformat_VERSION}" VERSION_LESS "57.83.100")
+            message(FATAL_ERROR "Found version for libavformat is too low. The required version is at least 57.83.100")
+        else()
+            set(FFMPEG_FOUND YES)
+        endif()
+    endif()
+else()
+    set(FFMPEG_FOUND NO)
+endif()
 
 if (ENABLE_SCRIPTING)
     add_definitions(-DENABLE_SCRIPTING)

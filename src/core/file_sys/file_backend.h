@@ -46,7 +46,7 @@ public:
     u64 GetReadDelayNs(std::size_t length) {
         if (delay_generator)
             return delay_generator->GetReadDelayNs(length);
-        LOG_ERROR(Service_FS, "Delay generator was not initalized. Using default");
+        LOG_ERROR(Service_FS, "Delay generator was not initialized. Using default");
         delay_generator = std::make_unique<DefaultDelayGenerator>();
         return delay_generator->GetReadDelayNs(length);
     }
@@ -54,7 +54,7 @@ public:
     u64 GetOpenDelayNs() {
         if (delay_generator)
             return delay_generator->GetOpenDelayNs();
-        LOG_ERROR(Service_FS, "Delay generator was not initalized. Using default");
+        LOG_ERROR(Service_FS, "Delay generator was not initialized. Using default");
         delay_generator = std::make_unique<DefaultDelayGenerator>();
         return delay_generator->GetOpenDelayNs();
     }

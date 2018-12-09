@@ -1015,7 +1015,7 @@ ResultCode SVC::CreateMemoryBlock(Handle* out_handle, u32 addr, u32 size, u32 my
     if (size % Memory::PAGE_SIZE != 0)
         return ERR_MISALIGNED_SIZE;
     auto VerifyPermissions{[](MemoryPermission permission) {
-        // SharedMemory blocks can not be created with Execute permissions
+        // SharedMemory blocks can't be created with Execute permissions
         switch (permission) {
         case MemoryPermission::None:
         case MemoryPermission::Read:
@@ -1030,7 +1030,7 @@ ResultCode SVC::CreateMemoryBlock(Handle* out_handle, u32 addr, u32 size, u32 my
     if (!VerifyPermissions(static_cast<MemoryPermission>(my_permission)) ||
         !VerifyPermissions(static_cast<MemoryPermission>(other_permission)))
         return ERR_INVALID_COMBINATION;
-    // TODO: Processes with memory type Program are not allowed
+    // TODO: Processes with memory type Program aren't allowed
     // to create memory blocks with addr 0, any attempts to do so
     // should return error 0xD92007EA.
     if ((addr < Memory::PROCESS_IMAGE_VADDR || addr + size > Memory::SHARED_MEMORY_VADDR_END) &&

@@ -254,7 +254,7 @@ private:
 
     Kernel::SharedPtr<Kernel::SharedMemory> shared_memory;
 
-    /// The next number to use when a new HTTP session is initalized.
+    /// The next number to use when a new HTTP session is initialized.
     u32 session_counter{};
 
     /// The next handle number to use when a new HTTP context is created.

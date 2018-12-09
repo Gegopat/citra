@@ -286,7 +286,7 @@ union CTRSockAddr {
         result.sa_family = ctr_addr.raw.sa_family;
         std::memset(result.sa_data, 0, sizeof(result.sa_data));
 
-        // We can not guarantee ABI compatibility between platforms so we copy the fields manually
+        // We can't guarantee ABI compatibility between platforms so we copy the fields manually
         switch (result.sa_family) {
         case AF_INET: {
             sockaddr_in* result_in{reinterpret_cast<sockaddr_in*>(&result)};
@@ -306,7 +306,7 @@ union CTRSockAddr {
     static CTRSockAddr FromPlatform(sockaddr const& addr) {
         CTRSockAddr result{};
         result.raw.sa_family = static_cast<u8>(addr.sa_family);
-        // We can not guarantee ABI compatibility between platforms so we copy the fields manually
+        // We can't guarantee ABI compatibility between platforms so we copy the fields manually
         switch (result.raw.sa_family) {
         case AF_INET: {
             sockaddr_in const* addr_in{reinterpret_cast<sockaddr_in const*>(&addr)};
