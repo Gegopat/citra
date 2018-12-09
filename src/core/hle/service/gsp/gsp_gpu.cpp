@@ -303,8 +303,8 @@ void GSP_GPU::RegisterInterruptRelayQueue(Kernel::HLERequestContext& ctx) {
     u32 flags{rp.Pop<u32>()};
     auto interrupt_event{rp.PopObject<Kernel::Event>()};
     // TODO: return right error code instead of asserting
-    ASSERT_MSG((interrupt_event), "handle isn't valid!");
-    interrupt_event->SetName("GSP_GSP_GPU::interrupt_event");
+    ASSERT_MSG((interrupt_event), "Handle isn't valid!");
+    interrupt_event->SetName("gsp::Gpu Interrupt Event");
     auto session_data{GetSessionData(ctx.Session())};
     session_data->interrupt_event = std::move(interrupt_event);
     session_data->registered = true;

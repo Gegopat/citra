@@ -45,7 +45,7 @@ void System::Init1() {
     }
     room = std::make_unique<Network::Room>();
     room_member = std::make_unique<Network::RoomMember>();
-    movie = std::make_unique<Movie>();
+    movie = std::make_unique<Movie>(*this);
 }
 
 System::~System() {

@@ -99,18 +99,17 @@ static void MortonCopyTile(u32 stride, u8* tile_buffer, u8* gl_buffer) {
 
 template <bool morton_to_gl, PixelFormat format>
 static void MortonCopy(u32 stride, u32 height, u8* gl_buffer, PAddr base, PAddr start, PAddr end) {
-    constexpr u32 bytes_per_pixel{SurfaceParams::GetFormatBpp(format) / 8};
-    constexpr u32 tile_size{bytes_per_pixel * 64};
-    constexpr u32 gl_bytes_per_pixel{CachedSurface::GetGLBytesPerPixel(format)};
+    constexpr u32 bytes_per_pixel{SurfaceParams::GetFormatBpp(format) / 8},
+        tile_size{bytes_per_pixel * 64},
+        gl_bytes_per_pixel{CachedSurface::GetGLBytesPerPixel(format)};
     static_assert(gl_bytes_per_pixel >= bytes_per_pixel, "");
     gl_buffer += gl_bytes_per_pixel - bytes_per_pixel;
-    const PAddr aligned_down_start{base + Common::AlignDown(start - base, tile_size)};
-    const PAddr aligned_start{base + Common::AlignUp(start - base, tile_size)};
-    const PAddr aligned_end{base + Common::AlignDown(end - base, tile_size)};
+    const PAddr aligned_down_start{base + Common::AlignDown(start - base, tile_size)},
+        aligned_start{base + Common::AlignUp(start - base, tile_size)},
+        aligned_end{base + Common::AlignDown(end - base, tile_size)};
     ASSERT(!morton_to_gl || (aligned_start == start && aligned_end == end));
     const u32 begin_pixel_index{(aligned_down_start - base) / bytes_per_pixel};
-    u32 x{(begin_pixel_index % (stride * 8)) / 8};
-    u32 y{(begin_pixel_index / (stride * 8)) * 8};
+    u32 x{(begin_pixel_index % (stride * 8)) / 8}, y{(begin_pixel_index / (stride * 8)) * 8};
     gl_buffer += ((height - 8 - y) * stride + x) * gl_bytes_per_pixel;
     auto glbuf_next_tile{[&] {
         x = (x + 8) % stride;
@@ -120,7 +119,8 @@ static void MortonCopy(u32 stride, u32 height, u8* gl_buffer, PAddr base, PAddr 
             gl_buffer -= stride * 9 * gl_bytes_per_pixel;
         }
     }};
-    u8* tile_buffer{Core::System::GetInstance().Memory().GetPhysicalPointer(start)};
+    auto& memory{Core::System::GetInstance().Memory()};
+    u8* tile_buffer{memory.GetPhysicalPointer(start)};
     if (start < aligned_start && !morton_to_gl) {
         std::array<u8, tile_size> tmp_buf;
         MortonCopyTile<morton_to_gl, format>(stride, &tmp_buf[0], gl_buffer);
@@ -130,9 +130,18 @@ static void MortonCopy(u32 stride, u32 height, u8* gl_buffer, PAddr base, PAddr 
         glbuf_next_tile();
     }
     const u8* buffer_end{tile_buffer + aligned_end - aligned_start};
+    PAddr current_paddr{aligned_start};
     while (tile_buffer < buffer_end) {
+        // Pokémon Super Mystery Dungeon will try to use textures that go beyond
+        // the end address of VRAM. Stop reading if reaches invalid address
+        if (!memory.IsValidPhysicalAddress(current_paddr) ||
+            !memory.IsValidPhysicalAddress(current_paddr + tile_size)) {
+            LOG_ERROR(Render, "Out of bound texture");
+            break;
+        }
         MortonCopyTile<morton_to_gl, format>(stride, tile_buffer, gl_buffer);
         tile_buffer += tile_size;
+        current_paddr += tile_size;
         glbuf_next_tile();
     }
     if (end > std::max(aligned_start, aligned_end) && !morton_to_gl) {

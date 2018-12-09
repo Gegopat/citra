@@ -117,6 +117,8 @@ struct CTMHeader {
 static_assert(sizeof(CTMHeader) == 256, "CTMHeader should be 256 bytes");
 #pragma pack(pop)
 
+Movie::Movie(Core::System& system) : system{system} {}
+
 bool Movie::IsPlayingInput() const {
     return play_mode == PlayMode::Playing;
 }
@@ -332,7 +334,7 @@ Movie::ValidationResult Movie::ValidateHeader(const CTMHeader& header, u64 progr
     for (auto part : header.revision)
         revision += fmt::format("{:02x}", part);
     if (!program_id)
-        Core::System::GetInstance().GetProgramLoader().ReadProgramID(program_id);
+        system.GetProgramLoader().ReadProgramID(program_id);
     if (program_id != header.program_id) {
         LOG_WARNING(Movie, "This movie was recorded using a file with a different program ID");
         return ValidationResult::ProgramDismatch;
@@ -355,7 +357,7 @@ void Movie::SaveMovie() {
     CTMHeader header{};
     header.filetype = header_magic_bytes;
     header.clock_init_time = init_time;
-    Core::System::GetInstance().GetProgramLoader().ReadProgramID(header.program_id);
+    system.GetProgramLoader().ReadProgramID(header.program_id);
     std::string rev_bytes;
     CryptoPP::StringSource(Common::g_scm_rev, true,
                            new CryptoPP::HexDecoder(new CryptoPP::StringSink(rev_bytes)));

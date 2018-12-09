@@ -22,7 +22,7 @@
 
 namespace Service::CAM {
 
-// built-in resolution parameters
+// Built-in resolution parameters
 constexpr std::array<Resolution, 8> PRESET_RESOLUTION{{
     {640, 480, 0, 0, 639, 479},  // VGA
     {320, 240, 0, 0, 639, 479},  // QVGA
@@ -34,7 +34,7 @@ constexpr std::array<Resolution, 8> PRESET_RESOLUTION{{
     {400, 240, 0, 48, 639, 431}, // CTR_TOP_LCD
 }};
 
-// latency in ms for each frame rate option
+// Latency in ms for each frame rate option
 constexpr std::array<int, 13> LATENCY_BY_FRAME_RATE{{
     67,  // Rate_15
     67,  // Rate_15_To_5
@@ -51,10 +51,10 @@ constexpr std::array<int, 13> LATENCY_BY_FRAME_RATE{{
     33,  // Rate_30_To_10
 }};
 
-const ResultCode ERROR_INVALID_ENUM_VALUE(ErrorDescription::InvalidEnumValue, ErrorModule::CAM,
-                                          ErrorSummary::InvalidArgument, ErrorLevel::Usage);
-const ResultCode ERROR_OUT_OF_RANGE(ErrorDescription::OutOfRange, ErrorModule::CAM,
-                                    ErrorSummary::InvalidArgument, ErrorLevel::Usage);
+const ResultCode ERROR_INVALID_ENUM_VALUE{ErrorDescription::InvalidEnumValue, ErrorModule::CAM,
+                                          ErrorSummary::InvalidArgument, ErrorLevel::Usage};
+const ResultCode ERROR_OUT_OF_RANGE{ErrorDescription::OutOfRange, ErrorModule::CAM,
+                                    ErrorSummary::InvalidArgument, ErrorLevel::Usage};
 
 void Module::PortConfig::Clear() {
     completion_event->Clear();
@@ -73,10 +73,9 @@ void Module::PortConfig::Clear() {
 }
 
 void Module::CompletionEventCallback(u64 port_id, s64) {
-    PortConfig& port{ports[port_id]};
-    const CameraConfig& camera{cameras[port.camera_id]};
+    auto& port{ports[port_id]};
+    const auto& camera{cameras[port.camera_id]};
     const auto buffer{port.capture_result.get()};
-
     if (port.is_trimming) {
         u32 trim_width;
         u32 trim_height;
@@ -313,7 +312,7 @@ void Module::Interface::SetReceiving(Kernel::HLERequestContext& ctx) {
     auto rb{rp.MakeBuilder(1, 2)};
     if (port_select.IsSingle()) {
         int port_id{*port_select.begin()};
-        PortConfig& port{cam->ports[port_id]};
+        auto& port{cam->ports[port_id]};
         cam->CancelReceiving(port_id);
         port.completion_event->Clear();
         port.dest_process = process.get();
@@ -887,7 +886,7 @@ void Module::Interface::DriverInitialize(Kernel::HLERequestContext& ctx) {
         }
         cam->LoadCameraImplementation(camera, camera_id);
     }
-    for (PortConfig& port : cam->ports)
+    for (auto& port : cam->ports)
         port.Clear();
     IPC::ResponseBuilder rb{ctx, 0x39, 1, 0};
     rb.Push(RESULT_SUCCESS);
@@ -910,7 +909,7 @@ std::shared_ptr<Module> Module::Interface::GetModule() {
 
 Module::Module(Core::System& system) : system{system} {
     using namespace Kernel;
-    for (PortConfig& port : ports) {
+    for (auto& port : ports) {
         port.completion_event =
             system.Kernel().CreateEvent(Kernel::ResetType::Sticky, "CAM::completion_event");
         port.buffer_error_interrupt_event = system.Kernel().CreateEvent(

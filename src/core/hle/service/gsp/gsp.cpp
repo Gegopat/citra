@@ -10,11 +10,6 @@
 
 namespace Service::GSP {
 
-void SignalInterrupt(InterruptID interrupt_id) {
-    auto gpu{Core::System::GetInstance().ServiceManager().GetService<GSP_GPU>("gsp::Gpu")};
-    return gpu->SignalInterrupt(interrupt_id);
-}
-
 void InstallInterfaces(Core::System& system) {
     auto& service_manager{system.ServiceManager()};
     std::make_shared<GSP_GPU>(system)->InstallAsService(service_manager);

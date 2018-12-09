@@ -25,12 +25,15 @@ union PadState;
 
 namespace Core {
 
+class System;
 struct CTMHeader;
 struct ControllerState;
 enum class PlayMode;
 
 class Movie {
 public:
+    explicit Movie(Core::System& system);
+
     enum class ValidationResult {
         OK,
         RevisionDismatch,
@@ -127,6 +130,7 @@ private:
     u64 init_time;
     std::function<void()> playback_completion_callback;
     std::size_t current_byte{};
+    Core::System& system;
 };
 
 } // namespace Core

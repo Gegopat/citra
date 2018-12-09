@@ -17,7 +17,7 @@ inline u64 GetRunIntervalTicks() {
     return BASE_CLOCK_RATE_ARM11 / Settings::values.screen_refresh_rate;
 }
 
-CheatEngine::CheatEngine(Core::System& system_) : system{system_} {
+CheatEngine::CheatEngine(Core::System& system) : system{system} {
     LoadCheatFile();
     event = system.CoreTiming().RegisterEvent(
         "Cheats Run Event",

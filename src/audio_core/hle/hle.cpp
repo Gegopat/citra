@@ -77,7 +77,7 @@ private:
     Core::System& system;
 };
 
-DspHle::Impl::Impl(DspHle& parent_, Core::System& system_) : system{system_}, parent{parent_} {
+DspHle::Impl::Impl(DspHle& parent, Core::System& system) : system{system}, parent{parent} {
     auto& memory{system.Memory()};
     for (auto& s : sources)
         s.SetMemory(memory);

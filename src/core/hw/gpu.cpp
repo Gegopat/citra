@@ -337,9 +337,15 @@ inline void Write(u32 addr, const T data) {
             // TODO: hwtest this
             if (config.GetStartAddress() != 0)
                 if (!is_second_filler)
-                    Service::GSP::SignalInterrupt(Service::GSP::InterruptID::PSC0);
+                    Core::System::GetInstance()
+                        .ServiceManager()
+                        .GetService<Service::GSP::GSP_GPU>("gsp::Gpu")
+                        ->SignalInterrupt(Service::GSP::InterruptID::PSC0);
                 else
-                    Service::GSP::SignalInterrupt(Service::GSP::InterruptID::PSC1);
+                    Core::System::GetInstance()
+                        .ServiceManager()
+                        .GetService<Service::GSP::GSP_GPU>("gsp::Gpu")
+                        ->SignalInterrupt(Service::GSP::InterruptID::PSC1);
             // Reset "trigger" flag and set the "finish" flag
             // NOTE: This was confirmed to happen on hardware even if "address_start" is zero.
             config.trigger.Assign(0);
@@ -370,7 +376,10 @@ inline void Write(u32 addr, const T data) {
                           static_cast<u32>(config.output_format.Value()), config.flags);
             }
             g_regs.display_transfer_config.trigger = 0;
-            Service::GSP::SignalInterrupt(Service::GSP::InterruptID::PPF);
+            Core::System::GetInstance()
+                .ServiceManager()
+                .GetService<Service::GSP::GSP_GPU>("gsp::Gpu")
+                ->SignalInterrupt(Service::GSP::InterruptID::PPF);
         }
         break;
     }
@@ -408,10 +417,12 @@ static void VBlankCallback(u64 userdata, s64 cycles_late) {
     // screen, or if both use the same interrupts and these two instead determine the
     // beginning and end of the VBlank period. If needed, split the interrupt firing into
     // two different intervals.
-    Service::GSP::SignalInterrupt(Service::GSP::InterruptID::PDC0);
-    Service::GSP::SignalInterrupt(Service::GSP::InterruptID::PDC1);
+    auto& system{Core::System::GetInstance()};
+    auto gpu{system.ServiceManager().GetService<Service::GSP::GSP_GPU>("gsp::Gpu")};
+    gpu->SignalInterrupt(Service::GSP::InterruptID::PDC0);
+    gpu->SignalInterrupt(Service::GSP::InterruptID::PDC1);
     // Reschedule recurrent event
-    Core::System::GetInstance().CoreTiming().ScheduleEvent(
+    system.CoreTiming().ScheduleEvent(
         static_cast<u64>(BASE_CLOCK_RATE_ARM11 / Settings::values.screen_refresh_rate) -
             cycles_late,
         vblank_event);

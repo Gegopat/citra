@@ -117,7 +117,7 @@ static u8 PipeIndexToSlotIndex(u8 pipe_index, PipeDirection direction) {
 }
 
 struct DspLle::Impl final {
-    explicit Impl(Core::System& system_) : system{system_} {
+    explicit Impl(Core::System& system) : system{system} {
         teakra_slice_event = system.CoreTiming().RegisterEvent(
             "DSP slice", [this](u64, int late) { TeakraSliceEvent(static_cast<u64>(late)); });
     }
