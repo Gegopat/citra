@@ -857,7 +857,6 @@ Common::WebResult Room::RoomImpl::MakeRequest(const std::string& method, const s
 
 std::vector<JSONRoom> Room::RoomImpl::GetRoomList() {
     auto reply{MakeRequest("GET").returned_data};
-    LOG_CRITICAL(Log, "{}", reply);
     if (reply.empty())
         return {};
     return nlohmann::json::parse(reply).get<std::vector<JSONRoom>>();
