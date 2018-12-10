@@ -63,7 +63,8 @@ static Network::Room::BanList LoadBanList(const std::string& path) {
         std::getline(file, line);
         line.erase(std::remove(line.begin(), line.end(), '\0'), line.end());
         line = Common::StripSpaces(line);
-        ban_list.emplace_back(line);
+        if (!line.empty())
+            ban_list.emplace_back(line);
     }
     return ban_list;
 }
