@@ -907,10 +907,12 @@ bool Room::Create(bool is_public, const std::string& name, const std::string& de
     room_impl->ban_list = ban_list;
     room_impl->is_public.store(is_public, std::memory_order_relaxed);
     room_impl->StartLoop();
-    if (room_impl->is_public.load(std::memory_order_relaxed))
+    if (room_impl->is_public.load(std::memory_order_relaxed)) {
         std::thread(
             [this] { room_impl->http_server.listen("0.0.0.0", room_impl->room_information.port); })
             .detach();
+        room_impl->UpdateAPIInformation();
+    }
     return true;
 }
 
