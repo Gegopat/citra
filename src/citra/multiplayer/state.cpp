@@ -138,7 +138,7 @@ void MultiplayerState::OnNetworkError(const Network::RoomMember::Error& error) {
 void MultiplayerState::OnAnnounceFailed(const Common::WebResult& result) {
     OnCloseRoom(false);
     QMessageBox::critical(this, "Error",
-                          QString("Failed to create the room.\nDebug Message: ") +
+                          QString("Failed to create the room.\n") +
                               QString::fromStdString(result.result_string),
                           QMessageBox::Ok);
 }
