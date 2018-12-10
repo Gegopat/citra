@@ -279,7 +279,7 @@ void RoomMember::RoomMemberImpl::HandleRoomInformationPacket(const ENetEvent* ev
     packet.IgnoreBytes(sizeof(u8)); // Ignore the message type
     packet >> room_information.name;
     packet >> room_information.description;
-    packet >> room_information.member_slots;
+    packet >> room_information.max_members;
     packet >> room_information.port;
     packet >> room_information.creator;
     u32 num_members;
@@ -357,7 +357,7 @@ void RoomMember::RoomMemberImpl::HandleModBanListResponsePacket(const ENetEvent*
 
 void RoomMember::RoomMemberImpl::Disconnect() {
     member_information.clear();
-    room_information.member_slots = 0;
+    room_information.max_members = 0;
     room_information.name.clear();
     if (!server)
         return;

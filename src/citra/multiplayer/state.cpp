@@ -14,7 +14,6 @@
 #include "citra/multiplayer/state.h"
 #include "citra/ui_settings.h"
 #include "citra/util/clickable_label.h"
-#include "common/announce_multiplayer_room.h"
 #include "common/logging/log.h"
 #include "core/core.h"
 #include "core/hle/kernel/kernel.h"
@@ -37,9 +36,7 @@ MultiplayerState::MultiplayerState(QWidget* parent, QAction* leave_room, QAction
     error_callback_handle = member.BindOnError(
         [this](const Network::RoomMember::Error& error) { emit NetworkError(error); });
     connect(this, &MultiplayerState::NetworkError, this, &MultiplayerState::OnNetworkError);
-    announce_multiplayer_session =
-        std::make_shared<Core::AnnounceMultiplayerSession>(system.Room());
-    announce_multiplayer_session->BindErrorCallback(
+    system.Room().SetErrorCallback(
         [this](const Common::WebResult& result) { emit AnnounceFailed(result); });
     connect(this, &MultiplayerState::AnnounceFailed, this, &MultiplayerState::OnAnnounceFailed);
     status_icon = new ClickableLabel(this);
@@ -139,12 +136,11 @@ void MultiplayerState::OnNetworkError(const Network::RoomMember::Error& error) {
 }
 
 void MultiplayerState::OnAnnounceFailed(const Common::WebResult& result) {
-    announce_multiplayer_session->Stop();
-    QMessageBox::warning(this, "Error",
-                         QString("Failed to announce the room to the public lobby. Please report "
-                                 "this issue now.\nDebug Message: ") +
-                             QString::fromStdString(result.result_string),
-                         QMessageBox::Ok);
+    system.Room().StopAnnouncing();
+    QMessageBox::critical(this, "Error",
+                          QString("Failed to announce the room.\n") +
+                              QString::fromStdString(result.result_string),
+                          QMessageBox::Ok);
 }
 
 void MultiplayerState::UpdateThemedIcons() {
@@ -164,13 +160,13 @@ static void BringWidgetToFront(QWidget* widget) {
 
 void MultiplayerState::OnViewLobby() {
     if (!lobby)
-        lobby = new Lobby(this, announce_multiplayer_session, system);
+        lobby = new Lobby(this, system);
     BringWidgetToFront(lobby);
 }
 
 void MultiplayerState::OnCreateRoom() {
     if (!host_room)
-        host_room = new HostRoomWindow(this, announce_multiplayer_session, system);
+        host_room = new HostRoomWindow(this, system);
     BringWidgetToFront(host_room);
 }
 
@@ -188,10 +184,14 @@ bool MultiplayerState::OnCloseRoom(bool confirm) {
     // Save ban list
     UISettings::values.ban_list = std::move(room.GetBanList());
     room.Destroy();
-    announce_multiplayer_session->Stop();
     LOG_DEBUG(Frontend, "Closed the room (as a server)");
     replies.clear();
     return true;
+}
+
+void MultiplayerState::OnCloseRoomClient() {
+    if (client_room)
+        client_room->Disconnect();
 }
 
 void MultiplayerState::OnOpenRoom() {

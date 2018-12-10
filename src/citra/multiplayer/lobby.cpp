@@ -19,10 +19,9 @@
 #include "core/settings.h"
 #include "network/room_member.h"
 
-Lobby::Lobby(QWidget* parent, std::shared_ptr<Core::AnnounceMultiplayerSession> session,
-             Core::System& system)
+Lobby::Lobby(QWidget* parent, Core::System& system)
     : QDialog{parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint},
-      ui{std::make_unique<Ui::Lobby>()}, announce_multiplayer_session{session}, system{system} {
+      ui{std::make_unique<Ui::Lobby>()}, system{system} {
     ui->setupUi(this);
     // Setup the watcher for background connections
     watcher = new QFutureWatcher<void>;
@@ -54,7 +53,7 @@ Lobby::Lobby(QWidget* parent, std::shared_ptr<Core::AnnounceMultiplayerSession> 
     connect(ui->room_list, &QTreeView::doubleClicked, this, &Lobby::OnJoinRoom);
     connect(ui->room_list, &QTreeView::clicked, this, &Lobby::OnExpandRoom);
     // Actions
-    connect(&room_list_watcher, &QFutureWatcher<AnnounceMultiplayerRoom::RoomList>::finished, this,
+    connect(&room_list_watcher, &QFutureWatcher<std::vector<Network::JSONRoom>>::finished, this,
             &Lobby::OnRefreshLobby);
     // Manually start a refresh when the window is opening
     // TODO: if this refresh is slow for people with bad internet, then don't do it as
@@ -126,13 +125,11 @@ void Lobby::ResetModel() {
 }
 
 void Lobby::RefreshLobby() {
-    if (auto session{announce_multiplayer_session.lock()}) {
-        ResetModel();
-        ui->refresh_list->setEnabled(false);
-        ui->refresh_list->setText("Refreshing");
-        room_list_watcher.setFuture(
-            QtConcurrent::run([session]() { return session->GetRoomList(); }));
-    }
+    ResetModel();
+    ui->refresh_list->setEnabled(false);
+    ui->refresh_list->setText("Refreshing");
+    room_list_watcher.setFuture(
+        QtConcurrent::run([this]() { return system.Room().GetRoomList(); }));
     // TODO: Display an error box about announce couldn't be started
 }
 

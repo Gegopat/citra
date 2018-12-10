@@ -10,8 +10,6 @@
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 #include "citra/multiplayer/validation.h"
-#include "common/announce_multiplayer_room.h"
-#include "core/announce_multiplayer_session.h"
 #include "network/room_member.h"
 #include "ui_lobby.h"
 
@@ -28,8 +26,7 @@ class Lobby : public QDialog {
     Q_OBJECT
 
 public:
-    explicit Lobby(QWidget* parent, std::shared_ptr<Core::AnnounceMultiplayerSession> session,
-                   Core::System& system);
+    explicit Lobby(QWidget* parent, Core::System& system);
     ~Lobby() = default;
 
 public slots:
@@ -73,8 +70,7 @@ private:
     QStandardItemModel* model;
     LobbyFilterProxyModel* proxy;
 
-    QFutureWatcher<AnnounceMultiplayerRoom::RoomList> room_list_watcher;
-    std::weak_ptr<Core::AnnounceMultiplayerSession> announce_multiplayer_session;
+    QFutureWatcher<std::vector<Network::JSONRoom>> room_list_watcher;
     std::unique_ptr<Ui::Lobby> ui;
     QFutureWatcher<void>* watcher;
     Validation validation;

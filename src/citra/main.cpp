@@ -432,7 +432,7 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Start_Room, &QAction::triggered, multiplayer_state,
             &MultiplayerState::OnCreateRoom);
     connect(ui.action_Leave_Room, &QAction::triggered, multiplayer_state,
-            &MultiplayerState::OnCloseRoom);
+            &MultiplayerState::OnCloseRoomClient);
     connect(ui.action_Connect_To_Room, &QAction::triggered, multiplayer_state,
             &MultiplayerState::OnDirectConnect);
     connect(ui.action_Show_Room, &QAction::triggered, multiplayer_state,
@@ -1586,7 +1586,7 @@ void GMainWindow::UpdateDiscordRPC(const Network::RoomInformation& info) {
         if (member.IsConnected()) {
             const auto& member_info{member.GetMemberInformation()};
             presence.partySize = member_info.size();
-            presence.partyMax = info.member_slots;
+            presence.partyMax = info.max_members;
             presence.state = info.name.c_str();
         }
         auto details{

@@ -15,7 +15,6 @@
 
 namespace Core {
 class System;
-class AnnounceMultiplayerSession;
 } // namespace Core
 
 namespace Ui {

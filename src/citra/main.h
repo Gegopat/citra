@@ -8,7 +8,6 @@
 #include <QMainWindow>
 #include <QTimer>
 #include "citra/hotkeys.h"
-#include "common/announce_multiplayer_room.h"
 #include "core/core.h"
 #include "core/hle/service/am/am.h"
 #include "network/room.h"
