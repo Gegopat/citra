@@ -7,8 +7,7 @@ add_executable(citra-room
 
 create_target_directory_groups(citra-room)
 
-target_link_libraries(citra-room PRIVATE common core network)
-target_link_libraries(citra-room PRIVATE glad)
+target_link_libraries(citra-room PRIVATE common network)
 if (MSVC)
     target_link_libraries(citra-room PRIVATE getopt)
 endif()

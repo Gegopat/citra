@@ -9,8 +9,8 @@
 #include <regex>
 #include <string>
 #include <thread>
+#include <fmt/format.h>
 #include <getopt.h>
-#include <glad/glad.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -24,10 +24,9 @@
 #endif
 
 #include "common/common_types.h"
+#include "common/file_util.h"
 #include "common/scm_rev.h"
 #include "common/string_util.h"
-#include "core/core.h"
-#include "core/settings.h"
 #include "network/room.h"
 
 static void PrintHelp(const char* argv0) {
@@ -86,8 +85,6 @@ static void SaveBanList(const Network::Room::BanList& ban_list, const std::strin
 int main(int argc, char** argv) {
     int option_index{};
     char* endarg;
-    // This is just to be able to link against core
-    gladLoadGL();
     std::string room_name, room_description, creator, password, ban_list_file;
     u32 port{Network::DefaultRoomPort}, max_members{16};
     bool announce{};

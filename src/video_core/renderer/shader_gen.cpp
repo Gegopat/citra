@@ -584,7 +584,7 @@ static void WriteTevStage(std::string& out, const PicaFSConfig& config, unsigned
     const auto stage{
         static_cast<const TexturingRegs::TevStageConfig>(config.state.tev_stages[index])};
     if (!IsPassThroughTevStage(stage)) {
-        std::string index_name{std::to_string(index)};
+        auto index_name{std::to_string(index)};
         out += "vec3 color_results_" + index_name + "[3] = vec3[3](";
         AppendColorModifier(out, config, stage.color_modifier1, stage.color_source1, index_name);
         out += ", ";
@@ -741,9 +741,9 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
         std::string light_src{"light_src[" + std::to_string(light_config.num) + "]"};
         // Compute light vector (directional or positional)
         if (light_config.directional)
-            out += "light_vector = normalize(" + light_src + ".position);\n";
-        else
-            out += "light_vector = normalize(" + light_src + ".position + view);\n";
+            out += light_config.directional
+                       ? "light_vector = normalize(" + light_src + ".position);\n"
+                       : "light_vector = normalize(" + light_src + ".position + view);\n";
         out += "spot_dir = " + light_src + ".spot_direction;\n";
         out += "half_vector = normalize(view) + light_vector;\n";
         // Compute dot product of light_vector and normal, adjust if lighting is one-sided or
@@ -759,17 +759,16 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
         if (light_config.spot_atten_enabled &&
             LightingRegs::IsLightingSamplerSupported(
                 lighting.config, LightingRegs::LightingSampler::SpotlightAttenuation)) {
-            std::string value{
-                GetLutValue(LightingRegs::SpotlightAttenuationSampler(light_config.num),
-                            light_config.num, lighting.lut_sp.type, lighting.lut_sp.abs_input)};
+            auto value{GetLutValue(LightingRegs::SpotlightAttenuationSampler(light_config.num),
+                                   light_config.num, lighting.lut_sp.type,
+                                   lighting.lut_sp.abs_input)};
             spot_atten = "(" + std::to_string(lighting.lut_sp.scale) + " * " + value + ")";
         }
         // If enabled, compute distance attenuation value
         std::string dist_atten{"1.0"};
         if (light_config.dist_atten_enabled) {
-            std::string index = "clamp(" + light_src + ".dist_atten_scale * length(-view - " +
-                                light_src + ".position) + " + light_src +
-                                ".dist_atten_bias, 0.0, 1.0)";
+            auto index{"clamp(" + light_src + ".dist_atten_scale * length(-view - " + light_src +
+                       ".position) + " + light_src + ".dist_atten_bias, 0.0, 1.0)"};
             auto sampler{LightingRegs::DistanceAttenuationSampler(light_config.num)};
             dist_atten = "LookupLightingLUTUnsigned(" +
                          std::to_string(static_cast<unsigned>(sampler)) + "," + index + ")";
@@ -784,9 +783,8 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
             LightingRegs::IsLightingSamplerSupported(
                 lighting.config, LightingRegs::LightingSampler::Distribution0)) {
             // Lookup specular "distribution 0" LUT value
-            std::string value{GetLutValue(LightingRegs::LightingSampler::Distribution0,
-                                          light_config.num, lighting.lut_d0.type,
-                                          lighting.lut_d0.abs_input)};
+            auto value{GetLutValue(LightingRegs::LightingSampler::Distribution0, light_config.num,
+                                   lighting.lut_d0.type, lighting.lut_d0.abs_input)};
             d0_lut_value = "(" + std::to_string(lighting.lut_d0.scale) + " * " + value + ")";
         }
         std::string specular_0{"(" + d0_lut_value + " * " + light_src + ".specular_0)"};
@@ -796,9 +794,8 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
         if (lighting.lut_rr.enabled &&
             LightingRegs::IsLightingSamplerSupported(lighting.config,
                                                      LightingRegs::LightingSampler::ReflectRed)) {
-            std::string value{GetLutValue(LightingRegs::LightingSampler::ReflectRed,
-                                          light_config.num, lighting.lut_rr.type,
-                                          lighting.lut_rr.abs_input)};
+            auto value{GetLutValue(LightingRegs::LightingSampler::ReflectRed, light_config.num,
+                                   lighting.lut_rr.type, lighting.lut_rr.abs_input)};
             value = "(" + std::to_string(lighting.lut_rr.scale) + " * " + value + ")";
             out += "refl_value.r = " + value + ";\n";
         } else
@@ -807,9 +804,8 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
         if (lighting.lut_rg.enabled &&
             LightingRegs::IsLightingSamplerSupported(lighting.config,
                                                      LightingRegs::LightingSampler::ReflectGreen)) {
-            std::string value{GetLutValue(LightingRegs::LightingSampler::ReflectGreen,
-                                          light_config.num, lighting.lut_rg.type,
-                                          lighting.lut_rg.abs_input)};
+            auto value{GetLutValue(LightingRegs::LightingSampler::ReflectGreen, light_config.num,
+                                   lighting.lut_rg.type, lighting.lut_rg.abs_input)};
             value = "(" + std::to_string(lighting.lut_rg.scale) + " * " + value + ")";
             out += "refl_value.g = " + value + ";\n";
         } else
@@ -818,9 +814,8 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
         if (lighting.lut_rb.enabled &&
             LightingRegs::IsLightingSamplerSupported(lighting.config,
                                                      LightingRegs::LightingSampler::ReflectBlue)) {
-            std::string value{GetLutValue(LightingRegs::LightingSampler::ReflectBlue,
-                                          light_config.num, lighting.lut_rb.type,
-                                          lighting.lut_rb.abs_input)};
+            auto value{GetLutValue(LightingRegs::LightingSampler::ReflectBlue, light_config.num,
+                                   lighting.lut_rb.type, lighting.lut_rb.abs_input)};
             value = "(" + std::to_string(lighting.lut_rb.scale) + " * " + value + ")";
             out += "refl_value.b = " + value + ";\n";
         } else
@@ -831,9 +826,8 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
             LightingRegs::IsLightingSamplerSupported(
                 lighting.config, LightingRegs::LightingSampler::Distribution1)) {
             // Lookup specular "distribution 1" LUT value
-            std::string value{GetLutValue(LightingRegs::LightingSampler::Distribution1,
-                                          light_config.num, lighting.lut_d1.type,
-                                          lighting.lut_d1.abs_input)};
+            auto value{GetLutValue(LightingRegs::LightingSampler::Distribution1, light_config.num,
+                                   lighting.lut_d1.type, lighting.lut_d1.abs_input)};
             d1_lut_value = "(" + std::to_string(lighting.lut_d1.scale) + " * " + value + ")";
         }
         std::string specular_1{"(" + d1_lut_value + " * refl_value * " + light_src +
@@ -846,8 +840,8 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
             LightingRegs::IsLightingSamplerSupported(lighting.config,
                                                      LightingRegs::LightingSampler::Fresnel)) {
             // Lookup fresnel LUT value
-            std::string value{GetLutValue(LightingRegs::LightingSampler::Fresnel, light_config.num,
-                                          lighting.lut_fr.type, lighting.lut_fr.abs_input)};
+            auto value{GetLutValue(LightingRegs::LightingSampler::Fresnel, light_config.num,
+                                   lighting.lut_fr.type, lighting.lut_fr.abs_input)};
             value = "(" + std::to_string(lighting.lut_fr.scale) + " * " + value + ")";
             // Enabled for diffuse lighting alpha component
             if (lighting.enable_primary_alpha)
@@ -889,7 +883,7 @@ using ProcTexFilter = TexturingRegs::ProcTexFilter;
 
 void AppendProcTexShiftOffset(std::string& out, const std::string& v, ProcTexShift mode,
                               ProcTexClamp clamp_mode) {
-    std::string offset{(clamp_mode == ProcTexClamp::MirroredRepeat) ? "1.0" : "0.5"};
+    std::string offset{clamp_mode == ProcTexClamp::MirroredRepeat ? "1.0" : "0.5"};
     switch (mode) {
     case ProcTexShift::None:
         out += "0";
