@@ -143,7 +143,7 @@ struct Room::RoomImpl {
      */
     void HandleModGetBanListPacket(const ENetEvent* event);
 
-    /// Returns whether the nickname is valid, ie. isn't already taken error_callbackby someone else
+    /// Returns whether the nickname is valid, ie. isn't already taken by someone else
     /// in the room.
     bool IsValidNickname(const std::string& nickname) const;
 
@@ -878,7 +878,7 @@ void Room::RoomImpl::UpdateAPIInformation() {
     nlohmann::json json = room;
     auto result{MakeRequest("POST", json.dump())};
     if (result.result_code != Common::WebResult::Code::Success &&
-        is_public.load(std::memory_order_relaxed))
+        is_public.load(std::memory_order_relaxed) && error_callback)
         return error_callback(result);
 }
 
