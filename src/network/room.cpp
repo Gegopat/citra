@@ -69,8 +69,7 @@ void from_json(const nlohmann::json& json, JSONRoom& room) {
 struct Room::RoomImpl {
     RoomImpl()
         : random_gen{std::random_device{}()}, client{std::make_unique<httplib::SSLClient>(
-                                                  "us-central1-citra-valentin.cloudfunctions.net",
-                                                  443)} {
+                                                  "citra-valentin-api.us.openode.io", 443)} {
         http_server.Get("/", [this](const httplib::Request& req, httplib::Response& res) {
             res.status = 200;
             res.body = "OK";
@@ -762,7 +761,6 @@ void Room::RoomImpl::HandleWiFiPacket(const ENetEvent* event) {
 void Room::RoomImpl::HandleChatPacket(const ENetEvent* event) {
     Packet in_packet;
     in_packet.Append(event->packet->data, event->packet->dataLength);
-
     in_packet.IgnoreBytes(sizeof(u8)); // Ignore the message type
     std::string message;
     in_packet >> message;
@@ -830,8 +828,8 @@ void Room::RoomImpl::HandleClientDisconnection(ENetPeer* client) {
 }
 
 Common::WebResult Room::RoomImpl::MakeRequest(const std::string& method, const std::string& body) {
-    auto response{method == "GET" ? client->Get("/api/lobby")
-                                  : client->Post("/api/lobby", body, "application/json")};
+    auto response{method == "GET" ? client->Get("/lobby")
+                                  : client->Post("/lobby", body, "application/json")};
     if (!response) {
         LOG_ERROR(Network, "Request returned null ({})", response->status);
         return Common::WebResult{Common::WebResult::Code::LibError, "Null response"};
@@ -909,11 +907,9 @@ bool Room::Create(bool is_public, const std::string& name, const std::string& de
     room_impl->ban_list = ban_list;
     room_impl->is_public.store(is_public, std::memory_order_relaxed);
     room_impl->StartLoop();
-    if (is_public)
-        std::thread([this] {
-            room_impl->http_server.listen("127.0.0.1", room_impl->room_information.port);
-        })
-            .detach();
+    std::thread(
+        [this] { room_impl->http_server.listen("0.0.0.0", room_impl->room_information.port); })
+        .detach();
     return true;
 }
 
@@ -961,9 +957,11 @@ void Room::Destroy() {
     }
     room_impl->room_information.max_members = 0;
     room_impl->room_information.name.clear();
-    nlohmann::json json;
-    json["delete"] = room_impl->room_information.port;
-    room_impl->MakeRequest("POST", json.dump());
+    if (room_impl->is_public.load(std::memory_order_relaxed)) {
+        nlohmann::json json;
+        json["delete"] = room_impl->room_information.port;
+        room_impl->MakeRequest("POST", json.dump());
+    }
     room_impl->http_server.stop();
 }
 
@@ -977,7 +975,6 @@ void Room::SetErrorCallback(ErrorCallback cb) {
 
 void Room::StopAnnouncing() {
     room_impl->is_public.store(false, std::memory_order_relaxed);
-    room_impl->http_server.stop();
 }
 
 bool Room::IsPublic() const {
