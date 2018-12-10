@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
         PrintHelp(argv[0]);
         return -1;
     }
-    if (max_members >= Network::MaxConcurrentConnections || max_members < 2) {
+    if (max_members > Network::MaxConcurrentConnections || max_members < 2) {
         std::cout << "max-members needs to be in the range 2 - "
                   << Network::MaxConcurrentConnections << "!\n\n";
         PrintHelp(argv[0]);

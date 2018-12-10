@@ -18,7 +18,7 @@ constexpr u32 NetworkVersion{0xFF04}; ///< The network version
 constexpr u16 DefaultRoomPort{24872};
 constexpr u32 MaxMessageSize{500};
 constexpr u32 MaxConcurrentConnections{
-    254};                             ///< Maximum number of concurrent connections allowed rooms.
+    254}; ///< Maximum number of concurrent connections allowed to rooms.
 constexpr std::size_t NumChannels{1}; // Number of channels used for the connection
 
 struct RoomInformation {
