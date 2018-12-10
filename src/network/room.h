@@ -125,6 +125,9 @@ public:
     /// Sets a function to call when a error happens in 'MakeRequest'
     void SetErrorCallback(ErrorCallback cb);
 
+    /// Stops announcing the room
+    void StopAnnouncing();
+
 private:
     Common::WebResult MakeRequest(const std::string& method, const std::string& body = "");
 

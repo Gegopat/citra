@@ -975,4 +975,8 @@ void Room::SetErrorCallback(ErrorCallback cb) {
     return room_impl->SetErrorCallback(cb);
 }
 
+void Room::StopAnnouncing() {
+    room_impl->is_public = false;
+}
+
 } // namespace Network
