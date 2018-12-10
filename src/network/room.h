@@ -128,6 +128,8 @@ public:
     /// Stops announcing the room
     void StopAnnouncing();
 
+    bool IsPublic() const;
+
 private:
     Common::WebResult MakeRequest(const std::string& method, const std::string& body = "");
 

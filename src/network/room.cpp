@@ -86,8 +86,7 @@ struct Room::RoomImpl {
 
     ENetHost* server; ///< Network interface.
 
-    bool is_public;
-    std::atomic_bool is_open{};       ///< Whether the room is open.
+    std::atomic_bool is_open{}, is_public{};
     RoomInformation room_information; ///< Information about this room.
 
     std::string password; ///< The password required to connect to this room.
@@ -698,7 +697,7 @@ void Room::RoomImpl::BroadcastRoomInformation() {
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_host_broadcast(server, 0, enet_packet);
     enet_host_flush(server);
-    if (is_public) {
+    if (is_public.load(std::memory_order_relaxed)) {
         // Update API information
         auto& thread_pool{Common::ThreadPool::GetPool()};
         thread_pool.Push([this] { UpdateAPIInformation(); });
@@ -880,7 +879,8 @@ void Room::RoomImpl::UpdateAPIInformation() {
             JSONRoom::Member{member.nickname, member.program, member.mac_address});
     nlohmann::json json = room;
     auto result{MakeRequest("POST", json.dump())};
-    if (result.result_code != Common::WebResult::Code::Success)
+    if (result.result_code != Common::WebResult::Code::Success &&
+        is_public.load(std::memory_order_relaxed))
         return error_callback(result);
 }
 
@@ -907,7 +907,7 @@ bool Room::Create(bool is_public, const std::string& name, const std::string& de
     room_impl->room_information.port = port;
     room_impl->password = password;
     room_impl->ban_list = ban_list;
-    room_impl->is_public = is_public;
+    room_impl->is_public.store(is_public, std::memory_order_relaxed);
     room_impl->StartLoop();
     if (is_public)
         std::thread([this] {
@@ -976,7 +976,12 @@ void Room::SetErrorCallback(ErrorCallback cb) {
 }
 
 void Room::StopAnnouncing() {
-    room_impl->is_public = false;
+    room_impl->is_public.store(false, std::memory_order_relaxed);
+    room_impl->http_server.stop();
+}
+
+bool Room::IsPublic() const {
+    return room_impl->is_public.load(std::memory_order_relaxed);
 }
 
 } // namespace Network
