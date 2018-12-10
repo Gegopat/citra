@@ -1,4 +1,4 @@
-// Copyright 2015 Citra Emulator Project
+// Cop @param 2015 Citra Emulator Project
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
@@ -76,7 +76,7 @@ public:
 
     /**
      * Puts a packet to the head of the buffer.
-     * @params packet The data of the packet to put.
+     * @param packet The data of the packet to put.
      * @returns whether the operation is successful.
      */
     bool Put(const std::vector<u8>& packet) {
@@ -114,7 +114,7 @@ public:
 
     /**
      * Release packets from the tail of the buffer
-     * @params count Numbers of packets to release.
+     * @param count Numbers of packets to release.
      * @returns whether the operation is successful.
      */
     bool Release(u32 count) {

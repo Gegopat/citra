@@ -78,11 +78,11 @@ struct RoomMember::RoomMemberImpl {
     /**
      * Sends a request to the server, asking for permission to join a room with the specified
      * nickname and preferred MAC address.
-     * @params nickname The desired nickname.
-     * @params console_id The console ID.
-     * @params preferred_mac The preferred MAC address to use in the room, the BroadcastMac tells
-     * @params password The password for the room
-     * the server to assign one for us.
+     * @param nickname The desired nickname.
+     * @param console_id The console ID.
+     * @param preferred_mac The preferred MAC address to use in the room, the BroadcastMac tells the
+     * server to assign one for us.
+     * @param password The password for the room
      */
     void SendJoinRequest(const std::string& nickname, u64 console_id,
                          const MACAddress& preferred_mac = BroadcastMac,
