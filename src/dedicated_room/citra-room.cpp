@@ -164,6 +164,11 @@ int main(int argc, char** argv) {
     if (!ban_list_file.empty())
         ban_list = LoadBanList(ban_list_file);
     Network::Room room;
+    room.SetErrorCallback([&announce](const Common::WebResult& result) {
+        if (result.result_code != Common::WebResult::Code::Success)
+            announce = false;
+        std::cout << result.result_string << std::endl;
+    });
     if (!room.Create(announce, room_name, room_description, creator, port, password, max_members,
                      ban_list)) {
         std::cout << "Failed to create room!\n\n";
