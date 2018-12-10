@@ -49,6 +49,7 @@ public slots:
     void OnViewLobby();
     void OnCreateRoom();
     bool OnCloseRoom(bool confirm = true);
+    void OnCloseRoomClient();
     void OnOpenRoom();
     void OnDirectConnect();
     void OnAnnounceFailed(const Common::WebResult&);

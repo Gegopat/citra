@@ -432,7 +432,7 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Start_Room, &QAction::triggered, multiplayer_state,
             &MultiplayerState::OnCreateRoom);
     connect(ui.action_Leave_Room, &QAction::triggered, multiplayer_state,
-            &MultiplayerState::OnCloseRoom);
+            &MultiplayerState::OnCloseRoomClient);
     connect(ui.action_Connect_To_Room, &QAction::triggered, multiplayer_state,
             &MultiplayerState::OnDirectConnect);
     connect(ui.action_Show_Room, &QAction::triggered, multiplayer_state,

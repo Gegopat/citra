@@ -68,8 +68,8 @@ void from_json(const nlohmann::json& json, JSONRoom& room) {
 
 struct Room::RoomImpl {
     RoomImpl()
-        : random_gen{std::random_device{}()}, client{std::make_unique<httplib::SSLClient>(
-                                                  "citra-valentin-api.us.openode.io", 443)} {
+        : random_gen{std::random_device{}()}, client{std::make_unique<httplib::Client>(
+                                                  "citra-valentin-api.us.openode.io", 80)} {
         http_server.Get("/", [this](const httplib::Request& req, httplib::Response& res) {
             res.status = 200;
             res.body = "OK";
@@ -78,7 +78,7 @@ struct Room::RoomImpl {
 
     ErrorCallback error_callback;
 
-    std::unique_ptr<httplib::SSLClient> client;
+    std::unique_ptr<httplib::Client> client;
     httplib::Server http_server;
 
     std::mt19937 random_gen; ///< Random number generator. Used for GenerateMACAddress
@@ -844,19 +844,20 @@ Common::WebResult Room::RoomImpl::MakeRequest(const std::string& method, const s
         LOG_ERROR(Network, "Request returned no content");
         return Common::WebResult{Common::WebResult::Code::WrongContent, "No content"};
     }
-    if (content_type->second != "application/json" &&
-        content_type->second != "text/html; charset=utf-8" &&
-        content_type->second != "text/plain") {
+    if (content_type->second.find("application/json") == std::string::npos &&
+        content_type->second.find("text/html") == std::string::npos &&
+        content_type->second.find("text/plain") == std::string::npos) {
         LOG_ERROR(Network, "Request returned wrong content: {}", content_type->second);
         return Common::WebResult{Common::WebResult::Code::WrongContent, "Wrong content"};
     }
     if (response->body == "You need to open both TCP & UDP ports to create a public room.")
         return Common::WebResult{Common::WebResult::Code::HttpError, response->body};
-    return Common::WebResult{Common::WebResult::Code::Success, response->body};
+    return Common::WebResult{Common::WebResult::Code::Success, "", response->body};
 }
 
 std::vector<JSONRoom> Room::RoomImpl::GetRoomList() {
     auto reply{MakeRequest("GET").returned_data};
+    LOG_CRITICAL(Log, "{}", reply);
     if (reply.empty())
         return {};
     return nlohmann::json::parse(reply).get<std::vector<JSONRoom>>();
@@ -907,9 +908,10 @@ bool Room::Create(bool is_public, const std::string& name, const std::string& de
     room_impl->ban_list = ban_list;
     room_impl->is_public.store(is_public, std::memory_order_relaxed);
     room_impl->StartLoop();
-    std::thread(
-        [this] { room_impl->http_server.listen("0.0.0.0", room_impl->room_information.port); })
-        .detach();
+    if (room_impl->is_public.load(std::memory_order_relaxed))
+        std::thread(
+            [this] { room_impl->http_server.listen("0.0.0.0", room_impl->room_information.port); })
+            .detach();
     return true;
 }
 
@@ -975,6 +977,7 @@ void Room::SetErrorCallback(ErrorCallback cb) {
 
 void Room::StopAnnouncing() {
     room_impl->is_public.store(false, std::memory_order_relaxed);
+    room_impl->http_server.stop();
 }
 
 bool Room::IsPublic() const {

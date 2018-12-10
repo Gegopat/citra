@@ -189,6 +189,11 @@ bool MultiplayerState::OnCloseRoom(bool confirm) {
     return true;
 }
 
+void MultiplayerState::OnCloseRoomClient() {
+    if (client_room)
+        client_room->Disconnect();
+}
+
 void MultiplayerState::OnOpenRoom() {
     auto& member{system.RoomMember()};
     if (member.IsConnected()) {
