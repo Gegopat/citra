@@ -152,7 +152,6 @@ bool RoomMember::RoomMemberImpl::IsConnected() const {
 
 void RoomMember::RoomMemberImpl::MemberLoop() {
     // Receive packets while the connection is open
-    bool kicked{};
     while (IsConnected()) {
         std::lock_guard lock{network_mutex};
         ENetEvent event;
