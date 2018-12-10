@@ -18,7 +18,6 @@ class HostRoom;
 
 namespace Core {
 class System;
-class AnnounceMultiplayerSession;
 } // namespace Core
 
 class ConnectionError;
@@ -30,9 +29,7 @@ class HostRoomWindow : public QDialog {
     Q_OBJECT
 
 public:
-    explicit HostRoomWindow(QWidget* parent,
-                            std::shared_ptr<Core::AnnounceMultiplayerSession> session,
-                            Core::System& system);
+    explicit HostRoomWindow(QWidget* parent, Core::System& system);
     ~HostRoomWindow();
 
 private slots:
@@ -48,7 +45,6 @@ private:
     void RemoveReply();
     void UpdateReplies();
 
-    std::weak_ptr<Core::AnnounceMultiplayerSession> announce_multiplayer_session;
     std::unique_ptr<Ui::HostRoom> ui;
     Validation validation;
     Core::System& system;

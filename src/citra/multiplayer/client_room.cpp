@@ -15,7 +15,6 @@
 #include "citra/multiplayer/state.h"
 #include "citra/program_list_p.h"
 #include "common/logging/log.h"
-#include "core/announce_multiplayer_session.h"
 #include "core/core.h"
 #include "ui_client_room.h"
 
@@ -77,7 +76,7 @@ void ClientRoomWindow::UpdateView() {
         setWindowTitle(QString("%1 (%2/%3 members) - connected")
                            .arg(QString::fromStdString(information.name))
                            .arg(member_list.size())
-                           .arg(information.member_slots));
+                           .arg(information.max_members));
         ui->description->setText(QString::fromStdString(information.description));
         return;
     }

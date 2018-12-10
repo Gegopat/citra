@@ -1,12 +1,10 @@
 # Generate cpp with Git revision from template
-# Also if this is a CI build, add the build information to the scm_rev file as well
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/scm_rev.cpp.in" "${CMAKE_CURRENT_SOURCE_DIR}/scm_rev.cpp" @ONLY)
 
 add_library(common STATIC
     x64/xbyak_abi.h
     x64/xbyak_util.h
     alignment.h
-    announce_multiplayer_room.h
     assert.h
     bit_field.h
     bit_set.h

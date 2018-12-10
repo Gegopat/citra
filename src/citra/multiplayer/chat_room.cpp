@@ -22,7 +22,6 @@
 #include "citra/multiplayer/state.h"
 #include "citra/program_list_p.h"
 #include "common/logging/log.h"
-#include "core/announce_multiplayer_session.h"
 #include "core/core.h"
 #include "ui_chat_room.h"
 

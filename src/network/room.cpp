@@ -11,17 +11,82 @@
 #include <sstream>
 #include <thread>
 #include <enet/enet.h>
+#include <httplib.h>
+#include <json.hpp>
 #include "common/logging/log.h"
+#include "common/thread_pool.h"
 #include "network/packet.h"
 #include "network/room.h"
 
 namespace Network {
 
+void to_json(nlohmann::json& json, const JSONRoom::Member& member) {
+    json["name"] = member.name;
+    json["program"] = member.program;
+}
+
+void from_json(const nlohmann::json& json, JSONRoom::Member& member) {
+    member.name = json.at("name").get<std::string>();
+    member.program = json.at("program").get<std::string>();
+}
+
+void to_json(nlohmann::json& json, const JSONRoom& room) {
+    json["name"] = room.name;
+    json["creator"] = room.creator;
+    if (!room.description.empty())
+        json["description"] = room.description;
+    json["port"] = room.port;
+    json["maxMembers"] = room.max_members;
+    json["netVersion"] = room.net_version;
+    json["hasPassword"] = room.has_password;
+    if (room.members.size() > 0) {
+        nlohmann::json member_json = room.members;
+        json["members"] = member_json;
+    }
+}
+
+void from_json(const nlohmann::json& json, JSONRoom& room) {
+    room.ip = json.at("ip").get<std::string>();
+    room.name = json.at("name").get<std::string>();
+    room.creator = json.at("creator").get<std::string>();
+    try {
+        room.description = json.at("description").get<std::string>();
+    } catch (const nlohmann::detail::out_of_range& e) {
+        room.description = "";
+        LOG_DEBUG(Network, "Room '{}' doesn't contain a description", room.name);
+    }
+    room.port = json.at("port").get<u16>();
+    room.max_members = json.at("maxMembers").get<u32>();
+    room.net_version = json.at("netVersion").get<u32>();
+    room.has_password = json.at("hasPassword").get<bool>();
+    try {
+        room.members = json.at("members").get<std::vector<JSONRoom::Member>>();
+    } catch (const nlohmann::detail::out_of_range& e) {
+        LOG_DEBUG(Network, "Out of range {}", e.what());
+    }
+}
+
 struct Room::RoomImpl {
+    RoomImpl()
+        : random_gen{std::random_device{}()}, client{std::make_unique<httplib::SSLClient>(
+                                                  "us-central1-citra-valentin.cloudfunctions.net",
+                                                  443)} {
+        http_server.Get("/", [this](const httplib::Request& req, httplib::Response& res) {
+            res.status = 200;
+            res.body = "OK";
+        });
+    }
+
+    ErrorCallback error_callback;
+
+    std::unique_ptr<httplib::SSLClient> client;
+    httplib::Server http_server;
+
     std::mt19937 random_gen; ///< Random number generator. Used for GenerateMACAddress
 
     ENetHost* server; ///< Network interface.
 
+    bool is_public;
     std::atomic_bool is_open{};       ///< Whether the room is open.
     RoomInformation room_information; ///< Information about this room.
 
@@ -41,8 +106,6 @@ struct Room::RoomImpl {
 
     BanList ban_list;                  ///< List of banned IP addresses
     mutable std::mutex ban_list_mutex; ///< Mutex for locking the ban list
-
-    RoomImpl() : random_gen{std::random_device{}()} {}
 
     std::unique_ptr<std::thread>
         room_thread; ///< Thread that receives and dispatches network packets
@@ -82,7 +145,8 @@ struct Room::RoomImpl {
      */
     void HandleModGetBanListPacket(const ENetEvent* event);
 
-    /// Returns whether the nickname is valid, ie. isn't already taken by someone else in the room.
+    /// Returns whether the nickname is valid, ie. isn't already taken error_callbackby someone else
+    /// in the room.
     bool IsValidNickname(const std::string& nickname) const;
 
     /// Returns whether the MAC address is valid, ie. isn't already taken by someone else in the
@@ -156,7 +220,7 @@ struct Room::RoomImpl {
      * <MessageID> ID_ROOM_INFORMATION
      * <String> room_name
      * <String> room_description
-     * <u32> member_slots: The max number of clients allowed in this room
+     * <u32> max_members: The max number of clients allowed in this room
      * <u16> port
      * <u32> num_members: the number of currently joined clients
      * This is followed by the following three values for each member:
@@ -192,6 +256,14 @@ struct Room::RoomImpl {
      * to all other clients.
      */
     void HandleClientDisconnection(ENetPeer* client);
+
+    Common::WebResult MakeRequest(const std::string& method, const std::string& body = "");
+    std::vector<JSONRoom> GetRoomList();
+    void UpdateAPIInformation();
+
+    void SetErrorCallback(ErrorCallback cb) {
+        error_callback = cb;
+    }
 };
 
 // RoomImpl
@@ -250,7 +322,7 @@ void Room::RoomImpl::StartLoop() {
 void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
     {
         std::lock_guard lock{member_mutex};
-        if (members.size() >= room_information.member_slots) {
+        if (members.size() >= room_information.max_members) {
             SendRoomIsFull(event->peer);
             return;
         }
@@ -610,7 +682,7 @@ void Room::RoomImpl::BroadcastRoomInformation() {
     packet << static_cast<u8>(IDRoomInformation);
     packet << room_information.name;
     packet << room_information.description;
-    packet << room_information.member_slots;
+    packet << room_information.max_members;
     packet << room_information.port;
     packet << room_information.creator;
     packet << static_cast<u32>(members.size());
@@ -626,6 +698,11 @@ void Room::RoomImpl::BroadcastRoomInformation() {
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_host_broadcast(server, 0, enet_packet);
     enet_host_flush(server);
+    if (is_public) {
+        // Update API information
+        auto& thread_pool{Common::ThreadPool::GetPool()};
+        thread_pool.Push([this] { UpdateAPIInformation(); });
+    }
 }
 
 MACAddress Room::RoomImpl::GenerateMACAddress() {
@@ -753,11 +830,65 @@ void Room::RoomImpl::HandleClientDisconnection(ENetPeer* client) {
     BroadcastRoomInformation();
 }
 
+Common::WebResult Room::RoomImpl::MakeRequest(const std::string& method, const std::string& body) {
+    auto response{method == "GET" ? client->Get("/api/lobby")
+                                  : client->Post("/api/lobby", body, "application/json")};
+    if (!response) {
+        LOG_ERROR(Network, "Request returned null ({})", response->status);
+        return Common::WebResult{Common::WebResult::Code::LibError, "Null response"};
+    }
+    if (response->status >= 400) {
+        LOG_ERROR(Network, "Request returned error status code: {}", response->status);
+        return Common::WebResult{Common::WebResult::Code::HttpError,
+                                 std::to_string(response->status)};
+    }
+    auto content_type{response->headers.find("Content-Type")};
+    if (content_type == response->headers.end()) {
+        LOG_ERROR(Network, "Request returned no content");
+        return Common::WebResult{Common::WebResult::Code::WrongContent, "No content"};
+    }
+    if (content_type->second != "application/json" &&
+        content_type->second != "text/html; charset=utf-8" &&
+        content_type->second != "text/plain") {
+        LOG_ERROR(Network, "Request returned wrong content: {}", content_type->second);
+        return Common::WebResult{Common::WebResult::Code::WrongContent, "Wrong content"};
+    }
+    if (response->body == "Not port forwarded")
+        return Common::WebResult{Common::WebResult::Code::HttpError, response->body};
+    return Common::WebResult{Common::WebResult::Code::Success, response->body};
+}
+
+std::vector<JSONRoom> Room::RoomImpl::GetRoomList() {
+    auto reply{MakeRequest("GET").returned_data};
+    if (reply.empty())
+        return {};
+    return nlohmann::json::parse(reply).get<std::vector<JSONRoom>>();
+}
+
+void Room::RoomImpl::UpdateAPIInformation() {
+    std::lock_guard lock{member_mutex};
+    JSONRoom room;
+    room.name = room_information.name;
+    room.creator = room_information.creator;
+    room.description = room_information.description;
+    room.port = room_information.port;
+    room.max_members = room_information.max_members;
+    room.net_version = Network::NetworkVersion;
+    room.has_password = !password.empty();
+    for (const auto& member : members)
+        room.members.emplace_back(
+            JSONRoom::Member{member.nickname, member.program, member.mac_address});
+    nlohmann::json json = room;
+    auto result{MakeRequest("POST", json.dump())};
+    if (result.result_code != Common::WebResult::Code::Success)
+        return error_callback(result);
+}
+
 // Room
 Room::Room() : room_impl{std::make_unique<RoomImpl>()} {}
 Room::~Room() = default;
 
-bool Room::Create(const std::string& name, const std::string& description,
+bool Room::Create(bool is_public, const std::string& name, const std::string& description,
                   const std::string& creator, u16 port, const std::string& password,
                   const u32 max_connections, const Room::BanList& ban_list) {
     ENetAddress address;
@@ -772,11 +903,17 @@ bool Room::Create(const std::string& name, const std::string& description,
     room_impl->room_information.name = name;
     room_impl->room_information.creator = creator;
     room_impl->room_information.description = description;
-    room_impl->room_information.member_slots = max_connections;
+    room_impl->room_information.max_members = max_connections;
     room_impl->room_information.port = port;
     room_impl->password = password;
     room_impl->ban_list = ban_list;
+    room_impl->is_public = is_public;
     room_impl->StartLoop();
+    if (is_public)
+        std::thread([this] {
+            room_impl->http_server.listen("127.0.0.1", room_impl->room_information.port);
+        })
+            .detach();
     return true;
 }
 
@@ -822,8 +959,20 @@ void Room::Destroy() {
         std::lock_guard lock{room_impl->member_mutex};
         room_impl->members.clear();
     }
-    room_impl->room_information.member_slots = 0;
+    room_impl->room_information.max_members = 0;
     room_impl->room_information.name.clear();
+    nlohmann::json json;
+    json["delete"] = room_impl->room_information.port;
+    room_impl->MakeRequest("POST", json.dump());
+    room_impl->http_server.stop();
+}
+
+std::vector<JSONRoom> Room::GetRoomList() {
+    return room_impl->GetRoomList();
+}
+
+void Room::SetErrorCallback(ErrorCallback cb) {
+    return room_impl->SetErrorCallback(cb);
 }
 
 } // namespace Network

@@ -5,10 +5,12 @@
 #pragma once
 
 #include <array>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
 #include "common/common_types.h"
+#include "common/web_result.h"
 
 namespace Network {
 
@@ -22,9 +24,21 @@ constexpr std::size_t NumChannels{1}; // Number of channels used for the connect
 struct RoomInformation {
     std::string name;        ///< Name of the room
     std::string description; ///< Room description
-    u32 member_slots;        ///< Maximum number of members in this room
+    u32 max_members;         ///< Maximum number of members in this room
     u16 port;                ///< The port of this room
     std::string creator;     ///< The creator of this room
+};
+
+struct JSONRoom {
+    struct Member {
+        std::string name, program;
+        MACAddress mac_address;
+    };
+    std::string name, creator, description, ip;
+    u16 port;
+    u32 max_members, net_version;
+    bool has_password;
+    std::vector<Member> members;
 };
 
 // The different types of messages that can be sent. The first byte of each packet defines the type
@@ -65,6 +79,8 @@ enum StatusMessageTypes : u8 {
     IDAddressUnbanned,  ///< A IP address was unbanned from the room
 };
 
+using ErrorCallback = std::function<void(const Common::WebResult&)>;
+
 /// This is what a server [person creating a server] would use.
 class Room final {
 public:
@@ -92,8 +108,9 @@ public:
     bool HasPassword() const;
 
     /// Creates the socket for this room
-    bool Create(const std::string& name, const std::string& description, const std::string& creator,
-                u16 port = DefaultRoomPort, const std::string& password = "",
+    bool Create(bool is_public, const std::string& name, const std::string& description,
+                const std::string& creator, u16 port = DefaultRoomPort,
+                const std::string& password = "",
                 const u32 max_connections = MaxConcurrentConnections, const BanList& ban_list = {});
 
     /// Gets the banned IPs of the room.
@@ -102,7 +119,15 @@ public:
     /// Destroys the socket
     void Destroy();
 
+    // Gets the room list
+    std::vector<JSONRoom> GetRoomList();
+
+    /// Sets a function to call when a error happens in 'MakeRequest'
+    void SetErrorCallback(ErrorCallback cb);
+
 private:
+    Common::WebResult MakeRequest(const std::string& method, const std::string& body = "");
+
     struct RoomImpl;
     std::unique_ptr<RoomImpl> room_impl;
 };

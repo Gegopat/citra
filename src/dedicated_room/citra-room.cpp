@@ -26,7 +26,6 @@
 #include "common/common_types.h"
 #include "common/scm_rev.h"
 #include "common/string_util.h"
-#include "core/announce_multiplayer_session.h"
 #include "core/core.h"
 #include "core/settings.h"
 #include "network/room.h"
@@ -165,22 +164,17 @@ int main(int argc, char** argv) {
     if (!ban_list_file.empty())
         ban_list = LoadBanList(ban_list_file);
     Network::Room room;
-    if (!room.Create(room_name, room_description, creator, port, password, max_members, ban_list)) {
+    if (!room.Create(announce, room_name, room_description, creator, port, password, max_members,
+                     ban_list)) {
         std::cout << "Failed to create room!\n\n";
         return -1;
     }
     std::cout << fmt::format("Hosting a {} room\nRoom is open. Close with Q+Enter...\n\n",
                              announce ? "public" : "private");
-    auto announce_session{std::make_unique<Core::AnnounceMultiplayerSession>(room)};
-    if (announce)
-        announce_session->Start();
     while (room.IsOpen()) {
         std::string in;
         std::cin >> in;
         if (in.size() > 0) {
-            if (announce)
-                announce_session->Stop();
-            announce_session.reset();
             // Save the ban list
             if (!ban_list_file.empty())
                 SaveBanList(room.GetBanList(), ban_list_file);
@@ -189,9 +183,6 @@ int main(int argc, char** argv) {
         }
         std::this_thread::sleep_for(std::chrono::milliseconds{100});
     }
-    if (announce)
-        announce_session->Stop();
-    announce_session.reset();
     // Save the ban list
     if (!ban_list_file.empty())
         SaveBanList(room.GetBanList(), ban_list_file);

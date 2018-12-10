@@ -20,16 +20,13 @@
 #include "citra/program_list_p.h"
 #include "citra/ui_settings.h"
 #include "common/logging/log.h"
-#include "core/announce_multiplayer_session.h"
 #include "core/hle/service/cfg/cfg.h"
 #include "core/settings.h"
 #include "ui_host_room.h"
 
-HostRoomWindow::HostRoomWindow(QWidget* parent,
-                               std::shared_ptr<Core::AnnounceMultiplayerSession> session,
-                               Core::System& system)
+HostRoomWindow::HostRoomWindow(QWidget* parent, Core::System& system)
     : QDialog{parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint},
-      ui{std::make_unique<Ui::HostRoom>()}, announce_multiplayer_session{session}, system{system} {
+      ui{std::make_unique<Ui::HostRoom>()}, system{system} {
     ui->setupUi(this);
     ui->max_members->setMaximum(Network::MaxConcurrentConnections);
     // Set up validation for the text fields
@@ -80,8 +77,9 @@ void HostRoomWindow::Host() {
     if (ui->load_ban_list->isChecked())
         ban_list = UISettings::values.ban_list;
     bool created{system.Room().Create(
-        ui->room_name->text().toStdString(), ui->room_description->toPlainText().toStdString(),
-        ui->nickname->text().toStdString(), port, password, ui->max_members->value(), ban_list)};
+        ui->host_type->currentIndex() == 0, ui->room_name->text().toStdString(),
+        ui->room_description->toPlainText().toStdString(), ui->nickname->text().toStdString(), port,
+        password, ui->max_members->value(), ban_list)};
     if (!created) {
         NetworkMessage::ShowError(NetworkMessage::COULD_NOT_CREATE_ROOM);
         LOG_ERROR(Network, "Couldn't create room!");
@@ -144,12 +142,6 @@ void HostRoomWindow::UpdateReplies() {
 void HostRoomWindow::OnConnection() {
     ui->host->setEnabled(true);
     if (system.RoomMember().GetState() == Network::RoomMember::State::Joining) {
-        // Start the announce session if they chose Public
-        if (ui->host_type->currentIndex() == 0)
-            if (auto session{announce_multiplayer_session.lock()})
-                session->Start();
-            else
-                LOG_ERROR(Network, "Starting announce session failed");
         UpdateReplies();
         close();
     }
