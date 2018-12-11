@@ -291,7 +291,7 @@ void System::Shutdown() {
     timing.reset();
     program_loader.reset();
     memory.reset();
-    room_member->SendProgram(std::string{});
+    room_member->SetProgram(std::string{});
     LOG_DEBUG(Core, "Shutdown OK");
 }
 

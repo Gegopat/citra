@@ -356,8 +356,11 @@ void RoomMember::RoomMemberImpl::HandleModBanListResponsePacket(const ENetEvent*
 
 void RoomMember::RoomMemberImpl::Disconnect() {
     member_information.clear();
-    room_information.max_members = 0;
     room_information.name.clear();
+    room_information.description.clear();
+    room_information.creator.clear();
+    room_information.max_members = 0;
+    room_information.port = 0;
     if (!server)
         return;
     enet_peer_disconnect(server, 0);
@@ -497,7 +500,7 @@ void RoomMember::Join(const std::string& nickname, u64 console_id, const char* s
         room_member_impl->nickname = nickname;
         room_member_impl->StartLoop();
         room_member_impl->SendJoinRequest(nickname, console_id, preferred_mac, password);
-        SendProgram(room_member_impl->current_program);
+        SetProgram(room_member_impl->current_program);
     } else {
         enet_peer_disconnect(room_member_impl->server, 0);
         room_member_impl->SetState(State::Idle);
@@ -527,7 +530,7 @@ void RoomMember::SendChatMessage(const std::string& message) {
     room_member_impl->Send(std::move(packet));
 }
 
-void RoomMember::SendProgram(const std::string& program) {
+void RoomMember::SetProgram(const std::string& program) {
     room_member_impl->current_program = program;
     if (!IsConnected())
         return;

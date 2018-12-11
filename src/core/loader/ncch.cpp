@@ -146,7 +146,7 @@ ResultStatus ProgramLoader_NCCH::Load(Kernel::SharedPtr<Kernel::Process>& proces
         overlay_ncch = &update_ncch;
     std::string program;
     ReadShortTitle(program);
-    system.RoomMember().SendProgram(program);
+    system.RoomMember().SetProgram(program);
     is_loaded = true;           // Set state to loaded
     result = LoadExec(process); // Load the executable into memory for booting
     if (ResultStatus::Success != result)

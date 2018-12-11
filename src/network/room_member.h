@@ -146,7 +146,7 @@ public:
      * Sends the current program to the room.
      * @param program The program name.
      */
-    void SendProgram(const std::string& program);
+    void SetProgram(const std::string& program);
 
     /**
      * Sends a moderation request to the room.
