@@ -56,8 +56,8 @@ struct RoomMember::RoomMemberImpl {
 
     private:
         CallbackSet<WiFiPacket> callback_set_wifi_packet;
-        CallbackSet<ChatEntry> callback_set_chat_messages;
-        CallbackSet<StatusMessageEntry> callback_set_status_messages;
+        CallbackSet<ChatEntry> callback_set_chat_message;
+        CallbackSet<StatusMessageEntry> callback_set_status_message;
         CallbackSet<RoomInformation> callback_set_room_information;
         CallbackSet<State> callback_set_state;
         CallbackSet<Error> callback_set_error;
@@ -405,13 +405,13 @@ RoomMember::RoomMemberImpl::Callbacks::Get() {
 
 template <>
 RoomMember::RoomMemberImpl::CallbackSet<ChatEntry>& RoomMember::RoomMemberImpl::Callbacks::Get() {
-    return callback_set_chat_messages;
+    return callback_set_chat_message;
 }
 
 template <>
 RoomMember::RoomMemberImpl::CallbackSet<StatusMessageEntry>&
 RoomMember::RoomMemberImpl::Callbacks::Get() {
-    return callback_set_status_messages;
+    return callback_set_status_message;
 }
 
 template <>
@@ -576,7 +576,7 @@ RoomMember::CallbackHandle<RoomInformation> RoomMember::BindOnRoomInformationCha
     return room_member_impl->Bind(callback);
 }
 
-RoomMember::CallbackHandle<ChatEntry> RoomMember::BindOnChatMessageRecieved(
+RoomMember::CallbackHandle<ChatEntry> RoomMember::BindOnChatMessageReceived(
     std::function<void(const ChatEntry&)> callback) {
     return room_member_impl->Bind(callback);
 }

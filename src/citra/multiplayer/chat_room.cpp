@@ -102,7 +102,7 @@ ChatRoom::ChatRoom(QWidget* parent)
     qRegisterMetaType<Network::StatusMessageEntry>();
     // Setup the callbacks for network updates
     auto& member{system.RoomMember()};
-    member.BindOnChatMessageRecieved(
+    member.BindOnChatMessageReceived(
         [this](const Network::ChatEntry& chat) { emit ChatReceived(chat); });
     member.BindOnStatusMessageReceived([this](const Network::StatusMessageEntry& status_message) {
         emit StatusMessageReceived(status_message);

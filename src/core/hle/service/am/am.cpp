@@ -153,7 +153,7 @@ ResultVal<std::size_t> CIAFile::WriteContentData(u64 offset, std::size_t length,
             // or comes before the buffered data we have, so skip this content ID.
             if (range_min > offset_max || range_max < offset)
                 continue;
-            // Figure out how much of this content ID we have just recieved/can write out
+            // Figure out how much of this content ID we have just received/can write out
             u64 available_to_write{std::min(offset_max, range_max) - range_min};
             // Since the incoming TMD has already been written, we can use GetProgramContentPath
             // to get the content paths to write to.
