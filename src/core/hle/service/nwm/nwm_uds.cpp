@@ -46,7 +46,7 @@ constexpr u16 HostDestNodeID{1};
 /// Returns a list of received 802.11 beacon frames from the specified sender since the last call.
 std::list<Network::WiFiPacket> NWM_UDS::GetReceivedBeacons(const MACAddress& sender) {
     std::lock_guard lock{beacon_mutex};
-    if (sender != BroadcastMac) {
+    if (sender != BroadcastMAC) {
         std::list<Network::WiFiPacket> filtered_list;
         const auto beacon{std::find_if(received_beacons.begin(), received_beacons.end(),
                                        [&sender](const Network::WiFiPacket& packet) {
@@ -89,7 +89,7 @@ void NWM_UDS::BroadcastNodeMap() {
     Network::WiFiPacket packet;
     packet.channel = network_channel;
     packet.type = Network::WiFiPacket::PacketType::NodeMap;
-    packet.destination_address = BroadcastMac;
+    packet.destination_address = BroadcastMAC;
     std::size_t num_entries{static_cast<std::size_t>(std::count_if(
         node_map.begin(), node_map.end(), [](const auto& node) { return node.second.connected; }))};
     using node_t = decltype(node_map)::value_type;
@@ -220,7 +220,7 @@ void NWM_UDS::HandleEAPoLPacket(const Network::WiFiPacket& packet) {
         // On a console the eapol packet is only sent to packet.transmitter_address
         // while a packet containing the node information is broadcasted
         // For now we will broadcast the eapol packet instead
-        eapol_logoff.destination_address = BroadcastMac;
+        eapol_logoff.destination_address = BroadcastMAC;
         eapol_logoff.type = WiFiPacket::PacketType::Data;
         SendPacket(eapol_logoff);
         connection_status_event->Signal();
@@ -288,7 +288,7 @@ void NWM_UDS::HandleSecureDataPacket(const Network::WiFiPacket& packet) {
         // The packet wasn't addressed to us, we can only act as a router if we're the host.
         // However, we might have received this packet due to a broadcast from the host, in that
         // case just ignore it.
-        ASSERT_MSG(packet.destination_address == BroadcastMac ||
+        ASSERT_MSG(packet.destination_address == BroadcastMAC ||
                        connection_status.status == static_cast<u32>(NetworkStatus::ConnectedAsHost),
                    "Can't be a router if we're not a host");
         if (connection_status.status == static_cast<u32>(NetworkStatus::ConnectedAsHost) &&
@@ -297,7 +297,7 @@ void NWM_UDS::HandleSecureDataPacket(const Network::WiFiPacket& packet) {
             // TODO: Is there a flag that makes this kind of routing be unicast instead of
             // multicast? Perhaps this is a way to allow spectators to see some of the packets.
             Network::WiFiPacket out_packet{packet};
-            out_packet.destination_address = BroadcastMac;
+            out_packet.destination_address = BroadcastMAC;
             SendPacket(out_packet);
         }
         return;
@@ -477,7 +477,7 @@ std::optional<MACAddress> NWM_UDS::GetNodeMACAddress(u16 dest_node_id, u8 flags)
     constexpr u8 BroadcastFlag{0x2};
     if ((flags & BroadcastFlag) || dest_node_id == BroadcastNetworkNodeID)
         // Broadcast
-        return BroadcastMac;
+        return BroadcastMAC;
     else if (dest_node_id == HostDestNodeID)
         // Destination is host
         return network_info.host_mac_address;
@@ -1045,7 +1045,7 @@ void NWM_UDS::BeaconBroadcastCallback(s64 cycles_late) {
     WiFiPacket packet;
     packet.type = WiFiPacket::PacketType::Beacon;
     packet.data = std::move(frame);
-    packet.destination_address = BroadcastMac;
+    packet.destination_address = BroadcastMAC;
     packet.channel = network_channel;
     SendPacket(packet);
     // Start broadcasting the network, send a beacon frame every 102.4ms.

@@ -128,7 +128,7 @@ public:
      */
     void Join(const std::string& nickname, u64 console_id, const char* server_addr = "127.0.0.1",
               const u16 server_port = DefaultRoomPort,
-              const MACAddress& preferred_mac = BroadcastMac, const std::string& password = "");
+              const MACAddress& preferred_mac = BroadcastMAC, const std::string& password = "");
 
     /**
      * Sends a WiFi packet to the room.

@@ -53,7 +53,7 @@ using MACAddress = std::array<u8, 6>; ///< Network MAC address
 constexpr MACAddress NintendoOUI{0x00, 0x1F, 0x32, 0x00, 0x00, 0x00};
 constexpr std::array<u8, 3> NintendoOUI3{0x00, 0x1F, 0x32};
 
-constexpr MACAddress BroadcastMac{0xFF, 0xFF, 0xFF,
+constexpr MACAddress BroadcastMAC{0xFF, 0xFF, 0xFF,
                                   0xFF, 0xFF, 0xFF}; ///< 802.11 broadcast MAC address
 
 // An inheritable class to disallow the copy constructor and operator= functions

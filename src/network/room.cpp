@@ -346,7 +346,7 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
         SendNameCollision(event->peer);
         return;
     }
-    if (preferred_mac != BroadcastMac) {
+    if (preferred_mac != BroadcastMAC) {
         // Verify if the preferred MAC address is available
         if (!IsValidMACAddress(preferred_mac)) {
             SendMacCollision(event->peer);
@@ -727,7 +727,7 @@ void Room::RoomImpl::HandleWiFiPacket(const ENetEvent* event) {
     out_packet.Append(event->packet->data, event->packet->dataLength);
     auto enet_packet{enet_packet_create(out_packet.GetData(), out_packet.GetDataSize(),
                                         ENET_PACKET_FLAG_RELIABLE)};
-    if (destination_address == BroadcastMac) { // Send the data to everyone except the sender
+    if (destination_address == BroadcastMAC) { // Send the data to everyone except the sender
         std::lock_guard lock{member_mutex};
         bool sent_packet{};
         for (const auto& member : members) {

@@ -105,7 +105,7 @@ void Lobby::OnJoinRoom(const QModelIndex& source) {
     // Attempt to connect in a different thread
     auto f{QtConcurrent::run([this, nickname, ip, port, password] {
         system.RoomMember().Join(nickname, Service::CFG::GetConsoleID(system), ip.c_str(), port,
-                                 BroadcastMac, password);
+                                 BroadcastMAC, password);
     })};
     watcher->setFuture(f);
     // TODO: disable widgets and display a connecting while we wait

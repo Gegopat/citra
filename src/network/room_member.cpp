@@ -80,12 +80,12 @@ struct RoomMember::RoomMemberImpl {
      * nickname and preferred MAC address.
      * @param nickname The desired nickname.
      * @param console_id The console ID.
-     * @param preferred_mac The preferred MAC address to use in the room, the BroadcastMac tells the
+     * @param preferred_mac The preferred MAC address to use in the room, the BroadcastMAC tells the
      * server to assign one for us.
      * @param password The password for the room
      */
     void SendJoinRequest(const std::string& nickname, u64 console_id,
-                         const MACAddress& preferred_mac = BroadcastMac,
+                         const MACAddress& preferred_mac = BroadcastMAC,
                          const std::string& password = "");
     /**
      * Extracts a MAC address from a received ENet packet.
