@@ -233,7 +233,7 @@ void SoftwareKeyboard::Update() {
         u32 num_buttons{static_cast<u32>(config.num_buttons_m1)};
         for (u32 i{}; i <= num_buttons; ++i) {
             std::string button_text;
-            // Apps are allowed to set custom text to display on the button
+            // Programs are allowed to set custom text to display on the button
             std::u16string custom_button_text{
                 reinterpret_cast<char16_t*>(config.buttons_text[i].data())};
             if (custom_button_text.empty())

@@ -84,7 +84,7 @@ ChatRoom::ChatRoom(QWidget* parent)
     // Set the item_model for member_view
     enum {
         COLUMN_NAME,
-        COLUMN_APP,
+        COLUMN_PROGRAM,
         COLUMN_COUNT, // Number of columns
     };
     member_list = new QStandardItemModel(ui->member_view);
@@ -92,7 +92,7 @@ ChatRoom::ChatRoom(QWidget* parent)
     ui->member_view->setContextMenuPolicy(Qt::CustomContextMenu);
     member_list->insertColumns(0, COLUMN_COUNT);
     member_list->setHeaderData(COLUMN_NAME, Qt::Horizontal, "Name");
-    member_list->setHeaderData(COLUMN_APP, Qt::Horizontal, "Program");
+    member_list->setHeaderData(COLUMN_PROGRAM, Qt::Horizontal, "Program");
     constexpr int MaxChatLines{1000};
     ui->chat_history->document()->setMaximumBlockCount(MaxChatLines);
     // Register the network structs to use in slots and signals

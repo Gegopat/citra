@@ -201,20 +201,20 @@ union ResultCode {
     BitField<21, 6, ErrorSummary> summary;
     BitField<27, 5, ErrorLevel> level;
 
-    // The last bit of `level` is checked by apps and the kernel to determine if a result code is an
-    // error
+    // The last bit of `level` is checked by programs and the kernel to determine if a result code
+    // is an error
     BitField<31, 1, u32> is_error;
 
-    constexpr explicit ResultCode(u32 raw) : raw(raw) {}
+    constexpr explicit ResultCode(u32 raw) : raw{raw} {}
 
     constexpr ResultCode(ErrorDescription description, ErrorModule module, ErrorSummary summary,
                          ErrorLevel level)
-        : ResultCode(static_cast<u32>(description), module, summary, level) {}
+        : ResultCode{static_cast<u32>(description), module, summary, level} {}
 
     constexpr ResultCode(u32 description_, ErrorModule module_, ErrorSummary summary_,
                          ErrorLevel level_)
-        : raw(description.FormatValue(description_) | module.FormatValue(module_) |
-              summary.FormatValue(summary_) | level.FormatValue(level_)) {}
+        : raw{description.FormatValue(description_) | module.FormatValue(module_) |
+              summary.FormatValue(summary_) | level.FormatValue(level_)} {}
 
     constexpr ResultCode& operator=(const ResultCode& o) {
         raw = o.raw;

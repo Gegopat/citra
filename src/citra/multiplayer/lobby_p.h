@@ -35,7 +35,7 @@ public:
 
     LobbyItemName() = default;
 
-    explicit LobbyItemName(bool has_password, QString name) : LobbyItem() {
+    explicit LobbyItemName(bool has_password, QString name) : LobbyItem{} {
         setData(name, NameRole);
         setData(has_password, PasswordRole);
     }

@@ -405,7 +405,7 @@ std::string GetProgramContentPath(Service::FS::MediaType media_type, u64 pid, u1
         }
         // TODO: how does DLC actually get this folder on hardware?
         // For now, check if the second (index 1) content has the optional flag set, for most
-        // apps this is usually the manual and not set optional, DLC has it set optional.
+        // programs this is usually the manual and not set optional, DLC has it set optional.
         // All .apps (including index 0) will be in the 00000000/ folder for DLC.
         if (tmd.GetContentCount() > 1 &&
             tmd.GetContentTypeByIndex(1) & FileSys::TMDContentTypeFlag::Optional) {

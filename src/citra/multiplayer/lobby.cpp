@@ -64,13 +64,13 @@ Lobby::Lobby(QWidget* parent, Core::System& system)
 
 QString Lobby::PasswordPrompt() {
     bool ok{};
-    const auto text{QInputDialog::getText(this, "Password Required to Join",
+    const auto text{QInputDialog::getText(this, "Password Required",
                                           "Password:", QLineEdit::Password, "", &ok)};
     return ok ? text : QString();
 }
 
 void Lobby::OnExpandRoom(const QModelIndex& index) {
-    QModelIndex member_index{proxy->index(index.row(), Column::MEMBER)};
+    auto member_index{proxy->index(index.row(), Column::MEMBER)};
     auto member_list{proxy->data(member_index, LobbyItemMemberList::MemberListRole).toList()};
 }
 

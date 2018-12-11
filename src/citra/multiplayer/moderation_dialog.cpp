@@ -8,12 +8,14 @@
 #include "ui_moderation_dialog.h"
 
 namespace Column {
+
 enum {
     SUBJECT,
     TYPE,
     COUNT,
 };
-}
+
+} // namespace Column
 
 ModerationDialog::ModerationDialog(Network::RoomMember& member, QWidget* parent)
     : QDialog{parent}, member{member}, ui{std::make_unique<Ui::ModerationDialog>()} {

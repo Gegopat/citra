@@ -375,7 +375,7 @@ void ConfigurationInput::keyPressEvent(QKeyEvent* event) {
 }
 
 void ConfigurationInput::OnNewProfile() {
-    QString name{QInputDialog::getText(this, "New Profile", "Enter the name for the new profile.")};
+    auto name{QInputDialog::getText(this, "New Profile", "Enter the name for the new profile.")};
     if (name.isEmpty())
         return;
     ApplyConfiguration();
@@ -391,7 +391,7 @@ void ConfigurationInput::OnDeleteProfile() {
         QMessageBox::critical(this, "Citra", "You need to have 1 profile at least");
         return;
     }
-    QMessageBox::StandardButton answer{QMessageBox::question(
+    auto answer{QMessageBox::question(
         this, "Delete Profile", QString("Delete profile %1?").arg(ui->profile->currentText()))};
     if (answer != QMessageBox::Yes)
         return;
@@ -403,7 +403,7 @@ void ConfigurationInput::OnDeleteProfile() {
 }
 
 void ConfigurationInput::OnRenameProfile() {
-    QString new_name{QInputDialog::getText(this, "Rename Profile", "New name:")};
+    auto new_name{QInputDialog::getText(this, "Rename Profile", "New name:")};
     if (new_name.isEmpty())
         return;
     ui->profile->setItemText(ui->profile->currentIndex(), new_name);

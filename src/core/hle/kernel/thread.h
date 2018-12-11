@@ -27,8 +27,8 @@ class Process;
 
 enum ThreadPriority : u32 {
     ThreadPrioHighest = 0,      ///< Highest thread priority
-    ThreadPrioUserlandMax = 24, ///< Highest thread priority for userland apps
-    ThreadPrioDefault = 48,     ///< Default thread priority for userland apps
+    ThreadPrioUserlandMax = 24, ///< Highest thread priority for userland programs
+    ThreadPrioDefault = 48,     ///< Default thread priority for userland programs
     ThreadPrioLowest = 63,      ///< Lowest thread priority
 };
 

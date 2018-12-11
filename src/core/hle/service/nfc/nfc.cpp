@@ -35,16 +35,16 @@ struct AmiiboConfig {
     u8 lastwritedate_month;
     u8 lastwritedate_day;
     u16_le write_counter;
-    std::array<u8, 3> characterID; /// The first element is the collection ID, the second the
-                                   /// character in this collection, the third the variant
-    u8 series;                     /// ID of the series
-    u16_le amiiboID; /// ID shared by all exact same amiibo. Some amiibo are only distinguished by
-                     /// this one like regular SMB Series Mario and the gold one
-    u8 type;         /// Type of amiibo 0 = figure, 1 = card, 2 = plush
+    std::array<u8, 3> character_id; /// The first element is the collection ID, the second the
+                                    /// character in this collection, the third the variant
+    u8 series;                      /// ID of the series
+    u16_le amiibo_id; /// ID shared by all exact same amiibo. Some amiibo are only distinguished by
+                      /// this one like regular SMB Series Mario and the gold one
+    u8 type;          /// Type of amiibo, 0: figure, 1: card, 2: plush
     u8 pagex4_byte3;
     u16_le
         appdata_size; /// NFC module writes hard-coded u8 value 0xD8 here. This is the size of the
-                      /// amiibo AppData, apps can use this with the AppData R/W commands. ...
+                      /// amiibo AppData, programs can use this with the AppData R/W commands.
     INSERT_PADDING_BYTES(
         0x30); /// Unused / reserved: this is cleared by NFC module but never written after that.
 };
@@ -182,11 +182,11 @@ void Module::Interface::GetAmiiboConfig(Kernel::HLERequestContext& ctx) {
     amiibo_config.lastwritedate_month = AMIIBO_MONTH_FROM_DATE(nfc->decrypted_data[0x32]);
     amiibo_config.lastwritedate_day = AMIIBO_DAY_FROM_DATE(nfc->decrypted_data[0x32]);
     amiibo_config.write_counter = (nfc->decrypted_data[0xB4] << 8) | nfc->decrypted_data[0xB5];
-    amiibo_config.characterID[0] = nfc->decrypted_data[0x1DC];
-    amiibo_config.characterID[1] = nfc->decrypted_data[0x1DD];
-    amiibo_config.characterID[2] = nfc->decrypted_data[0x1DE];
+    amiibo_config.character_id[0] = nfc->decrypted_data[0x1DC];
+    amiibo_config.character_id[1] = nfc->decrypted_data[0x1DD];
+    amiibo_config.character_id[2] = nfc->decrypted_data[0x1DE];
     amiibo_config.series = nfc->decrypted_data[0x1e2];
-    amiibo_config.amiiboID = (nfc->decrypted_data[0x1e0] << 8) | nfc->decrypted_data[0x1e1];
+    amiibo_config.amiibo_id = (nfc->decrypted_data[0x1e0] << 8) | nfc->decrypted_data[0x1e1];
     amiibo_config.type = nfc->decrypted_data[0x1DF];
     amiibo_config.pagex4_byte3 = nfc->decrypted_data[0x2B]; // Raw page 0x4 byte 0x3, decrypted byte
     amiibo_config.appdata_size = 0xD8;

@@ -911,7 +911,9 @@ bool Room::Create(bool is_public, const std::string& name, const std::string& de
         std::thread(
             [this] { room_impl->http_server.listen("0.0.0.0", room_impl->room_information.port); })
             .detach();
-        room_impl->UpdateAPIInformation();
+        // Update API information
+        auto& thread_pool{Common::ThreadPool::GetPool()};
+        thread_pool.Push([this] { UpdateAPIInformation(); });
     }
     return true;
 }
