@@ -770,8 +770,6 @@ void Room::RoomImpl::HandleChatPacket(const ENetEvent* event) {
     const auto sending_member{std::find_if(members.begin(), members.end(), CompareNetworkAddress)};
     if (sending_member == members.end())
         return; // Received a chat message from a unknown sender
-    // Limit the size of chat messages to MaxMessageSize
-    message.resize(MaxMessageSize);
     Packet out_packet;
     out_packet << static_cast<u8>(IDChatMessage);
     out_packet << sending_member->nickname;
