@@ -15,7 +15,6 @@
 #include "core/hle/kernel/process.h"
 #include "core/hle/lock.h"
 #include "core/memory.h"
-#include "core/memory_setup.h"
 #include "video_core/renderer/renderer.h"
 #include "video_core/video_core.h"
 
@@ -33,42 +32,45 @@ PageTable* MemorySystem::GetCurrentPageTable() {
     return current_page_table;
 }
 
-static void MapPages(MemorySystem& ms, PageTable& page_table, u32 base, u32 size, u8* memory,
-                     PageType type) {
+void MemorySystem::MapPages(PageTable& page_table, u32 base, u32 size, u8* memory, PageType type) {
     LOG_DEBUG(HW_Memory, "Mapping {} onto {:08X}-{:08X}", (void*)memory, base * PAGE_SIZE,
               (base + size) * PAGE_SIZE);
-    ms.RasterizerFlushVirtualRegion(base << PAGE_BITS, size * PAGE_SIZE,
-                                    FlushMode::FlushAndInvalidate);
+    RasterizerFlushVirtualRegion(base << PAGE_BITS, size * PAGE_SIZE,
+                                 FlushMode::FlushAndInvalidate);
     u32 end{base + size};
     while (base != end) {
         ASSERT_MSG(base < PAGE_TABLE_NUM_ENTRIES, "out of range mapping at {:08X}", base);
         page_table.attributes[base] = type;
         page_table.pointers[base] = memory;
         base += 1;
+        // If the memory to map is already rasterizer-cached, mark the page
+        if (type == PageType::Memory && cache_marker.IsCached(base * PAGE_SIZE)) {
+            page_table.attributes[base] = PageType::RasterizerCachedMemory;
+            page_table.pointers[base] = nullptr;
+        }
         if (memory)
             memory += PAGE_SIZE;
     }
 }
 
-void MapMemoryRegion(MemorySystem& memory, PageTable& page_table, VAddr base, u32 size,
-                     u8* target) {
+void MemorySystem::MapMemoryRegion(PageTable& page_table, VAddr base, u32 size, u8* target) {
     ASSERT_MSG((size & PAGE_MASK) == 0, "non-page aligned size: {:08X}", size);
     ASSERT_MSG((base & PAGE_MASK) == 0, "non-page aligned base: {:08X}", base);
-    MapPages(memory, page_table, base / PAGE_SIZE, size / PAGE_SIZE, target, PageType::Memory);
+    MapPages(page_table, base / PAGE_SIZE, size / PAGE_SIZE, target, PageType::Memory);
 }
 
-void MapIoRegion(MemorySystem& memory, PageTable& page_table, VAddr base, u32 size,
-                 MMIORegionPointer mmio_handler) {
+void MemorySystem::MapIORegion(PageTable& page_table, VAddr base, u32 size,
+                               MMIORegionPointer mmio_handler) {
     ASSERT_MSG((size & PAGE_MASK) == 0, "non-page aligned size: {:08X}", size);
     ASSERT_MSG((base & PAGE_MASK) == 0, "non-page aligned base: {:08X}", base);
-    MapPages(memory, page_table, base / PAGE_SIZE, size / PAGE_SIZE, nullptr, PageType::Special);
+    MapPages(page_table, base / PAGE_SIZE, size / PAGE_SIZE, nullptr, PageType::Special);
     page_table.special_regions.emplace_back(SpecialRegion{base, size, mmio_handler});
 }
 
-void UnmapRegion(MemorySystem& memory, PageTable& page_table, VAddr base, u32 size) {
+void MemorySystem::UnmapRegion(PageTable& page_table, VAddr base, u32 size) {
     ASSERT_MSG((size & PAGE_MASK) == 0, "non-page aligned size: {:08X}", size);
     ASSERT_MSG((base & PAGE_MASK) == 0, "non-page aligned base: {:08X}", base);
-    MapPages(memory, page_table, base / PAGE_SIZE, size / PAGE_SIZE, nullptr, PageType::Unmapped);
+    MapPages(page_table, base / PAGE_SIZE, size / PAGE_SIZE, nullptr, PageType::Unmapped);
 }
 
 /**
@@ -85,6 +87,14 @@ u8* MemorySystem::GetPointerForRasterizerCache(VAddr addr) {
     else if (addr >= VRAM_VADDR && addr < VRAM_N3DS_VADDR_END)
         return vram.data() + (addr - VRAM_VADDR);
     UNREACHABLE();
+}
+
+void MemorySystem::RegisterPageTable(PageTable* page_table) {
+    page_table_list.push_back(page_table);
+}
+
+void MemorySystem::UnregisterPageTable(PageTable* page_table) {
+    page_table_list.erase(std::find(page_table_list.begin(), page_table_list.end(), page_table));
 }
 
 /// This function should only be called for virtual addreses with attribute `PageType::Special`.
@@ -278,28 +288,31 @@ void MemorySystem::RasterizerMarkRegionCached(PAddr start, u32 size, bool cached
     auto paddr{start};
     for (unsigned i{}; i < num_pages; ++i, paddr += PAGE_SIZE) {
         for (const auto& vaddr : PhysicalToVirtualAddressForRasterizer(paddr)) {
-            auto& page_type{current_page_table->attributes[vaddr >> PAGE_BITS]};
-            if (cached)
-                // Switch page type to cached if now cached
-                switch (page_type) {
-                case PageType::Memory:
-                    page_type = PageType::RasterizerCachedMemory;
-                    current_page_table->pointers[vaddr >> PAGE_BITS] = nullptr;
-                    break;
-                default:
-                    break;
-                }
-            else
-                // Switch page type to uncached if now uncached
-                switch (page_type) {
-                case PageType::RasterizerCachedMemory:
-                    page_type = PageType::Memory;
-                    current_page_table->pointers[vaddr >> PAGE_BITS] =
-                        GetPointerForRasterizerCache(vaddr & ~PAGE_MASK);
-                    break;
-                default:
-                    break;
-                }
+            cache_marker.Mark(vaddr, cached);
+            for (auto page_table : page_table_list) {
+                auto& page_type{page_table->attributes[vaddr >> PAGE_BITS]};
+                if (cached)
+                    // Switch page type to cached if now cached
+                    switch (page_type) {
+                    case PageType::Memory:
+                        page_type = PageType::RasterizerCachedMemory;
+                        page_table->pointers[vaddr >> PAGE_BITS] = nullptr;
+                        break;
+                    default:
+                        break;
+                    }
+                else
+                    // Switch page type to uncached if now uncached
+                    switch (page_type) {
+                    case PageType::RasterizerCachedMemory:
+                        page_type = PageType::Memory;
+                        page_table->pointers[vaddr >> PAGE_BITS] =
+                            GetPointerForRasterizerCache(vaddr & ~PAGE_MASK);
+                        break;
+                    default:
+                        break;
+                    }
+            }
         }
     }
 }

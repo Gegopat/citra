@@ -19,7 +19,6 @@
 #include "core/hle/result.h"
 #include "core/hle/service/cfg/cfg.h"
 #include "core/memory.h"
-#include "core/memory_setup.h"
 #include "core/settings.h"
 
 namespace Kernel {
