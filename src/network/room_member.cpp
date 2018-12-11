@@ -467,7 +467,7 @@ RoomInformation RoomMember::GetRoomInformation() const {
     return room_member_impl->room_information;
 }
 
-void RoomMember::Join(const std::string& nick, u64 console_id, const char* server_addr,
+void RoomMember::Join(const std::string& nickname, u64 console_id, const char* server_addr,
                       u16 server_port, const MACAddress& preferred_mac,
                       const std::string& password) {
     // If the member is connected, kill the connection first
@@ -494,9 +494,9 @@ void RoomMember::Join(const std::string& nick, u64 console_id, const char* serve
     ENetEvent event;
     int net{enet_host_service(room_member_impl->client, &event, ConnectionTimeoutMs)};
     if (net > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
-        room_member_impl->nickname = nick;
+        room_member_impl->nickname = nickname;
         room_member_impl->StartLoop();
-        room_member_impl->SendJoinRequest(nick, console_id, preferred_mac, password);
+        room_member_impl->SendJoinRequest(nickname, console_id, preferred_mac, password);
         SendProgram(room_member_impl->current_program);
     } else {
         enet_peer_disconnect(room_member_impl->server, 0);
