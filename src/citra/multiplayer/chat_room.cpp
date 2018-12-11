@@ -219,8 +219,7 @@ void ChatRoom::OnChatReceive(const Network::ChatEntry& chat) {
     AppendChatMessage(m.GetMemberChatMessage(member));
     if (m.ContainsPing())
         emit Pinged();
-    auto message{QString::fromStdString(chat.message)};
-    HandleNewMessage(message.remove(QChar('\0')));
+    HandleNewMessage(QString::fromStdString(chat.message));
 }
 
 void ChatRoom::OnStatusMessageReceive(const Network::StatusMessageEntry& status_message) {
