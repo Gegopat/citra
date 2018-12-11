@@ -230,6 +230,8 @@ void MultiplayerState::ShowNotification() {
 }
 
 void MultiplayerState::HideNotification() {
+    if (!system.RoomMember().IsConnected())
+        return;
     show_notification = false;
     status_icon->setPixmap(QIcon::fromTheme("connected").pixmap(16));
 }
