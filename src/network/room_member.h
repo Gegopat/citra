@@ -27,9 +27,9 @@ struct WifiPacket {
     PacketType type;      ///< The type of 802.11 frame.
     std::vector<u8> data; ///< Raw 802.11 frame data, starting at the management frame header
                           /// for management frames.
-    MACAddress transmitter_address; ///< MAC address of the transmitter.
-    MACAddress destination_address; ///< MAC address of the receiver.
-    u8 channel;                     ///< Wifi channel where this frame was transmitted.
+    MacAddressdress transmitter_address; ///< MAC address of the transmitter.
+    MacAddressdress destination_address; ///< MAC address of the receiver.
+    u8 channel;                          ///< Wifi channel where this frame was transmitted.
 };
 
 /// Represents a chat message.
@@ -67,8 +67,8 @@ public:
         // Reasons why connection was rejected
         UnknownError,       ///< Some error [permissions to network device missing or something]
         NameCollision,      ///< Somebody is already using this name
-        MACCollision,       ///< Somebody is already using that MAC address
-        ConsoleIDCollision, ///< Somebody in the room has the same console ID
+        MacCollision,       ///< Somebody is already using that MAC address
+        ConsoleIdCollision, ///< Somebody in the room has the same console ID
         WrongVersion,       ///< The room version isn't the same as for this RoomMember
         WrongPassword,      ///< The password doesn't match the one from the Room
         CouldNotConnect,    ///< The room isn't responding to a connection attempt
@@ -81,10 +81,10 @@ public:
     };
 
     struct MemberInformation {
-        std::string nickname;   ///< Nickname of the member.
-        std::string program;    ///< Program that the member is running. Empty if the member isn't
-                                ///< running a program.
-        MACAddress mac_address; ///< MAC address associated with this member.
+        std::string nickname; ///< Nickname of the member.
+        std::string program;  ///< Program that the member is running. Empty if the member isn't
+                              ///< running a program.
+        MacAddressdress mac_address; ///< MAC address associated with this member.
     };
 
     using MemberList = std::vector<MemberInformation>;
@@ -113,7 +113,7 @@ public:
     const std::string& GetNickname() const;
 
     /// Returns the MAC address of the RoomMember.
-    const MACAddress& GetMACAddress() const;
+    const MacAddressdress& GetMacAddressdress() const;
 
     /// Returns information about the room we're currently connected to.
     RoomInformation GetRoomInformation() const;
@@ -128,7 +128,8 @@ public:
      */
     void Join(const std::string& nickname, u64 console_id, const char* server_addr = "127.0.0.1",
               const u16 server_port = DefaultRoomPort,
-              const MACAddress& preferred_mac = BroadcastMAC, const std::string& password = "");
+              const MacAddressdress& preferred_mac = BroadcastMac,
+              const std::string& password = "");
 
     /**
      * Sends a Wifi packet to the room.
@@ -259,10 +260,10 @@ static const char* GetErrorStr(const RoomMember::Error& e) {
         return "UnknownError";
     case RoomMember::Error::NameCollision:
         return "NameCollision";
-    case RoomMember::Error::MACCollision:
-        return "MACCollision";
-    case RoomMember::Error::ConsoleIDCollision:
-        return "ConsoleIDCollision";
+    case RoomMember::Error::MacCollision:
+        return "MacCollision";
+    case RoomMember::Error::ConsoleIdCollision:
+        return "ConsoleIdCollision";
     case RoomMember::Error::WrongVersion:
         return "WrongVersion";
     case RoomMember::Error::WrongPassword:

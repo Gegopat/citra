@@ -29,10 +29,10 @@ struct RoomInformation {
     std::string creator;     ///< The creator of this room
 };
 
-struct JSONRoom {
+struct JsonRoom {
     struct Member {
         std::string name, program;
-        MACAddress mac_address;
+        MacAddressdress mac_address;
     };
     std::string name, creator, description, ip;
     u16 port;
@@ -43,40 +43,40 @@ struct JSONRoom {
 
 // The different types of messages that can be sent. The first byte of each packet defines the type
 enum RoomMessageTypes : u8 {
-    IDJoinRequest = 1,
-    IDJoinSuccess,
-    IDRoomInformation,
-    IDSetProgram,
-    IDWifiPacket,
-    IDChatMessage,
-    IDNameCollision,
-    IDMACCollision,
-    IDVersionMismatch,
-    IDWrongPassword,
-    IDCloseRoom,
-    IDRoomIsFull,
-    IDStatusMessage,
-    IDConsoleIDCollision,
-    IDHostKicked,
-    IDHostBanned,
+    IdJoinRequest = 1,
+    IdJoinSuccess,
+    IdRoomInformation,
+    IdSetProgram,
+    IdWifiPacket,
+    IdChatMessage,
+    IdNameCollision,
+    IdMacCollision,
+    IdVersionMismatch,
+    IdWrongPassword,
+    IdCloseRoom,
+    IdRoomIsFull,
+    IdStatusMessage,
+    IdConsoleIdCollision,
+    IdHostKicked,
+    IdHostBanned,
     // Moderation requests
-    IDModKick,
-    IDModBan,
-    IDModUnban,
-    IDModGetBanList,
+    IdModKick,
+    IdModBan,
+    IdModUnban,
+    IdModGetBanList,
     // Moderation responses
-    IDModBanListResponse,
-    IDModPermissionDenied,
-    IDModNoSuchUser,
+    IdModBanListResponse,
+    IdModPermissionDenied,
+    IdModNoSuchUser,
 };
 
 /// Types of system status messages
 enum StatusMessageTypes : u8 {
-    IDMemberJoined = 1, ///< A member joined
-    IDMemberLeft,       ///< A member left
-    IDMemberKicked,     ///< A member was kicked from the room
-    IDMemberBanned,     ///< A member was banned from the room
-    IDAddressUnbanned,  ///< A IP address was unbanned from the room
+    IdMemberJoined = 1, ///< A member joined
+    IdMemberLeft,       ///< A member left
+    IdMemberKicked,     ///< A member was kicked from the room
+    IdMemberBanned,     ///< A member was banned from the room
+    IdAddressUnbanned,  ///< A IP address was unbanned from the room
 };
 
 using ErrorCallback = std::function<void(const Common::WebResult&)>;
@@ -85,9 +85,9 @@ using ErrorCallback = std::function<void(const Common::WebResult&)>;
 class Room final {
 public:
     struct Member {
-        std::string nickname;   ///< The nickname of the member.
-        std::string program;    ///< The current program of the member.
-        MACAddress mac_address; ///< The assigned MAC address of the member.
+        std::string nickname;        ///< The nickname of the member.
+        std::string program;         ///< The current program of the member.
+        MacAddressdress mac_address; ///< The assigned MAC address of the member.
     };
 
     using BanList = std::vector<std::string>;
@@ -120,7 +120,7 @@ public:
     void Destroy();
 
     // Gets the room list
-    std::vector<JSONRoom> GetRoomList();
+    std::vector<JsonRoom> GetRoomList();
 
     /// Sets a function to call when a error happens in 'MakeRequest'
     void SetErrorCallback(ErrorCallback cb);

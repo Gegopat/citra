@@ -95,8 +95,9 @@ static std::array<u8, CryptoPP::AES::BLOCKSIZE> GenerateDataCCMPKey(
  * Generates the Additional Authenticated Data (AAD) for an UDS 802.11 encrypted data frame.
  * @returns a buffer with the bytes of the AAD.
  */
-static std::vector<u8> GenerateCCMPAAD(const MACAddress& sender, const MACAddress& receiver,
-                                       const MACAddress& bssid, u16 frame_control) {
+static std::vector<u8> GenerateCCMPAAD(const MacAddressdress& sender,
+                                       const MacAddressdress& receiver,
+                                       const MacAddressdress& bssid, u16 frame_control) {
     // Reference: IEEE 802.11-2007
     // 8.3.3.3.2 Construct AAD (22-30 bytes)
     // The AAD is constructed from the MPDU header. The AAD doesn't include the header Duration
@@ -105,9 +106,9 @@ static std::vector<u8> GenerateCCMPAAD(const MACAddress& sender, const MACAddres
     // Control field are masked to 0.
     struct {
         u16_be FC; // MPDU Frame Control field
-        MACAddress A1;
-        MACAddress A2;
-        MACAddress A3;
+        MacAddressdress A1;
+        MacAddressdress A2;
+        MacAddressdress A3;
         u16_be SC; // MPDU Sequence Control field
     } aad_struct{};
     constexpr u16 AADFrameControlMask{0x8FC7};
@@ -140,8 +141,9 @@ static std::vector<u8> GenerateCCMPAAD(const MACAddress& sender, const MACAddres
  */
 static std::vector<u8> DecryptDataFrame(const std::vector<u8>& encrypted_payload,
                                         const std::array<u8, CryptoPP::AES::BLOCKSIZE>& ccmp_key,
-                                        const MACAddress& sender, const MACAddress& receiver,
-                                        const MACAddress& bssid, u16 sequence_number,
+                                        const MacAddressdress& sender,
+                                        const MacAddressdress& receiver,
+                                        const MacAddressdress& bssid, u16 sequence_number,
                                         u16 frame_control) {
     // Reference: IEEE 802.11-2007
     std::vector<u8> aad{GenerateCCMPAAD(sender, receiver, bssid, frame_control)};
@@ -190,8 +192,9 @@ static std::vector<u8> DecryptDataFrame(const std::vector<u8>& encrypted_payload
  */
 static std::vector<u8> EncryptDataFrame(const std::vector<u8>& payload,
                                         const std::array<u8, CryptoPP::AES::BLOCKSIZE>& ccmp_key,
-                                        const MACAddress& sender, const MACAddress& receiver,
-                                        const MACAddress& bssid, u16 sequence_number,
+                                        const MacAddressdress& sender,
+                                        const MacAddressdress& receiver,
+                                        const MacAddressdress& bssid, u16 sequence_number,
                                         u16 frame_control) {
     // Reference: IEEE 802.11-2007
     auto aad{GenerateCCMPAAD(sender, receiver, bssid, frame_control)};
@@ -300,7 +303,7 @@ NodeInfo DeserializeNodeInfo(const EAPoLNodeInfo& node) {
     return node_info;
 }
 
-std::vector<u8> GenerateEAPoLLogoffFrame(const MACAddress& mac_address, u16 network_node_id,
+std::vector<u8> GenerateEAPoLLogoffFrame(const MacAddressdress& mac_address, u16 network_node_id,
                                          const NodeList& nodes, u8 max_nodes, u8 total_nodes) {
     EAPoLLogoffPacket eapol_logoff{};
     eapol_logoff.assigned_node_id = network_node_id;

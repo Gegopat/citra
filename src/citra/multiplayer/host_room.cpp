@@ -87,7 +87,7 @@ void HostRoomWindow::Host() {
         return;
     }
     member.Join(ui->nickname->text().toStdString(), Service::CFG::GetConsoleID(system), "127.0.0.1",
-                port, BroadcastMAC, password);
+                port, BroadcastMac, password);
     // Store settings
     UISettings::values.room_nickname = ui->nickname->text();
     UISettings::values.room_name = ui->room_name->text();

@@ -48,13 +48,13 @@ using f32 = float;         ///< 32-bit floating point
 using VAddr = u32; ///< Represents a pointer in the userspace virtual address space.
 using PAddr = u32; ///< Represents a pointer in the ARM11 physical address space.
 
-using MACAddress = std::array<u8, 6>; ///< Network MAC address
+using MacAddressdress = std::array<u8, 6>; ///< Network MAC address
 
-constexpr MACAddress NintendoOUI{0x00, 0x1F, 0x32, 0x00, 0x00, 0x00};
+constexpr MacAddressdress NintendoOUI{0x00, 0x1F, 0x32, 0x00, 0x00, 0x00};
 constexpr std::array<u8, 3> NintendoOUI3{0x00, 0x1F, 0x32};
 
-constexpr MACAddress BroadcastMAC{0xFF, 0xFF, 0xFF,
-                                  0xFF, 0xFF, 0xFF}; ///< 802.11 broadcast MAC address
+constexpr MacAddressdress BroadcastMac{0xFF, 0xFF, 0xFF,
+                                       0xFF, 0xFF, 0xFF}; ///< 802.11 broadcast MAC address
 
 // An inheritable class to disallow the copy constructor and operator= functions
 class NonCopyable {

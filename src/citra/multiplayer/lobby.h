@@ -70,7 +70,7 @@ private:
     QStandardItemModel* model;
     LobbyFilterProxyModel* proxy;
 
-    QFutureWatcher<std::vector<Network::JSONRoom>> room_list_watcher;
+    QFutureWatcher<std::vector<Network::JsonRoom>> room_list_watcher;
     std::unique_ptr<Ui::Lobby> ui;
     QFutureWatcher<void>* watcher;
     Validation validation;

@@ -53,7 +53,7 @@ Lobby::Lobby(QWidget* parent, Core::System& system)
     connect(ui->room_list, &QTreeView::doubleClicked, this, &Lobby::OnJoinRoom);
     connect(ui->room_list, &QTreeView::clicked, this, &Lobby::OnExpandRoom);
     // Actions
-    connect(&room_list_watcher, &QFutureWatcher<std::vector<Network::JSONRoom>>::finished, this,
+    connect(&room_list_watcher, &QFutureWatcher<std::vector<Network::JsonRoom>>::finished, this,
             &Lobby::OnRefreshLobby);
     // Manually start a refresh when the window is opening
     // TODO: if this refresh is slow for people with bad internet, then don't do it as
@@ -105,7 +105,7 @@ void Lobby::OnJoinRoom(const QModelIndex& source) {
     // Attempt to connect in a different thread
     auto f{QtConcurrent::run([this, nickname, ip, port, password] {
         system.RoomMember().Join(nickname, Service::CFG::GetConsoleID(system), ip.c_str(), port,
-                                 BroadcastMAC, password);
+                                 BroadcastMac, password);
     })};
     watcher->setFuture(f);
     // TODO: disable widgets and display a connecting while we wait

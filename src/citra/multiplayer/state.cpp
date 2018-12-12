@@ -72,8 +72,8 @@ void MultiplayerState::OnNetworkStateChanged(const Network::RoomMember::State& s
     LOG_DEBUG(Frontend, "Network State: {}", Network::GetStateStr(state));
     if (state == Network::RoomMember::State::Joined) {
         if (system.IsPoweredOn())
-            system.Kernel().GetSharedPageHandler().SetMACAddress(
-                system.RoomMember().GetMACAddress());
+            system.Kernel().GetSharedPageHandler().SetMacAddressdress(
+                system.RoomMember().GetMacAddressdress());
         OnOpenRoom();
         status_icon->setPixmap(QIcon::fromTheme("connected").pixmap(16));
         leave_room->setEnabled(true);
@@ -103,7 +103,7 @@ void MultiplayerState::OnNetworkError(const Network::RoomMember::Error& error) {
     case Network::RoomMember::Error::NameCollision:
         NetworkMessage::ShowError(NetworkMessage::NICKNAME_NOT_VALID_SERVER);
         break;
-    case Network::RoomMember::Error::MACCollision:
+    case Network::RoomMember::Error::MacCollision:
         NetworkMessage::ShowError(NetworkMessage::MAC_COLLISION);
         break;
     case Network::RoomMember::Error::ConsoleIDCollision:

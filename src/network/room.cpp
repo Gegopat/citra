@@ -20,17 +20,17 @@
 
 namespace Network {
 
-void to_json(nlohmann::json& json, const JSONRoom::Member& member) {
+void to_json(nlohmann::json& json, const JsonRoom::Member& member) {
     json["name"] = member.name;
     json["program"] = member.program;
 }
 
-void from_json(const nlohmann::json& json, JSONRoom::Member& member) {
+void from_json(const nlohmann::json& json, JsonRoom::Member& member) {
     member.name = json.at("name").get<std::string>();
     member.program = json.at("program").get<std::string>();
 }
 
-void to_json(nlohmann::json& json, const JSONRoom& room) {
+void to_json(nlohmann::json& json, const JsonRoom& room) {
     json["name"] = room.name;
     json["creator"] = room.creator;
     if (!room.description.empty())
@@ -45,7 +45,7 @@ void to_json(nlohmann::json& json, const JSONRoom& room) {
     }
 }
 
-void from_json(const nlohmann::json& json, JSONRoom& room) {
+void from_json(const nlohmann::json& json, JsonRoom& room) {
     room.ip = json.at("ip").get<std::string>();
     room.name = json.at("name").get<std::string>();
     room.creator = json.at("creator").get<std::string>();
@@ -60,7 +60,7 @@ void from_json(const nlohmann::json& json, JSONRoom& room) {
     room.net_version = json.at("netVersion").get<u32>();
     room.has_password = json.at("hasPassword").get<bool>();
     try {
-        room.members = json.at("members").get<std::vector<JSONRoom::Member>>();
+        room.members = json.at("members").get<std::vector<JsonRoom::Member>>();
     } catch (const nlohmann::detail::out_of_range& e) {
         LOG_DEBUG(Network, "Out of range {}", e.what());
     }
@@ -81,7 +81,7 @@ struct Room::RoomImpl {
     std::unique_ptr<httplib::Client> client;
     httplib::Server http_server;
 
-    std::mt19937 random_gen; ///< Random number generator. Used for GenerateMACAddress
+    std::mt19937 random_gen; ///< Random number generator. Used for GenerateMacAddressdress
 
     ENetHost* server; ///< Network interface.
 
@@ -93,9 +93,9 @@ struct Room::RoomImpl {
     struct Member {
         std::string nickname; ///< The nickname of the member.
         u64 console_id;
-        std::string program;    ///< The current program of the member.
-        MACAddress mac_address; ///< The assigned MAC address of the member.
-        ENetPeer* peer;         ///< The remote peer.
+        std::string program;         ///< The current program of the member.
+        MacAddressdress mac_address; ///< The assigned MAC address of the member.
+        ENetPeer* peer;              ///< The remote peer.
     };
 
     using MemberList = std::vector<Member>;
@@ -149,57 +149,57 @@ struct Room::RoomImpl {
 
     /// Returns whether the MAC address is valid, ie. isn't already taken by someone else in the
     /// room.
-    bool IsValidMACAddress(const MACAddress& address) const;
+    bool IsValidMacAddressdress(const MacAddressdress& address) const;
 
     /**
      * Returns whether the console ID is valid, ie. isn't already taken by someone else in
      * the room.
      */
-    bool IsValidConsoleID(u64 console_id) const;
+    bool IsValidConsoleId(u64 console_id) const;
 
     /// Returns whether a nickname has mod permissions.
     bool HasModPermission(const ENetPeer* client) const;
 
-    /// Sends a IDRoomIsFull message telling the client that the room is full.
+    /// Sends a IdRoomIsFull message telling the client that the room is full.
     void SendRoomIsFull(ENetPeer* client);
 
-    /// Sends a IDNameCollision message telling the client that the name is invalid.
+    /// Sends a IdNameCollision message telling the client that the name is invalid.
     void SendNameCollision(ENetPeer* client);
 
-    /// Sends a IDMACCollision message telling the client that the MAC is invalid.
+    /// Sends a IdMacCollision message telling the client that the MAC is invalid.
     void SendMacCollision(ENetPeer* client);
 
     /**
-     * Sends a IDConsoleIDCollision message telling the client that another member with the same
+     * Sends a IdConsoleIdCollision message telling the client that another member with the same
      * console ID exists.
      */
-    void SendConsoleIDCollision(ENetPeer* client);
+    void SendConsoleIdCollision(ENetPeer* client);
 
-    /// Sends a IDVersionMismatch message telling the client that the version is invalid.
+    /// Sends a IdVersionMismatch message telling the client that the version is invalid.
     void SendVersionMismatch(ENetPeer* client);
 
-    /// Sends a IDWrongPassword message telling the client that the password is wrong.
+    /// Sends a IdWrongPassword message telling the client that the password is wrong.
     void SendWrongPassword(ENetPeer* client);
 
     /**
      * Notifies the member that its connection attempt was successful,
      * and it is now part of the room.
      */
-    void SendJoinSuccess(ENetPeer* client, MACAddress mac_address);
+    void SendJoinSuccess(ENetPeer* client, MacAddressdress mac_address);
 
-    /// Sends a IDHostKicked message telling the client that they have been kicked.
+    /// Sends a IdHostKicked message telling the client that they have been kicked.
     void SendUserKicked(ENetPeer* client);
 
-    /// Sends a IDHostBanned message telling the client that they have been banned.
+    /// Sends a IdHostBanned message telling the client that they have been banned.
     void SendUserBanned(ENetPeer* client);
 
     /**
-     * Sends a IDModPermissionDenied message telling the client that they don't have mod
+     * Sends a IdModPermissionDenied message telling the client that they don't have mod
      * permission.
      */
     void SendModPermissionDenied(ENetPeer* client);
 
-    /// Sends a IDModNoSuchUser message telling the client that the given user couldn't be found.
+    /// Sends a IdModNoSuchUser message telling the client that the given user couldn't be found.
     void SendModNoSuchUser(ENetPeer* client);
 
     /// Sends the ban list in response to a client's request for getting ban list.
@@ -223,13 +223,13 @@ struct Room::RoomImpl {
      * <u32> num_members: the number of currently joined clients
      * This is followed by the following three values for each member:
      * <String> nickname of that member
-     * <MACAddress> mac_address of that member
+     * <MacAddressdress> mac_address of that member
      * <String> program of that member
      */
     void BroadcastRoomInformation();
 
     /// Generates a free MAC address to assign to a new client.
-    MACAddress GenerateMACAddress();
+    MacAddressdress GenerateMacAddressdress();
 
     /**
      * Broadcasts this packet to all members except the sender.
@@ -256,7 +256,7 @@ struct Room::RoomImpl {
     void HandleClientDisconnection(ENetPeer* client);
 
     Common::WebResult MakeRequest(const std::string& method, const std::string& body = "");
-    std::vector<JSONRoom> GetRoomList();
+    std::vector<JsonRoom> GetRoomList();
     void UpdateAPIInformation();
 
     void SetErrorCallback(ErrorCallback cb) {
@@ -272,29 +272,29 @@ void Room::RoomImpl::ServerLoop() {
             switch (event.type) {
             case ENET_EVENT_TYPE_RECEIVE:
                 switch (event.packet->data[0]) {
-                case IDJoinRequest:
+                case IdJoinRequest:
                     HandleJoinRequest(&event);
                     break;
-                case IDSetProgram:
+                case IdSetProgram:
                     HandleProgramPacket(&event);
                     break;
-                case IDWifiPacket:
+                case IdWifiPacket:
                     HandleWifiPacket(&event);
                     break;
-                case IDChatMessage:
+                case IdChatMessage:
                     HandleChatPacket(&event);
                     break;
                 // Moderation
-                case IDModKick:
+                case IdModKick:
                     HandleModKickPacket(&event);
                     break;
-                case IDModBan:
+                case IdModBan:
                     HandleModBanPacket(&event);
                     break;
-                case IDModUnban:
+                case IdModUnban:
                     HandleModUnbanPacket(&event);
                     break;
-                case IDModGetBanList:
+                case IdModGetBanList:
                     HandleModGetBanListPacket(&event);
                     break;
                 }
@@ -332,7 +332,7 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
     packet >> nickname;
     u64 console_id;
     packet >> console_id;
-    MACAddress preferred_mac;
+    MacAddressdress preferred_mac;
     packet >> preferred_mac;
     u32 client_version;
     packet >> client_version;
@@ -346,17 +346,17 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
         SendNameCollision(event->peer);
         return;
     }
-    if (preferred_mac != BroadcastMAC) {
+    if (preferred_mac != BroadcastMac) {
         // Verify if the preferred MAC address is available
-        if (!IsValidMACAddress(preferred_mac)) {
+        if (!IsValidMacAddressdress(preferred_mac)) {
             SendMacCollision(event->peer);
             return;
         }
     } else
         // Assign a MAC address of this client automatically
-        preferred_mac = GenerateMACAddress();
-    if (!IsValidConsoleID(console_id)) {
-        SendConsoleIDCollision(event->peer);
+        preferred_mac = GenerateMacAddressdress();
+    if (!IsValidConsoleId(console_id)) {
+        SendConsoleIdCollision(event->peer);
         return;
     }
     if (client_version != NetworkVersion) {
@@ -381,7 +381,7 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
         }
     }
     // Notify everyone that the user has joined.
-    SendStatusMessage(IDMemberJoined, member.nickname);
+    SendStatusMessage(IdMemberJoined, member.nickname);
     {
         std::lock_guard lock{member_mutex};
         members.push_back(std::move(member));
@@ -416,7 +416,7 @@ void Room::RoomImpl::HandleModKickPacket(const ENetEvent* event) {
         members.erase(target_member);
     }
     // Announce the change to all clients.
-    SendStatusMessage(IDMemberKicked, nickname);
+    SendStatusMessage(IdMemberKicked, nickname);
     BroadcastRoomInformation();
 }
 
@@ -456,7 +456,7 @@ void Room::RoomImpl::HandleModBanPacket(const ENetEvent* event) {
             ban_list.push_back(ip);
     }
     // Announce the change to all clients.
-    SendStatusMessage(IDMemberBanned, nickname);
+    SendStatusMessage(IdMemberBanned, nickname);
     BroadcastRoomInformation();
 }
 
@@ -480,7 +480,7 @@ void Room::RoomImpl::HandleModUnbanPacket(const ENetEvent* event) {
         }
     }
     if (unbanned)
-        SendStatusMessage(IDAddressUnbanned, address);
+        SendStatusMessage(IdAddressUnbanned, address);
     else
         SendModNoSuchUser(event->peer);
 }
@@ -504,14 +504,14 @@ bool Room::RoomImpl::IsValidNickname(const std::string& nickname) const {
                        [&nickname](const auto& member) { return member.nickname != nickname; });
 }
 
-bool Room::RoomImpl::IsValidMACAddress(const MACAddress& address) const {
+bool Room::RoomImpl::IsValidMacAddressdress(const MacAddressdress& address) const {
     // A MAC address is valid if it isn't already taken by anybody else in the room.
     std::lock_guard lock{member_mutex};
     return std::all_of(members.begin(), members.end(),
                        [&address](const auto& member) { return member.mac_address != address; });
 }
 
-bool Room::RoomImpl::IsValidConsoleID(u64 console_id) const {
+bool Room::RoomImpl::IsValidConsoleId(u64 console_id) const {
     // A console ID is valid if it isn't already taken by anybody else in the room.
     std::lock_guard lock{member_mutex};
     return std::all_of(members.begin(), members.end(), [&console_id](const auto& member) {
@@ -533,7 +533,7 @@ bool Room::RoomImpl::HasModPermission(const ENetPeer* client) const {
 
 void Room::RoomImpl::SendNameCollision(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IDNameCollision);
+    packet << static_cast<u8>(IdNameCollision);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
@@ -542,16 +542,16 @@ void Room::RoomImpl::SendNameCollision(ENetPeer* client) {
 
 void Room::RoomImpl::SendMacCollision(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IDMACCollision);
+    packet << static_cast<u8>(IdMacCollision);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
     enet_host_flush(server);
 }
 
-void Room::RoomImpl::SendConsoleIDCollision(ENetPeer* client) {
+void Room::RoomImpl::SendConsoleIdCollision(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IDConsoleIDCollision);
+    packet << static_cast<u8>(IdConsoleIdCollision);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
@@ -560,7 +560,7 @@ void Room::RoomImpl::SendConsoleIDCollision(ENetPeer* client) {
 
 void Room::RoomImpl::SendWrongPassword(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IDWrongPassword);
+    packet << static_cast<u8>(IdWrongPassword);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
@@ -569,7 +569,7 @@ void Room::RoomImpl::SendWrongPassword(ENetPeer* client) {
 
 void Room::RoomImpl::SendRoomIsFull(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IDRoomIsFull);
+    packet << static_cast<u8>(IdRoomIsFull);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
@@ -578,7 +578,7 @@ void Room::RoomImpl::SendRoomIsFull(ENetPeer* client) {
 
 void Room::RoomImpl::SendVersionMismatch(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IDVersionMismatch);
+    packet << static_cast<u8>(IdVersionMismatch);
     packet << NetworkVersion;
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
@@ -586,9 +586,9 @@ void Room::RoomImpl::SendVersionMismatch(ENetPeer* client) {
     enet_host_flush(server);
 }
 
-void Room::RoomImpl::SendJoinSuccess(ENetPeer* client, MACAddress mac_address) {
+void Room::RoomImpl::SendJoinSuccess(ENetPeer* client, MacAddressdress mac_address) {
     Packet packet;
-    packet << static_cast<u8>(IDJoinSuccess);
+    packet << static_cast<u8>(IdJoinSuccess);
     packet << mac_address;
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
@@ -598,7 +598,7 @@ void Room::RoomImpl::SendJoinSuccess(ENetPeer* client, MACAddress mac_address) {
 
 void Room::RoomImpl::SendUserKicked(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IDHostKicked);
+    packet << static_cast<u8>(IdHostKicked);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
@@ -607,7 +607,7 @@ void Room::RoomImpl::SendUserKicked(ENetPeer* client) {
 
 void Room::RoomImpl::SendUserBanned(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IDHostBanned);
+    packet << static_cast<u8>(IdHostBanned);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
@@ -616,7 +616,7 @@ void Room::RoomImpl::SendUserBanned(ENetPeer* client) {
 
 void Room::RoomImpl::SendModPermissionDenied(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IDModPermissionDenied);
+    packet << static_cast<u8>(IdModPermissionDenied);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
@@ -625,7 +625,7 @@ void Room::RoomImpl::SendModPermissionDenied(ENetPeer* client) {
 
 void Room::RoomImpl::SendModNoSuchUser(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IDModNoSuchUser);
+    packet << static_cast<u8>(IdModNoSuchUser);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
@@ -634,7 +634,7 @@ void Room::RoomImpl::SendModNoSuchUser(ENetPeer* client) {
 
 void Room::RoomImpl::SendModBanListResponse(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IDModBanListResponse);
+    packet << static_cast<u8>(IdModBanListResponse);
     {
         std::lock_guard lock{ban_list_mutex};
         packet << ban_list;
@@ -647,7 +647,7 @@ void Room::RoomImpl::SendModBanListResponse(ENetPeer* client) {
 
 void Room::RoomImpl::SendCloseMessage() {
     Packet packet;
-    packet << static_cast<u8>(IDCloseRoom);
+    packet << static_cast<u8>(IdCloseRoom);
     std::lock_guard lock{member_mutex};
     if (!members.empty()) {
         auto enet_packet{
@@ -662,7 +662,7 @@ void Room::RoomImpl::SendCloseMessage() {
 
 void Room::RoomImpl::SendStatusMessage(StatusMessageTypes type, const std::string& nickname) {
     Packet packet;
-    packet << static_cast<u8>(IDStatusMessage);
+    packet << static_cast<u8>(IdStatusMessage);
     packet << static_cast<u8>(type);
     packet << nickname;
     std::lock_guard lock{member_mutex};
@@ -677,7 +677,7 @@ void Room::RoomImpl::SendStatusMessage(StatusMessageTypes type, const std::strin
 
 void Room::RoomImpl::BroadcastRoomInformation() {
     Packet packet;
-    packet << static_cast<u8>(IDRoomInformation);
+    packet << static_cast<u8>(IdRoomInformation);
     packet << room_information.name;
     packet << room_information.description;
     packet << room_information.max_members;
@@ -703,31 +703,31 @@ void Room::RoomImpl::BroadcastRoomInformation() {
     }
 }
 
-MACAddress Room::RoomImpl::GenerateMACAddress() {
+MacAddressdress Room::RoomImpl::GenerateMacAddressdress() {
     // The first three bytes of each MAC address will be the NintendoOUI
-    MACAddress result_mac{NintendoOUI};
+    MacAddressdress result_mac{NintendoOUI};
     std::uniform_int_distribution<> dis{0x00, 0xFF}; // Random byte between 0 and 0xFF
     do {
         for (std::size_t i{3}; i < result_mac.size(); ++i)
             result_mac[i] = dis(random_gen);
-    } while (!IsValidMACAddress(result_mac));
+    } while (!IsValidMacAddressdress(result_mac));
     return result_mac;
 }
 
 void Room::RoomImpl::HandleWifiPacket(const ENetEvent* event) {
     Packet in_packet;
     in_packet.Append(event->packet->data, event->packet->dataLength);
-    in_packet.IgnoreBytes(sizeof(u8));         // Message type
-    in_packet.IgnoreBytes(sizeof(u8));         // WifiPacket Type
-    in_packet.IgnoreBytes(sizeof(u8));         // WifiPacket Channel
-    in_packet.IgnoreBytes(sizeof(MACAddress)); // WifiPacket Transmitter Address
-    MACAddress destination_address;
+    in_packet.IgnoreBytes(sizeof(u8));              // Message type
+    in_packet.IgnoreBytes(sizeof(u8));              // WifiPacket Type
+    in_packet.IgnoreBytes(sizeof(u8));              // WifiPacket Channel
+    in_packet.IgnoreBytes(sizeof(MacAddressdress)); // WifiPacket Transmitter Address
+    MacAddressdress destination_address;
     in_packet >> destination_address;
     Packet out_packet;
     out_packet.Append(event->packet->data, event->packet->dataLength);
     auto enet_packet{enet_packet_create(out_packet.GetData(), out_packet.GetDataSize(),
                                         ENET_PACKET_FLAG_RELIABLE)};
-    if (destination_address == BroadcastMAC) { // Send the data to everyone except the sender
+    if (destination_address == BroadcastMac) { // Send the data to everyone except the sender
         std::lock_guard lock{member_mutex};
         bool sent_packet{};
         for (const auto& member : members) {
@@ -773,7 +773,7 @@ void Room::RoomImpl::HandleChatPacket(const ENetEvent* event) {
     // Limit the size of chat messages to MaxMessageSize
     message.resize(MaxMessageSize);
     Packet out_packet;
-    out_packet << static_cast<u8>(IDChatMessage);
+    out_packet << static_cast<u8>(IdChatMessage);
     out_packet << sending_member->nickname;
     out_packet << message;
     auto enet_packet{enet_packet_create(out_packet.GetData(), out_packet.GetDataSize(),
@@ -823,7 +823,7 @@ void Room::RoomImpl::HandleClientDisconnection(ENetPeer* client) {
     // Announce the change to all clients.
     enet_peer_disconnect(client, 0);
     if (!nickname.empty())
-        SendStatusMessage(IDMemberLeft, nickname);
+        SendStatusMessage(IdMemberLeft, nickname);
     BroadcastRoomInformation();
 }
 
@@ -855,16 +855,16 @@ Common::WebResult Room::RoomImpl::MakeRequest(const std::string& method, const s
     return Common::WebResult{Common::WebResult::Code::Success, "", response->body};
 }
 
-std::vector<JSONRoom> Room::RoomImpl::GetRoomList() {
+std::vector<JsonRoom> Room::RoomImpl::GetRoomList() {
     auto reply{MakeRequest("GET").returned_data};
     if (reply.empty())
         return {};
-    return nlohmann::json::parse(reply).get<std::vector<JSONRoom>>();
+    return nlohmann::json::parse(reply).get<std::vector<JsonRoom>>();
 }
 
 void Room::RoomImpl::UpdateAPIInformation() {
     std::lock_guard lock{member_mutex};
-    JSONRoom room;
+    JsonRoom room;
     room.name = room_information.name;
     room.creator = room_information.creator;
     room.description = room_information.description;
@@ -874,7 +874,7 @@ void Room::RoomImpl::UpdateAPIInformation() {
     room.has_password = !password.empty();
     for (const auto& member : members)
         room.members.emplace_back(
-            JSONRoom::Member{member.nickname, member.program, member.mac_address});
+            JsonRoom::Member{member.nickname, member.program, member.mac_address});
     nlohmann::json json = room;
     auto result{MakeRequest("POST", json.dump())};
     if (result.result_code != Common::WebResult::Code::Success &&
@@ -968,7 +968,7 @@ void Room::Destroy() {
     room_impl->http_server.stop();
 }
 
-std::vector<JSONRoom> Room::GetRoomList() {
+std::vector<JsonRoom> Room::GetRoomList() {
     return room_impl->GetRoomList();
 }
 

@@ -103,7 +103,7 @@ struct EAPoLLogoffPacket {
     u16_be magic = EAPoLLogoffMagic;
     INSERT_PADDING_BYTES(2);
     u16_be assigned_node_id;
-    MACAddress client_mac_address;
+    MacAddressdress client_mac_address;
     INSERT_PADDING_BYTES(6);
     u8 connected_nodes;
     u8 max_nodes;
@@ -160,7 +160,7 @@ NodeInfo DeserializeNodeInfo(const EAPoLNodeInfo& node);
  * communication.
  * @returns The generated frame body.
  */
-std::vector<u8> GenerateEAPoLLogoffFrame(const MACAddress& mac_address, u16 network_node_id,
+std::vector<u8> GenerateEAPoLLogoffFrame(const MacAddressdress& mac_address, u16 network_node_id,
                                          const NodeList& nodes, u8 max_nodes, u8 total_nodes);
 
 /*

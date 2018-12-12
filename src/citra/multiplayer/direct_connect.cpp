@@ -73,7 +73,7 @@ void DirectConnectWindow::Connect() {
         system.RoomMember().Join(ui->nickname->text().toStdString(),
                                  Service::CFG::GetConsoleID(system),
                                  ui->ip->text().toStdString().c_str(), UISettings::values.port,
-                                 BroadcastMAC, ui->password->text().toStdString().c_str());
+                                 BroadcastMac, ui->password->text().toStdString().c_str());
     })};
     watcher->setFuture(f);
     // And disable widgets and display a connecting while we wait
