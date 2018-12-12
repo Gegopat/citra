@@ -275,9 +275,8 @@ void ChatRoom::SetMemberList(const Network::RoomMember::MemberList& member_list)
 }
 
 void ChatRoom::OnChatTextChanged() {
-    constexpr int MAX_MESSAGE_LENGTH{500};
-    if (ui->chat_message->text().length() > MAX_MESSAGE_LENGTH)
-        ui->chat_message->setText(ui->chat_message->text().left(MAX_MESSAGE_LENGTH));
+    if (ui->chat_message->text().length() > Network::MaxMessageSize)
+        ui->chat_message->setText(ui->chat_message->text().left(Network::MaxMessageSize));
 }
 
 void ChatRoom::PopupContextMenu(const QPoint& menu_location) {
