@@ -652,11 +652,9 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
         out += "vec3 surface_normal = " + Perturbation() + ";\n";
         // Recompute Z-component of perturbation if 'renorm' is enabled, this provides a higher
         // precision result
-        if (lighting.bump_renorm) {
-            std::string val{
-                "(1.0 - (surface_normal.x*surface_normal.x + surface_normal.y*surface_normal.y))"};
-            out += "surface_normal.z = sqrt(max(" + val + ", 0.0));\n";
-        }
+        if (lighting.bump_renorm)
+            out += "surface_normal.z = sqrt(max((1.0 - (surface_normal.x * surface_normal.x + "
+                   "surface_normal.y * surface_normal.y)), 0.0));\n";
         // The tangent vector isn't perturbed by the normal map and is just a unit vector.
         out += "vec3 surface_tangent = vec3(1.0, 0.0, 0.0);\n";
     } else if (lighting.bump_mode == LightingRegs::LightingBumpMode::TangentMap) {
@@ -678,7 +676,7 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
     out += "vec3 normal = quaternion_rotate(normalized_normquat, surface_normal);\n";
     out += "vec3 tangent = quaternion_rotate(normalized_normquat, surface_tangent);\n";
     if (lighting.enable_shadow) {
-        std::string shadow_texture{SampleTexture(config, lighting.shadow_selector)};
+        auto shadow_texture{SampleTexture(config, lighting.shadow_selector)};
         if (lighting.shadow_invert)
             out += "vec4 shadow = vec4(1.0) - " + shadow_texture + ";\n";
         else
@@ -738,12 +736,12 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
     // Write the code to emulate each enabled light
     for (unsigned light_index{}; light_index < lighting.src_num; ++light_index) {
         const auto& light_config{lighting.light[light_index]};
-        std::string light_src{"light_src[" + std::to_string(light_config.num) + "]"};
+        auto light_src{"light_src[" + std::to_string(light_config.num) + "]"};
         // Compute light vector (directional or positional)
         if (light_config.directional)
-            out += light_config.directional
-                       ? "light_vector = normalize(" + light_src + ".position);\n"
-                       : "light_vector = normalize(" + light_src + ".position + view);\n";
+            out += "light_vector = normalize(" + light_src + ".position);\n";
+        else
+            out += "light_vector = normalize(" + light_src + ".position + view);\n";
         out += "spot_dir = " + light_src + ".spot_direction;\n";
         out += "half_vector = normalize(view) + light_vector;\n";
         // Compute dot product of light_vector and normal, adjust if lighting is one-sided or
@@ -787,7 +785,7 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
                                    lighting.lut_d0.type, lighting.lut_d0.abs_input)};
             d0_lut_value = "(" + std::to_string(lighting.lut_d0.scale) + " * " + value + ")";
         }
-        std::string specular_0{"(" + d0_lut_value + " * " + light_src + ".specular_0)"};
+        auto specular_0{"(" + d0_lut_value + " * " + light_src + ".specular_0)"};
         if (light_config.geometric_factor_0)
             specular_0 = "(" + specular_0 + " * geo_factor)";
         // If enabled, lookup ReflectRed value, otherwise, 1.0 is used
@@ -830,8 +828,7 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
                                    lighting.lut_d1.type, lighting.lut_d1.abs_input)};
             d1_lut_value = "(" + std::to_string(lighting.lut_d1.scale) + " * " + value + ")";
         }
-        std::string specular_1{"(" + d1_lut_value + " * refl_value * " + light_src +
-                               ".specular_1)"};
+        auto specular_1{"(" + d1_lut_value + " * refl_value * " + light_src + ".specular_1)"};
         if (light_config.geometric_factor_1)
             specular_1 = "(" + specular_1 + " * geo_factor)";
         // Fresnel
@@ -1024,10 +1021,10 @@ float ProcTexNoiseCoef(vec2 x) {
     }
     out += "vec4 SampleProcTexColor(float lut_coord, int level) {\n";
     out += "int lut_width = " + std::to_string(config.state.proctex.lut_width) + " >> level;\n";
-    std::string offset0{std::to_string(config.state.proctex.lut_offset0)};
-    std::string offset1{std::to_string(config.state.proctex.lut_offset1)};
-    std::string offset2{std::to_string(config.state.proctex.lut_offset2)};
-    std::string offset3{std::to_string(config.state.proctex.lut_offset3)};
+    auto offset0{std::to_string(config.state.proctex.lut_offset0)};
+    auto offset1{std::to_string(config.state.proctex.lut_offset1)};
+    auto offset2{std::to_string(config.state.proctex.lut_offset2)};
+    auto offset3{std::to_string(config.state.proctex.lut_offset3)};
     // Offsets for level 4-7 seem to be hardcoded
     out += "int lut_offsets[8] = int[](" + offset0 + ", " + offset1 + ", " + offset2 + ", " +
            offset3 + ", 0xF0, 0xF8, 0xFC, 0xFE);\n";
@@ -1533,7 +1530,7 @@ layout (std140) uniform vs_config {
 }
 
 static std::string GetGSCommonSource(const PicaGSConfigCommonRaw& config, bool separable_shader) {
-    std::string out{GetVertexInterfaceDeclaration(true, separable_shader)};
+    auto out{GetVertexInterfaceDeclaration(true, separable_shader)};
     out += UniformBlockDef;
     out += Pica::Shader::Decompiler::GetCommonDeclarations();
     out += '\n';
