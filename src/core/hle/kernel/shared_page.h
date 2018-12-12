@@ -46,7 +46,7 @@ union BatteryState {
 // Default MAC address in valid range
 constexpr MACAddress DefaultMac{0x40, 0xF4, 0x07, 0x00, 0x00, 0x00};
 
-enum class WiFiLinkLevel : u8 {
+enum class WifiLinkLevel : u8 {
     Off = 0,
     Poor = 1,
     Good = 2,
@@ -90,7 +90,7 @@ public:
     explicit Handler(Core::System& system);
 
     void SetMACAddress(const MACAddress&);
-    void SetWiFiLinkLevel(WiFiLinkLevel);
+    void SetWifiLinkLevel(WifiLinkLevel);
     void SetNetworkState(NetworkState);
     NetworkState GetNetworkState();
     void SetAdapterConnected(u8);

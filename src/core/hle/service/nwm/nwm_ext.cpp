@@ -42,7 +42,7 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
                                              : 1;
         Settings::values.n_wifi_link_level = 3;
         Settings::values.n_state = 2;
-        shared_page.SetWiFiLinkLevel(SharedPage::WiFiLinkLevel::Best);
+        shared_page.SetWifiLinkLevel(SharedPage::WifiLinkLevel::Best);
         shared_page.SetNetworkState(SharedPage::NetworkState::Internet);
         system.GetFrontend().UpdateNetwork();
         break;
@@ -57,7 +57,7 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
         Settings::values.n_wifi_status = 0;
         Settings::values.n_wifi_link_level = 0;
         Settings::values.n_state = 7;
-        shared_page.SetWiFiLinkLevel(SharedPage::WiFiLinkLevel::Off);
+        shared_page.SetWifiLinkLevel(SharedPage::WifiLinkLevel::Off);
         shared_page.SetNetworkState(SharedPage::NetworkState::Disabled);
         system.GetFrontend().UpdateNetwork();
         break;

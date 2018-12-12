@@ -13,9 +13,9 @@
 
 namespace Network {
 
-/// Information about the received WiFi packets.
+/// Information about the received Wifi packets.
 /// Acts as our own 802.11 header.
-struct WiFiPacket {
+struct WifiPacket {
     enum class PacketType : u8 {
         Beacon,
         Data,
@@ -29,7 +29,7 @@ struct WiFiPacket {
                           /// for management frames.
     MACAddress transmitter_address; ///< MAC address of the transmitter.
     MACAddress destination_address; ///< MAC address of the receiver.
-    u8 channel;                     ///< WiFi channel where this frame was transmitted.
+    u8 channel;                     ///< Wifi channel where this frame was transmitted.
 };
 
 /// Represents a chat message.
@@ -131,10 +131,10 @@ public:
               const MACAddress& preferred_mac = BroadcastMAC, const std::string& password = "");
 
     /**
-     * Sends a WiFi packet to the room.
-     * @param packet The WiFi packet to send.
+     * Sends a Wifi packet to the room.
+     * @param packet The Wifi packet to send.
      */
-    void SendWiFiPacket(const WiFiPacket& packet);
+    void SendWifiPacket(const WifiPacket& packet);
 
     /**
      * Sends a chat message to the room.
@@ -180,14 +180,14 @@ public:
     CallbackHandle<Error> BindOnError(std::function<void(const Error&)> callback);
 
     /**
-     * Binds a function to an event that will be triggered every time a WiFiPacket is received.
+     * Binds a function to an event that will be triggered every time a WifiPacket is received.
      * The function wil be called everytime the event is triggered.
      * The callback function must not bind or unbind a function. Doing so will cause a deadlock
      * @param callback The function to call
      * @return A handle used for removing the function from the registered list
      */
-    CallbackHandle<WiFiPacket> BindOnWiFiPacketReceived(
-        std::function<void(const WiFiPacket&)> callback);
+    CallbackHandle<WifiPacket> BindOnWifiPacketReceived(
+        std::function<void(const WifiPacket&)> callback);
 
     /**
      * Binds a function to an event that will be triggered every time the RoomInformation changes.

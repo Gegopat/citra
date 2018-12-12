@@ -22,26 +22,26 @@
 //
 // http://code.google.com/p/cityhash/
 //
-// This file provides a few functions for hashing strings.  All of them are
+// This file provides a few functions for hashing strings. All of them are
 // high-quality functions in the sense that they pass standard tests such
-// as Austin Appleby's SMHasher.  They are also fast.
+// as Austin Appleby's SMHasher. They are also fast.
 //
 // For 64-bit x86 code, on short strings, we don't know of anything faster than
-// CityHash64 that is of comparable quality.  We believe our nearest competitor
-// is Murmur3.  For 64-bit x86 code, CityHash64 is an excellent choice for hash
+// CityHash64 that is of comparable quality. We believe our nearest competitor
+// is Murmur3. For 64-bit x86 code, CityHash64 is an excellent choice for hash
 // tables and most other hashing (excluding cryptography).
 //
 // For 64-bit x86 code, on long strings, the picture is more complicated.
 // On many recent Intel CPUs, such as Nehalem, Westmere, Sandy Bridge, etc.,
 // CityHashCrc128 appears to be faster than all competitors of comparable
-// quality.  CityHash128 is also good but not quite as fast.  We believe our
-// nearest competitor is Bob Jenkins' Spooky.  We don't have great data for
+// quality. CityHash128 is also good but not quite as fast. We believe our
+// nearest competitor is Bob Jenkins' Spooky. We don't have great data for
 // other 64-bit CPUs, but for long strings we know that Spooky is slightly
 // faster than CityHash on some relatively recent AMD x86-64 CPUs, for example.
 // Note that CityHashCrc128 is declared in citycrc.h.
 //
 // For 32-bit x86 code, we don't know of anything faster than CityHash32 that
-// is of comparable quality.  We believe our nearest competitor is Murmur3A.
+// is of comparable quality. We believe our nearest competitor is Murmur3A.
 // (On 64-bit CPUs, it is typically faster to use the other CityHash variants.)
 //
 // Functions in the CityHash family aren't suitable for cryptography.
@@ -56,7 +56,7 @@
 // bug reports are welcome.
 //
 // By the way, for some hash functions, given strings a and b, the hash
-// of a+b is easily derived from the hashes of a and b.  This property
+// of a+b is easily derived from the hashes of a and b. This property
 // doesn't hold for any hash functions in this file.
 
 #pragma once

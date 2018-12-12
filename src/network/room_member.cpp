@@ -55,7 +55,7 @@ struct RoomMember::RoomMemberImpl {
         CallbackSet<T>& Get();
 
     private:
-        CallbackSet<WiFiPacket> callback_set_wifi_packet;
+        CallbackSet<WifiPacket> callback_set_wifi_packet;
         CallbackSet<ChatEntry> callback_set_chat_message;
         CallbackSet<StatusMessageEntry> callback_set_status_message;
         CallbackSet<RoomInformation> callback_set_room_information;
@@ -100,10 +100,10 @@ struct RoomMember::RoomMemberImpl {
     void HandleRoomInformationPacket(const ENetEvent* event);
 
     /**
-     * Extracts a WiFiPacket from a received ENet packet.
+     * Extracts a WifiPacket from a received ENet packet.
      * @param event The  ENet event that was received.
      */
-    void HandleWiFiPacket(const ENetEvent* event);
+    void HandleWifiPacket(const ENetEvent* event);
 
     /**
      * Extracts a chat entry from a received ENet packet and adds it to the chat queue.
@@ -159,8 +159,8 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
             switch (event.type) {
             case ENET_EVENT_TYPE_RECEIVE:
                 switch (event.packet->data[0]) {
-                case IDWiFiPacket:
-                    HandleWiFiPacket(&event);
+                case IDWifiPacket:
+                    HandleWifiPacket(&event);
                     break;
                 case IDChatMessage:
                     HandleChatPacket(&event);
@@ -302,22 +302,22 @@ void RoomMember::RoomMemberImpl::HandleJoinPacket(const ENetEvent* event) {
     SetState(State::Joined);
 }
 
-void RoomMember::RoomMemberImpl::HandleWiFiPacket(const ENetEvent* event) {
-    WiFiPacket wifi_packet;
+void RoomMember::RoomMemberImpl::HandleWifiPacket(const ENetEvent* event) {
+    WifiPacket wifi_packet;
     Packet packet;
     packet.Append(event->packet->data, event->packet->dataLength);
     // Ignore the first byte, which is the message ID.
     packet.IgnoreBytes(sizeof(u8)); // Ignore the message type
-    // Parse the WiFiPacket from the packet
+    // Parse the WifiPacket from the packet
     u8 frame_type;
     packet >> frame_type;
-    WiFiPacket::PacketType type{static_cast<WiFiPacket::PacketType>(frame_type)};
+    WifiPacket::PacketType type{static_cast<WifiPacket::PacketType>(frame_type)};
     wifi_packet.type = type;
     packet >> wifi_packet.channel;
     packet >> wifi_packet.transmitter_address;
     packet >> wifi_packet.destination_address;
     packet >> wifi_packet.data;
-    Invoke<WiFiPacket>(wifi_packet);
+    Invoke<WifiPacket>(wifi_packet);
 }
 
 void RoomMember::RoomMemberImpl::HandleChatPacket(const ENetEvent* event) {
@@ -384,7 +384,7 @@ void RoomMember::RoomMemberImpl::Disconnect() {
 }
 
 template <>
-RoomMember::RoomMemberImpl::CallbackSet<WiFiPacket>& RoomMember::RoomMemberImpl::Callbacks::Get() {
+RoomMember::RoomMemberImpl::CallbackSet<WifiPacket>& RoomMember::RoomMemberImpl::Callbacks::Get() {
     return callback_set_wifi_packet;
 }
 
@@ -512,9 +512,9 @@ bool RoomMember::IsConnected() const {
     return room_member_impl->IsConnected();
 }
 
-void RoomMember::SendWiFiPacket(const WiFiPacket& wifi_packet) {
+void RoomMember::SendWifiPacket(const WifiPacket& wifi_packet) {
     Packet packet;
-    packet << static_cast<u8>(IDWiFiPacket);
+    packet << static_cast<u8>(IDWifiPacket);
     packet << static_cast<u8>(wifi_packet.type);
     packet << wifi_packet.channel;
     packet << wifi_packet.transmitter_address;
@@ -569,8 +569,8 @@ RoomMember::CallbackHandle<RoomMember::Error> RoomMember::BindOnError(
     return room_member_impl->Bind(callback);
 }
 
-RoomMember::CallbackHandle<WiFiPacket> RoomMember::BindOnWiFiPacketReceived(
-    std::function<void(const WiFiPacket&)> callback) {
+RoomMember::CallbackHandle<WifiPacket> RoomMember::BindOnWifiPacketReceived(
+    std::function<void(const WifiPacket&)> callback) {
     return room_member_impl->Bind(callback);
 }
 
@@ -609,7 +609,7 @@ void RoomMember::Leave() {
     room_member_impl->Invoke(RoomInformation{});
 }
 
-template void RoomMember::Unbind(CallbackHandle<WiFiPacket>);
+template void RoomMember::Unbind(CallbackHandle<WifiPacket>);
 template void RoomMember::Unbind(CallbackHandle<RoomMember::State>);
 template void RoomMember::Unbind(CallbackHandle<RoomMember::Error>);
 template void RoomMember::Unbind(CallbackHandle<RoomInformation>);

@@ -47,7 +47,7 @@ enum RoomMessageTypes : u8 {
     IDJoinSuccess,
     IDRoomInformation,
     IDSetProgram,
-    IDWiFiPacket,
+    IDWifiPacket,
     IDChatMessage,
     IDNameCollision,
     IDMACCollision,

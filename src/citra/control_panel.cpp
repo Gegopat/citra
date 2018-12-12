@@ -82,8 +82,8 @@ ControlPanel::ControlPanel(Core::System& system, QWidget* parent)
                 Settings::values.n_wifi_link_level =
                     static_cast<u8>(ui->network_link_level->currentIndex());
                 if (system.IsPoweredOn())
-                    system.Kernel().GetSharedPageHandler().SetWiFiLinkLevel(
-                        static_cast<SharedPage::WiFiLinkLevel>(Settings::values.n_wifi_link_level));
+                    system.Kernel().GetSharedPageHandler().SetWifiLinkLevel(
+                        static_cast<SharedPage::WifiLinkLevel>(Settings::values.n_wifi_link_level));
             });
     connect(ui->network_state, qOverload<int>(&QComboBox::currentIndexChanged), [&system, this] {
         Settings::values.n_state =

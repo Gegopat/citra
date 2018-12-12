@@ -235,7 +235,7 @@ struct Room::RoomImpl {
      * Broadcasts this packet to all members except the sender.
      * @param event The ENet event containing the data
      */
-    void HandleWiFiPacket(const ENetEvent* event);
+    void HandleWifiPacket(const ENetEvent* event);
 
     /**
      * Extracts a chat entry from a received ENet packet and adds it to the chat queue.
@@ -278,8 +278,8 @@ void Room::RoomImpl::ServerLoop() {
                 case IDSetProgram:
                     HandleProgramPacket(&event);
                     break;
-                case IDWiFiPacket:
-                    HandleWiFiPacket(&event);
+                case IDWifiPacket:
+                    HandleWifiPacket(&event);
                     break;
                 case IDChatMessage:
                     HandleChatPacket(&event);
@@ -714,13 +714,13 @@ MACAddress Room::RoomImpl::GenerateMACAddress() {
     return result_mac;
 }
 
-void Room::RoomImpl::HandleWiFiPacket(const ENetEvent* event) {
+void Room::RoomImpl::HandleWifiPacket(const ENetEvent* event) {
     Packet in_packet;
     in_packet.Append(event->packet->data, event->packet->dataLength);
     in_packet.IgnoreBytes(sizeof(u8));         // Message type
-    in_packet.IgnoreBytes(sizeof(u8));         // WiFiPacket Type
-    in_packet.IgnoreBytes(sizeof(u8));         // WiFiPacket Channel
-    in_packet.IgnoreBytes(sizeof(MACAddress)); // WiFiPacket Transmitter Address
+    in_packet.IgnoreBytes(sizeof(u8));         // WifiPacket Type
+    in_packet.IgnoreBytes(sizeof(u8));         // WifiPacket Channel
+    in_packet.IgnoreBytes(sizeof(MACAddress)); // WifiPacket Transmitter Address
     MACAddress destination_address;
     in_packet >> destination_address;
     Packet out_packet;

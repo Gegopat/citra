@@ -54,10 +54,10 @@ void LogSettings() {
     LogSetting("ControlPanel_BatteryCharging", values.p_battery_charging);
     LogSetting("ControlPanel_BatteryLevel", values.p_battery_level);
     LogSetting("ControlPanel_NetworkState", values.n_state);
-    LogSetting("ControlPanel_WiFiLinkLevel", values.n_wifi_link_level);
-    LogSetting("ControlPanel_WiFiStatus", values.n_wifi_status);
+    LogSetting("ControlPanel_WifiLinkLevel", values.n_wifi_link_level);
+    LogSetting("ControlPanel_WifiStatus", values.n_wifi_status);
     LogSetting("Core_KeyboardMode", static_cast<int>(values.keyboard_mode));
-    LogSetting("Core_EnableNSLaunch", values.enable_ns_launch);
+    LogSetting("Core_EnableNsLaunch", values.enable_ns_launch);
     LogSetting("Graphics_EnableShadows", values.enable_shadows);
     LogSetting("Graphics_UseFrameLimit", values.use_frame_limit);
     LogSetting("Graphics_FrameLimit", values.frame_limit);
@@ -76,7 +76,7 @@ void LogSettings() {
             using_lle_modules = true;
             break;
         }
-    LogSetting("Lle_UsingLlModules", using_lle_modules);
+    LogSetting("Lle_UsingLleModules", using_lle_modules);
     LogSetting("Lle_UseLleApplets", values.use_lle_applets);
     LogSetting("Lle_UseLleDsp", values.use_lle_dsp);
     LogSetting("Audio_EnableAudioStretching", values.enable_audio_stretching);

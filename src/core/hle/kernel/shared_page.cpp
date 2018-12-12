@@ -97,7 +97,7 @@ void Handler::SetMACAddress(const MACAddress& addr) {
     std::memcpy(shared_page.wifi_macaddr, addr.data(), sizeof(MACAddress));
 }
 
-void Handler::SetWiFiLinkLevel(WiFiLinkLevel level) {
+void Handler::SetWifiLinkLevel(WifiLinkLevel level) {
     shared_page.wifi_link_level = static_cast<u8>(level);
 }
 
