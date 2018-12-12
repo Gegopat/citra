@@ -34,10 +34,10 @@ void ConfigurationHotkeys::EmitHotkeysChanged() {
 
 QList<QKeySequence> ConfigurationHotkeys::GetUsedKeyList() {
     QList<QKeySequence> list;
-    for (int r = 0; r < model->rowCount(); r++) {
-        QStandardItem* parent = model->item(r, 0);
-        for (int r2 = 0; r2 < parent->rowCount(); r2++) {
-            QStandardItem* keyseq = parent->child(r2, 1);
+    for (int r{}; r < model->rowCount(); r++) {
+        auto parent{model->item(r, 0)};
+        for (int r2{}; r2 < parent->rowCount(); r2++) {
+            auto keyseq{parent->child(r2, 1)};
             list << QKeySequence::fromString(keyseq->text(), QKeySequence::NativeText);
         }
     }
@@ -96,13 +96,14 @@ void ConfigurationHotkeys::ApplyConfiguration(HotkeyRegistry& registry) {
         for (int key_column_id = 0; key_column_id < parent->rowCount(); key_column_id++) {
             auto action{parent->child(key_column_id, 0)};
             auto keyseq{parent->child(key_column_id, 1)};
-            for (auto key_iterator{registry.hotkey_groups.begin()};
-                 key_iterator != registry.hotkey_groups.end(); ++key_iterator) {
-                if (key_iterator->first == parent->text())
-                    for (auto it2{key_iterator->second.begin()}; it2 != key_iterator->second.end();
-                         ++it2)
-                        if (it2->first == action->text())
-                            it2->second.keyseq = QKeySequence{keyseq->text()};
+            for (auto& [group, sub_actions] : registry.hotkey_groups) {
+                if (group != parent->text())
+                    continue;
+                for (auto& [action_name, hotkey] : sub_actions) {
+                    if (action_name != action->text())
+                        continue;
+                    hotkey.keyseq = QKeySequence{keyseq->text()};
+                }
             }
         }
     }
