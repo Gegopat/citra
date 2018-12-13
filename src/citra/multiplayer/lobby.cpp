@@ -188,7 +188,7 @@ bool LobbyFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& s
         int member_count{
             sourceModel()->data(member_list, LobbyItemMemberList::MemberListRole).toList().size()};
         int max_members{
-            sourceModel()->data(member_list, LobbyItemMemberList::MaxMemberRole).toInt()};
+            sourceModel()->data(member_list, LobbyItemMemberList::MaxMembersRole).toInt()};
         if (member_count >= max_members)
             return false;
     }

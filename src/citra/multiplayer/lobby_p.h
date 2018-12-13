@@ -139,7 +139,7 @@ public:
 
     explicit LobbyItemMemberList(QList<QVariant> members, u32 max_members) {
         setData(members, MemberListRole);
-        setData(max_members, MaxMemberRole);
+        setData(max_members, MaxMembersRole);
     }
 
     QVariant data(int role) const override {
@@ -147,7 +147,7 @@ public:
             return LobbyItem::data(role);
         auto members = data(MemberListRole).toList();
         return QString("%1 / %2").arg(QString::number(members.size()),
-                                      data(MaxMemberRole).toString());
+                                      data(MaxMembersRole).toString());
     }
 
     bool operator<(const QStandardItem& other) const override {
@@ -158,7 +158,7 @@ public:
     }
 
     static constexpr int MemberListRole{Qt::UserRole + 1};
-    static constexpr int MaxMemberRole{Qt::UserRole + 2};
+    static constexpr int MaxMembersRole{Qt::UserRole + 2};
 };
 
 /// Member information for when a lobby is expanded in the UI
