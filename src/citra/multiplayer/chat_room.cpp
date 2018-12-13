@@ -169,8 +169,7 @@ void ChatRoom::HandleNewMessage(const QString& msg) {
 
 void ChatRoom::AppendChatMessage(const QString& msg) {
     ui->chat_history->append(msg);
-    const QRegularExpression re{R"(image\((.*?)\))"};
-    auto i{re.globalMatch(msg)};
+    auto i{QRegularExpression{R"(image\((.*?)\))"}.globalMatch(msg)};
     while (i.hasNext()) {
         auto match{i.next()};
         if (match.hasMatch()) {
