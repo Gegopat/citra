@@ -12,9 +12,12 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QMetaType>
+#include <QRegularExpression>
 #include <QTime>
+#include <QUrl>
 #include <QVBoxLayout>
 #include <QtConcurrent/QtConcurrentRun>
+#include <httplib.h>
 #include "citra/multiplayer/chat_room.h"
 #include "citra/multiplayer/client_room.h"
 #include "citra/multiplayer/message.h"
@@ -129,7 +132,7 @@ void ChatRoom::Clear() {
 }
 
 void ChatRoom::AppendStatusMessage(const QString& msg) {
-    ui->chat_history->append(StatusMessage(msg).GetSystemChatMessage());
+    ui->chat_history->append(StatusMessage{msg}.GetSystemChatMessage());
 }
 
 bool ChatRoom::Send(QString msg) {
@@ -166,6 +169,34 @@ void ChatRoom::HandleNewMessage(const QString& msg) {
 
 void ChatRoom::AppendChatMessage(const QString& msg) {
     ui->chat_history->append(msg);
+    const QRegularExpression re{R"(image\((.*?)\))"};
+    auto i{re.globalMatch(msg)};
+    while (i.hasNext()) {
+        auto match{i.next()};
+        if (match.hasMatch()) {
+            QUrl url{match.captured(1)};
+            if (url.isValid()) {
+                auto scheme{url.scheme()};
+                if (scheme.contains("http")) {
+                    std::unique_ptr<httplib::Client> client;
+                    if (scheme == "http")
+                        client = std::make_unique<httplib::Client>(url.host().toStdString().c_str(),
+                                                                   url.port(80));
+                    else if (scheme == "https")
+                        client = std::make_unique<httplib::SSLClient>(
+                            url.host().toStdString().c_str(), url.port(443));
+                    if (client)
+                        if (auto res{client->Get(url.path().toStdString().c_str())})
+                            ui->chat_history->append(
+                                QString("<img src='data:%1;base64,%2'>")
+                                    .arg(QString::fromStdString(
+                                             res->get_header_value("Content-Type")),
+                                         QString::fromUtf8(
+                                             QByteArray::fromStdString(res->body).toBase64())));
+                }
+            }
+        }
+    }
 }
 
 void ChatRoom::SendModerationRequest(Network::RoomMessageTypes type, const std::string& nickname) {
