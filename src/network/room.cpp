@@ -163,8 +163,8 @@ struct Room::RoomImpl {
     /// Sends a IdRoomIsFull message telling the client that the room is full.
     void SendRoomIsFull(ENetPeer* client);
 
-    /// Sends a IdNicknameCollision message telling the client that the nickname is invalid.
-    void SendNicknameCollision(ENetPeer* client);
+    /// Sends a IdInvalidNickname message telling the client that the nickname is invalid.
+    void SendInvalidNickname(ENetPeer* client);
 
     /// Sends a IdMacCollision message telling the client that the MAC is invalid.
     void SendMacCollision(ENetPeer* client);
@@ -343,7 +343,7 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
         return;
     }
     if (!IsValidNickname(nickname)) {
-        SendNicknameCollision(event->peer);
+        SendInvalidNickname(event->peer);
         return;
     }
     if (preferred_mac != BroadcastMac) {
@@ -531,9 +531,9 @@ bool Room::RoomImpl::HasModPermission(const ENetPeer* client) const {
     return sending_member->nickname == room_information.creator;
 }
 
-void Room::RoomImpl::SendNicknameCollision(ENetPeer* client) {
+void Room::RoomImpl::SendInvalidNickname(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IdNicknameCollision);
+    packet << static_cast<u8>(IdInvalidNickname);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);

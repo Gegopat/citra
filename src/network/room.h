@@ -49,7 +49,7 @@ enum RoomMessageTypes : u8 {
     IdSetProgram,
     IdWifiPacket,
     IdChatMessage,
-    IdNicknameCollision,
+    IdInvalidNickname,
     IdMacCollision,
     IdVersionMismatch,
     IdWrongPassword,
