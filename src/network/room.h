@@ -31,7 +31,7 @@ struct RoomInformation {
 
 struct JsonRoom {
     struct Member {
-        std::string name, program;
+        std::string nickname, program;
         MacAddressdress mac_address;
     };
     std::string name, creator, description, ip;
@@ -49,7 +49,7 @@ enum RoomMessageTypes : u8 {
     IdSetProgram,
     IdWifiPacket,
     IdChatMessage,
-    IdNameCollision,
+    IdNicknameCollision,
     IdMacCollision,
     IdVersionMismatch,
     IdWrongPassword,

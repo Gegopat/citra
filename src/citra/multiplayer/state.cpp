@@ -100,7 +100,7 @@ void MultiplayerState::OnNetworkError(const Network::RoomMember::Error& error) {
     case Network::RoomMember::Error::CouldNotConnect:
         NetworkMessage::ShowError(NetworkMessage::UNABLE_TO_CONNECT);
         break;
-    case Network::RoomMember::Error::NameCollision:
+    case Network::RoomMember::Error::NicknameCollision:
         NetworkMessage::ShowError(NetworkMessage::NICKNAME_NOT_VALID_SERVER);
         break;
     case Network::RoomMember::Error::MacCollision:

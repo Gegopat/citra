@@ -66,7 +66,7 @@ public:
 
         // Reasons why connection was rejected
         UnknownError,       ///< Some error [permissions to network device missing or something]
-        NameCollision,      ///< Somebody is already using this name
+        NicknameCollision,  ///< Somebody is already using this nickname
         MacCollision,       ///< Somebody is already using that MAC address
         ConsoleIdCollision, ///< Somebody in the room has the same console ID
         WrongVersion,       ///< The room version isn't the same as for this RoomMember
@@ -258,8 +258,8 @@ static const char* GetErrorStr(const RoomMember::Error& e) {
         return "HostKicked";
     case RoomMember::Error::UnknownError:
         return "UnknownError";
-    case RoomMember::Error::NameCollision:
-        return "NameCollision";
+    case RoomMember::Error::NicknameCollision:
+        return "NicknameCollision";
     case RoomMember::Error::MacCollision:
         return "MacCollision";
     case RoomMember::Error::ConsoleIdCollision:

@@ -186,9 +186,9 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
                     SetState(State::Idle);
                     SetError(Error::RoomIsFull);
                     break;
-                case IdNameCollision:
+                case IdNicknameCollision:
                     SetState(State::Idle);
-                    SetError(Error::NameCollision);
+                    SetError(Error::NicknameCollision);
                     break;
                 case IdMacCollision:
                     SetState(State::Idle);

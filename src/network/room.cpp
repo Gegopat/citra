@@ -21,12 +21,12 @@
 namespace Network {
 
 void to_json(nlohmann::json& json, const JsonRoom::Member& member) {
-    json["name"] = member.name;
+    json["nickname"] = member.nickname;
     json["program"] = member.program;
 }
 
 void from_json(const nlohmann::json& json, JsonRoom::Member& member) {
-    member.name = json.at("name").get<std::string>();
+    member.nickname = json.at("nickname").get<std::string>();
     member.program = json.at("program").get<std::string>();
 }
 
@@ -163,8 +163,8 @@ struct Room::RoomImpl {
     /// Sends a IdRoomIsFull message telling the client that the room is full.
     void SendRoomIsFull(ENetPeer* client);
 
-    /// Sends a IdNameCollision message telling the client that the name is invalid.
-    void SendNameCollision(ENetPeer* client);
+    /// Sends a IdNicknameCollision message telling the client that the nickname is invalid.
+    void SendNicknameCollision(ENetPeer* client);
 
     /// Sends a IdMacCollision message telling the client that the MAC is invalid.
     void SendMacCollision(ENetPeer* client);
@@ -343,7 +343,7 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
         return;
     }
     if (!IsValidNickname(nickname)) {
-        SendNameCollision(event->peer);
+        SendNicknameCollision(event->peer);
         return;
     }
     if (preferred_mac != BroadcastMac) {
@@ -531,9 +531,9 @@ bool Room::RoomImpl::HasModPermission(const ENetPeer* client) const {
     return sending_member->nickname == room_information.creator;
 }
 
-void Room::RoomImpl::SendNameCollision(ENetPeer* client) {
+void Room::RoomImpl::SendNicknameCollision(ENetPeer* client) {
     Packet packet;
-    packet << static_cast<u8>(IdNameCollision);
+    packet << static_cast<u8>(IdNicknameCollision);
     auto enet_packet{
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
