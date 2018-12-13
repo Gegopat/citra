@@ -139,7 +139,7 @@ void Lobby::OnRefreshLobby() {
         QList<QVariant> members;
         for (auto member : room.members) {
             QVariant var;
-            var.setValue(LobbyMember{QString::fromStdString(member.name),
+            var.setValue(LobbyMember{QString::fromStdString(member.nickname),
                                      QString::fromStdString(member.program)});
             members.append(var);
         }

@@ -36,9 +36,9 @@ void to_json(nlohmann::json& json, const JsonRoom& room) {
     if (!room.description.empty())
         json["description"] = room.description;
     json["port"] = room.port;
-    json["maxMembers"] = room.max_members;
-    json["netVersion"] = room.net_version;
-    json["hasPassword"] = room.has_password;
+    json["max_members"] = room.max_members;
+    json["net_version"] = room.net_version;
+    json["has_password"] = room.has_password;
     if (room.members.size() > 0) {
         nlohmann::json member_json = room.members;
         json["members"] = member_json;
@@ -56,9 +56,9 @@ void from_json(const nlohmann::json& json, JsonRoom& room) {
         LOG_DEBUG(Network, "Room '{}' doesn't contain a description", room.name);
     }
     room.port = json.at("port").get<u16>();
-    room.max_members = json.at("maxMembers").get<u32>();
-    room.net_version = json.at("netVersion").get<u32>();
-    room.has_password = json.at("hasPassword").get<bool>();
+    room.max_members = json.at("max_members").get<u32>();
+    room.net_version = json.at("net_version").get<u32>();
+    room.has_password = json.at("has_password").get<bool>();
     try {
         room.members = json.at("members").get<std::vector<JsonRoom::Member>>();
     } catch (const nlohmann::detail::out_of_range& e) {
