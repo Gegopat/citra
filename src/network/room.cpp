@@ -830,7 +830,7 @@ Common::WebResult Room::RoomImpl::MakeRequest(const std::string& method, const s
     auto response{method == "GET" ? client->Get("/lobby")
                                   : client->Post("/lobby", body, "application/json")};
     if (!response) {
-        LOG_ERROR(Network, "Request returned null ({})", response->status);
+        LOG_ERROR(Network, "Request returned null");
         return Common::WebResult{Common::WebResult::Code::LibError, "Null response"};
     }
     if (response->status >= 400) {
