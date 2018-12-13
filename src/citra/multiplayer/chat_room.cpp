@@ -91,7 +91,7 @@ ChatRoom::ChatRoom(QWidget* parent)
     ui->member_view->setModel(member_list);
     ui->member_view->setContextMenuPolicy(Qt::CustomContextMenu);
     member_list->insertColumns(0, COLUMN_COUNT);
-    member_list->setHeaderData(COLUMN_NAME, Qt::Horizontal, "Name");
+    member_list->setHeaderData(COLUMN_NAME, Qt::Horizontal, "Nickname");
     member_list->setHeaderData(COLUMN_PROGRAM, Qt::Horizontal, "Program");
     constexpr int MaxChatLines{1000};
     ui->chat_history->document()->setMaximumBlockCount(MaxChatLines);
@@ -225,23 +225,23 @@ void ChatRoom::OnChatReceive(const Network::ChatEntry& chat) {
 
 void ChatRoom::OnStatusMessageReceive(const Network::StatusMessageEntry& status_message) {
     switch (status_message.type) {
-    case Network::IDMemberJoined:
+    case Network::IdMemberJoined:
         AppendStatusMessage(
             QString("%1 has joined").arg(QString::fromStdString(status_message.nickname)));
         break;
-    case Network::IDMemberLeft:
+    case Network::IdMemberLeft:
         AppendStatusMessage(
             QString("%1 has left").arg(QString::fromStdString(status_message.nickname)));
         break;
-    case Network::IDMemberKicked:
+    case Network::IdMemberKicked:
         AppendStatusMessage(
             QString("%1 has been kicked").arg(QString::fromStdString(status_message.nickname)));
         break;
-    case Network::IDMemberBanned:
+    case Network::IdMemberBanned:
         AppendStatusMessage(
             QString("%1 has been banned").arg(QString::fromStdString(status_message.nickname)));
         break;
-    case Network::IDAddressUnbanned:
+    case Network::IdAddressUnbanned:
         AppendStatusMessage(
             QString("%1 has been unbanned").arg(QString::fromStdString(status_message.nickname)));
         break;
@@ -333,7 +333,7 @@ void ChatRoom::PopupContextMenu(const QPoint& menu_location) {
                                           .arg(QString::fromStdString(nickname)),
                                       QMessageBox::Yes | QMessageBox::No)};
             if (result == QMessageBox::Yes)
-                SendModerationRequest(Network::IDModKick, nickname);
+                SendModerationRequest(Network::IdModKick, nickname);
         });
         connect(ban_action, &QAction::triggered, [this, nickname] {
             auto result{QMessageBox::question(
@@ -343,7 +343,7 @@ void ChatRoom::PopupContextMenu(const QPoint& menu_location) {
                     .arg(QString::fromStdString(nickname)),
                 QMessageBox::Yes | QMessageBox::No)};
             if (result == QMessageBox::Yes)
-                SendModerationRequest(Network::IDModBan, nickname);
+                SendModerationRequest(Network::IdModBan, nickname);
         });
         connect(moderation_action, &QAction::triggered, [this] {
             ModerationDialog dialog{system.RoomMember(), this};
