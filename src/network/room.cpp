@@ -779,12 +779,11 @@ void Room::RoomImpl::HandleChatPacket(const ENetEvent* event) {
     auto enet_packet{enet_packet_create(out_packet.GetData(), out_packet.GetDataSize(),
                                         ENET_PACKET_FLAG_RELIABLE)};
     bool sent_packet{};
-    for (const auto& member : members) {
+    for (const auto& member : members)
         if (member.peer != event->peer) {
             sent_packet = true;
             enet_peer_send(member.peer, 0, enet_packet);
         }
-    }
     if (!sent_packet)
         enet_packet_destroy(enet_packet);
     enet_host_flush(server);
