@@ -1,6 +1,5 @@
 # Build directory
 [Bb]uild/
-doc-build/
 
 # Generated source files
 src/common/scm_rev.cpp
