@@ -141,7 +141,7 @@ if (APPLE)
     set_target_properties(citra PROPERTIES MACOSX_BUNDLE TRUE)
     set_target_properties(citra PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist)
 elseif(WIN32)
-    # compile as a win32 gui application instead of a console application
+    # Compile as a win32 gui application instead of a console application
     target_link_libraries(citra PRIVATE Qt5::WinMain)
     if(MSVC)
         set_target_properties(citra PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
