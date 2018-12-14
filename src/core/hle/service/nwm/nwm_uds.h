@@ -140,7 +140,7 @@ private:
 
     void BeaconBroadcastCallback(s64);
 
-    std::list<Network::WifiPacket> GetReceivedBeacons(const MacAddressdress& sender);
+    std::list<Network::WifiPacket> GetReceivedBeacons(const MacAddress& sender);
     u16 GetNextAvailableNodeID();
     void BroadcastNodeMap();
     void SendPacket(Network::WifiPacket& packet);
@@ -149,13 +149,13 @@ private:
     void HandleAssociationResponseFrame(const Network::WifiPacket& packet);
     void HandleEAPoLPacket(const Network::WifiPacket& packet);
     void HandleSecureDataPacket(const Network::WifiPacket& packet);
-    void StartConnectionSequence(const MacAddressdress& server);
-    void SendAssociationResponseFrame(const MacAddressdress& address);
+    void StartConnectionSequence(const MacAddress& server);
+    void SendAssociationResponseFrame(const MacAddress& address);
     void HandleAuthenticationFrame(const Network::WifiPacket& packet);
     void HandleDeauthenticationFrame(const Network::WifiPacket& packet);
     void HandleDataFrame(const Network::WifiPacket& packet);
     void OnWifiPacketReceived(const Network::WifiPacket& packet);
-    std::optional<MacAddressdress> GetNodeMacAddressdress(u16 dest_node_id, u8 flags);
+    std::optional<MacAddress> GetNodeMacAddress(u16 dest_node_id, u8 flags);
 
     // Event that is signaled every time the connection status changes.
     Kernel::SharedPtr<Kernel::Event> connection_status_event;
@@ -203,7 +203,7 @@ private:
         bool connected;
         u16 node_id;
     };
-    std::map<MacAddressdress, Node> node_map;
+    std::map<MacAddress, Node> node_map;
 
     // Event that will generate and send the 802.11 beacon frames.
     Core::TimingEventType* beacon_broadcast_event;

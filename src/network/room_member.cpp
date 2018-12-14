@@ -35,8 +35,8 @@ struct RoomMember::RoomMemberImpl {
     void SetError(const Error new_error);
     bool IsConnected() const;
 
-    std::string nickname;        ///< The nickname of this member.
-    MacAddressdress mac_address; ///< The mac_address of this member.
+    std::string nickname;   ///< The nickname of this member.
+    MacAddress mac_address; ///< The mac_address of this member.
 
     std::mutex network_mutex; ///< Mutex that controls access to the client variable.
     std::unique_ptr<std::thread>
@@ -85,7 +85,7 @@ struct RoomMember::RoomMemberImpl {
      * @param password The password for the room
      */
     void SendJoinRequest(const std::string& nickname, u64 console_id,
-                         const MacAddressdress& preferred_mac = BroadcastMac,
+                         const MacAddress& preferred_mac = BroadcastMac,
                          const std::string& password = "");
     /**
      * Extracts a MAC address from a received ENet packet.
@@ -259,7 +259,7 @@ void RoomMember::RoomMemberImpl::Send(Packet&& packet) {
 }
 
 void RoomMember::RoomMemberImpl::SendJoinRequest(const std::string& nickname, u64 console_id,
-                                                 const MacAddressdress& preferred_mac,
+                                                 const MacAddress& preferred_mac,
                                                  const std::string& password) {
     Packet packet;
     packet << static_cast<u8>(IdJoinRequest);
@@ -461,7 +461,7 @@ const std::string& RoomMember::GetNickname() const {
     return room_member_impl->nickname;
 }
 
-const MacAddressdress& RoomMember::GetMacAddressdress() const {
+const MacAddress& RoomMember::GetMacAddress() const {
     ASSERT_MSG(IsConnected(), "Tried to get MAC address while not connected");
     return room_member_impl->mac_address;
 }
@@ -471,7 +471,7 @@ RoomInformation RoomMember::GetRoomInformation() const {
 }
 
 void RoomMember::Join(const std::string& nickname, u64 console_id, const char* server_addr,
-                      u16 server_port, const MacAddressdress& preferred_mac,
+                      u16 server_port, const MacAddress& preferred_mac,
                       const std::string& password) {
     // If the member is connected, kill the connection first
     if (room_member_impl->loop_thread && room_member_impl->loop_thread->joinable())

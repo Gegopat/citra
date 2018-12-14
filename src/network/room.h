@@ -32,7 +32,7 @@ struct RoomInformation {
 struct JsonRoom {
     struct Member {
         std::string nickname, program;
-        MacAddressdress mac_address;
+        MacAddress mac_address;
     };
     std::string name, creator, description, ip;
     u16 port;
@@ -85,9 +85,9 @@ using ErrorCallback = std::function<void(const Common::WebResult&)>;
 class Room final {
 public:
     struct Member {
-        std::string nickname;        ///< The nickname of the member.
-        std::string program;         ///< The current program of the member.
-        MacAddressdress mac_address; ///< The assigned MAC address of the member.
+        std::string nickname;   ///< The nickname of the member.
+        std::string program;    ///< The current program of the member.
+        MacAddress mac_address; ///< The assigned MAC address of the member.
     };
 
     using BanList = std::vector<std::string>;

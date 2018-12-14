@@ -29,7 +29,7 @@ struct BeaconEntryHeader {
     INSERT_PADDING_BYTES(1);
     u8 wifi_channel;
     INSERT_PADDING_BYTES(2);
-    MacAddressdress mac_address;
+    MacAddress mac_address;
     INSERT_PADDING_BYTES(6);
     u32_le unk_size;
     u32_le header_size;
@@ -97,7 +97,7 @@ static_assert(sizeof(EncryptedDataTag) == 6, "EncryptedDataTag has incorrect siz
 // The raw bytes of this structure are the CTR used in the encryption (AES-CTR)
 // of the beacon data stored in the EncryptedDataTags.
 struct BeaconDataCryptoCTR {
-    MacAddressdress host_mac;
+    MacAddress host_mac;
     u32_le wlan_comm_id;
     u8 id;
     INSERT_PADDING_BYTES(1);

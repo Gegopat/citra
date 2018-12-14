@@ -69,7 +69,7 @@ void from_json(const nlohmann::json& json, JsonRoom& room) {
 struct Room::RoomImpl {
     RoomImpl()
         : random_gen{std::random_device{}()}, client{std::make_unique<httplib::Client>(
-                                                  "citra-valentin-api.us.openode.io", 80)} {
+                                                  "citra-valentin-api.herokuapp.com", 80)} {
         http_server.Get("/", [this](const httplib::Request& req, httplib::Response& res) {
             res.status = 200;
             res.body = "OK";
@@ -81,7 +81,7 @@ struct Room::RoomImpl {
     std::unique_ptr<httplib::Client> client;
     httplib::Server http_server;
 
-    std::mt19937 random_gen; ///< Random number generator. Used for GenerateMacAddressdress
+    std::mt19937 random_gen; ///< Random number generator. Used for GenerateMacAddress
 
     ENetHost* server; ///< Network interface.
 
@@ -93,9 +93,9 @@ struct Room::RoomImpl {
     struct Member {
         std::string nickname; ///< The nickname of the member.
         u64 console_id;
-        std::string program;         ///< The current program of the member.
-        MacAddressdress mac_address; ///< The assigned MAC address of the member.
-        ENetPeer* peer;              ///< The remote peer.
+        std::string program;    ///< The current program of the member.
+        MacAddress mac_address; ///< The assigned MAC address of the member.
+        ENetPeer* peer;         ///< The remote peer.
     };
 
     using MemberList = std::vector<Member>;
@@ -149,7 +149,7 @@ struct Room::RoomImpl {
 
     /// Returns whether the MAC address is valid, ie. isn't already taken by someone else in the
     /// room.
-    bool IsValidMacAddressdress(const MacAddressdress& address) const;
+    bool IsValidMacAddress(const MacAddress& address) const;
 
     /**
      * Returns whether the console ID is valid, ie. isn't already taken by someone else in
@@ -185,7 +185,7 @@ struct Room::RoomImpl {
      * Notifies the member that its connection attempt was successful,
      * and it is now part of the room.
      */
-    void SendJoinSuccess(ENetPeer* client, MacAddressdress mac_address);
+    void SendJoinSuccess(ENetPeer* client, MacAddress mac_address);
 
     /// Sends a IdHostKicked message telling the client that they have been kicked.
     void SendUserKicked(ENetPeer* client);
@@ -223,13 +223,13 @@ struct Room::RoomImpl {
      * <u32> num_members: the number of currently joined clients
      * This is followed by the following three values for each member:
      * <String> nickname of that member
-     * <MacAddressdress> mac_address of that member
+     * <MacAddress> mac_address of that member
      * <String> program of that member
      */
     void BroadcastRoomInformation();
 
     /// Generates a free MAC address to assign to a new client.
-    MacAddressdress GenerateMacAddressdress();
+    MacAddress GenerateMacAddress();
 
     /**
      * Broadcasts this packet to all members except the sender.
@@ -332,7 +332,7 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
     packet >> nickname;
     u64 console_id;
     packet >> console_id;
-    MacAddressdress preferred_mac;
+    MacAddress preferred_mac;
     packet >> preferred_mac;
     u32 client_version;
     packet >> client_version;
@@ -348,13 +348,13 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
     }
     if (preferred_mac != BroadcastMac) {
         // Verify if the preferred MAC address is available
-        if (!IsValidMacAddressdress(preferred_mac)) {
+        if (!IsValidMacAddress(preferred_mac)) {
             SendMacCollision(event->peer);
             return;
         }
     } else
         // Assign a MAC address of this client automatically
-        preferred_mac = GenerateMacAddressdress();
+        preferred_mac = GenerateMacAddress();
     if (!IsValidConsoleId(console_id)) {
         SendConsoleIdCollision(event->peer);
         return;
@@ -504,7 +504,7 @@ bool Room::RoomImpl::IsValidNickname(const std::string& nickname) const {
                        [&nickname](const auto& member) { return member.nickname != nickname; });
 }
 
-bool Room::RoomImpl::IsValidMacAddressdress(const MacAddressdress& address) const {
+bool Room::RoomImpl::IsValidMacAddress(const MacAddress& address) const {
     // A MAC address is valid if it isn't already taken by anybody else in the room.
     std::lock_guard lock{member_mutex};
     return std::all_of(members.begin(), members.end(),
@@ -586,7 +586,7 @@ void Room::RoomImpl::SendVersionMismatch(ENetPeer* client) {
     enet_host_flush(server);
 }
 
-void Room::RoomImpl::SendJoinSuccess(ENetPeer* client, MacAddressdress mac_address) {
+void Room::RoomImpl::SendJoinSuccess(ENetPeer* client, MacAddress mac_address) {
     Packet packet;
     packet << static_cast<u8>(IdJoinSuccess);
     packet << mac_address;
@@ -703,25 +703,25 @@ void Room::RoomImpl::BroadcastRoomInformation() {
     }
 }
 
-MacAddressdress Room::RoomImpl::GenerateMacAddressdress() {
+MacAddress Room::RoomImpl::GenerateMacAddress() {
     // The first three bytes of each MAC address will be the NintendoOUI
-    MacAddressdress result_mac{NintendoOUI};
+    MacAddress result_mac{NintendoOUI};
     std::uniform_int_distribution<> dis{0x00, 0xFF}; // Random byte between 0 and 0xFF
     do {
         for (std::size_t i{3}; i < result_mac.size(); ++i)
             result_mac[i] = dis(random_gen);
-    } while (!IsValidMacAddressdress(result_mac));
+    } while (!IsValidMacAddress(result_mac));
     return result_mac;
 }
 
 void Room::RoomImpl::HandleWifiPacket(const ENetEvent* event) {
     Packet in_packet;
     in_packet.Append(event->packet->data, event->packet->dataLength);
-    in_packet.IgnoreBytes(sizeof(u8));              // Message type
-    in_packet.IgnoreBytes(sizeof(u8));              // WifiPacket Type
-    in_packet.IgnoreBytes(sizeof(u8));              // WifiPacket Channel
-    in_packet.IgnoreBytes(sizeof(MacAddressdress)); // WifiPacket Transmitter Address
-    MacAddressdress destination_address;
+    in_packet.IgnoreBytes(sizeof(u8));         // Message type
+    in_packet.IgnoreBytes(sizeof(u8));         // WifiPacket Type
+    in_packet.IgnoreBytes(sizeof(u8));         // WifiPacket Channel
+    in_packet.IgnoreBytes(sizeof(MacAddress)); // WifiPacket Transmitter Address
+    MacAddress destination_address;
     in_packet >> destination_address;
     Packet out_packet;
     out_packet.Append(event->packet->data, event->packet->dataLength);

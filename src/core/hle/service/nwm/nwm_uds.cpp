@@ -44,7 +44,7 @@ constexpr u16 BroadcastNetworkNodeID{0xFFFF};
 constexpr u16 HostDestNodeID{1};
 
 /// Returns a list of received 802.11 beacon frames from the specified sender since the last call.
-std::list<Network::WifiPacket> NWM_UDS::GetReceivedBeacons(const MacAddressdress& sender) {
+std::list<Network::WifiPacket> NWM_UDS::GetReceivedBeacons(const MacAddress& sender) {
     std::lock_guard lock{beacon_mutex};
     if (sender != BroadcastMac) {
         std::list<Network::WifiPacket> filtered_list;
@@ -66,7 +66,7 @@ std::list<Network::WifiPacket> NWM_UDS::GetReceivedBeacons(const MacAddressdress
 void NWM_UDS::SendPacket(Network::WifiPacket& packet) {
     auto& member{system.RoomMember()};
     if (member.GetState() == Network::RoomMember::State::Joined) {
-        packet.transmitter_address = member.GetMacAddressdress();
+        packet.transmitter_address = member.GetMacAddress();
         member.SendWifiPacket(packet);
     }
 }
@@ -116,7 +116,7 @@ void NWM_UDS::HandleNodeMapPacket(const Network::WifiPacket& packet) {
     }
     node_map.clear();
     std::size_t num_entries;
-    MacAddressdress address;
+    MacAddress address;
     u16 id;
     std::memcpy(&num_entries, packet.data.data(), sizeof(num_entries));
     std::size_t offset{sizeof(num_entries)};
@@ -323,7 +323,7 @@ void NWM_UDS::HandleSecureDataPacket(const Network::WifiPacket& packet) {
  * Start a connection sequence with an UDS server. The sequence starts by sending an 802.11
  * authentication frame with SEQ1.
  */
-void NWM_UDS::StartConnectionSequence(const MacAddressdress& server) {
+void NWM_UDS::StartConnectionSequence(const MacAddress& server) {
     using Network::WifiPacket;
     WifiPacket auth_request;
     {
@@ -340,7 +340,7 @@ void NWM_UDS::StartConnectionSequence(const MacAddressdress& server) {
 }
 
 /// Sends an Association Response frame to the specified MAC address
-void NWM_UDS::SendAssociationResponseFrame(const MacAddressdress& address) {
+void NWM_UDS::SendAssociationResponseFrame(const MacAddress& address) {
     using Network::WifiPacket;
     WifiPacket assoc_response;
     {
@@ -473,7 +473,7 @@ void NWM_UDS::OnWifiPacketReceived(const Network::WifiPacket& packet) {
     }
 }
 
-std::optional<MacAddressdress> NWM_UDS::GetNodeMacAddressdress(u16 dest_node_id, u8 flags) {
+std::optional<MacAddress> NWM_UDS::GetNodeMacAddress(u16 dest_node_id, u8 flags) {
     constexpr u8 BroadcastFlag{0x2};
     if ((flags & BroadcastFlag) || dest_node_id == BroadcastNetworkNodeID)
         // Broadcast
@@ -508,7 +508,7 @@ void NWM_UDS::RecvBeaconBroadcastData(Kernel::HLERequestContext& ctx) {
     u32 out_buffer_size{rp.Pop<u32>()};
     u32 unk1{rp.Pop<u32>()};
     u32 unk2{rp.Pop<u32>()};
-    MacAddressdress mac_address;
+    MacAddress mac_address;
     rp.PopRaw(mac_address);
     rp.Skip(9, false);
     u32 wlan_comm_id{rp.Pop<u32>()};
@@ -728,7 +728,7 @@ void NWM_UDS::BeginHostingNetwork(Kernel::HLERequestContext& ctx) {
         connection_status.changed_nodes |= 1;
         auto& member{system.RoomMember()};
         if (member.IsConnected())
-            network_info.host_mac_address = member.GetMacAddressdress();
+            network_info.host_mac_address = member.GetMacAddress();
         else
             network_info.host_mac_address = {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
         node_info[0] = current_node;
@@ -848,7 +848,7 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
     }
     if (flags >> 2)
         LOG_ERROR(Service_NWM, "Unexpected flags 0x{:02X}", flags);
-    auto dest_address{GetNodeMacAddressdress(dest_node_id, flags)};
+    auto dest_address{GetNodeMacAddress(dest_node_id, flags)};
     if (!dest_address) {
         rb.Push(ResultCode(ErrorDescription::NotFound, ErrorModule::UDS,
                            ErrorSummary::WrongArgument, ErrorLevel::Status));
@@ -1098,8 +1098,8 @@ NWM_UDS::NWM_UDS(Core::System& system) : ServiceFramework{"nwm::UDS"}, system{sy
     rng.GenerateBlock(static_cast<CryptoPP::byte*>(mac.data() + 3), 3);
     auto& member{system.RoomMember()};
     if (member.IsConnected())
-        mac = member.GetMacAddressdress();
-    system.Kernel().GetSharedPageHandler().SetMacAddressdress(mac);
+        mac = member.GetMacAddress();
+    system.Kernel().GetSharedPageHandler().SetMacAddress(mac);
 }
 
 NWM_UDS::~NWM_UDS() {

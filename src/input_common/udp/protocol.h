@@ -39,7 +39,7 @@ struct Header {
 static_assert(sizeof(Header) == 20, "UDP Message Header struct has wrong size");
 static_assert(std::is_trivially_copyable_v<Header>, "UDP Message Header isn't trivially copyable");
 
-constexpr MacAddressdress EMPTY_MAC_ADDRESS{0, 0, 0, 0, 0, 0};
+constexpr MacAddress EMPTY_MAC_ADDRESS{0, 0, 0, 0, 0, 0};
 
 #pragma pack(push, 1)
 template <typename T>
@@ -85,7 +85,7 @@ struct PadData {
     /// Index of the port of the controller to retrieve data about
     u8 port_id;
     /// Mac address of the controller to retrieve data about
-    MacAddressdress mac;
+    MacAddress mac;
 };
 static_assert(sizeof(PadData) == 8, "UDP Request PadData struct has wrong size");
 static_assert(std::is_trivially_copyable_v<PadData>,
@@ -124,7 +124,7 @@ struct PortInfo {
     u8 state;
     u8 model;
     u8 connection_type;
-    MacAddressdress mac;
+    MacAddress mac;
     u8 battery;
     u8 is_pad_active;
 };

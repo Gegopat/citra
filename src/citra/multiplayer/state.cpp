@@ -72,8 +72,8 @@ void MultiplayerState::OnNetworkStateChanged(const Network::RoomMember::State& s
     LOG_DEBUG(Frontend, "Network State: {}", Network::GetStateStr(state));
     if (state == Network::RoomMember::State::Joined) {
         if (system.IsPoweredOn())
-            system.Kernel().GetSharedPageHandler().SetMacAddressdress(
-                system.RoomMember().GetMacAddressdress());
+            system.Kernel().GetSharedPageHandler().SetMacAddress(
+                system.RoomMember().GetMacAddress());
         OnOpenRoom();
         status_icon->setPixmap(QIcon::fromTheme("connected").pixmap(16));
         leave_room->setEnabled(true);

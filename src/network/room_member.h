@@ -27,9 +27,9 @@ struct WifiPacket {
     PacketType type;      ///< The type of 802.11 frame.
     std::vector<u8> data; ///< Raw 802.11 frame data, starting at the management frame header
                           /// for management frames.
-    MacAddressdress transmitter_address; ///< MAC address of the transmitter.
-    MacAddressdress destination_address; ///< MAC address of the receiver.
-    u8 channel;                          ///< Wifi channel where this frame was transmitted.
+    MacAddress transmitter_address; ///< MAC address of the transmitter.
+    MacAddress destination_address; ///< MAC address of the receiver.
+    u8 channel;                     ///< Wifi channel where this frame was transmitted.
 };
 
 /// Represents a chat message.
@@ -81,10 +81,10 @@ public:
     };
 
     struct MemberInformation {
-        std::string nickname; ///< Nickname of the member.
-        std::string program;  ///< Program that the member is running. Empty if the member isn't
-                              ///< running a program.
-        MacAddressdress mac_address; ///< MAC address associated with this member.
+        std::string nickname;   ///< Nickname of the member.
+        std::string program;    ///< Program that the member is running. Empty if the member isn't
+                                ///< running a program.
+        MacAddress mac_address; ///< MAC address associated with this member.
     };
 
     using MemberList = std::vector<MemberInformation>;
@@ -113,7 +113,7 @@ public:
     const std::string& GetNickname() const;
 
     /// Returns the MAC address of the RoomMember.
-    const MacAddressdress& GetMacAddressdress() const;
+    const MacAddress& GetMacAddress() const;
 
     /// Returns information about the room we're currently connected to.
     RoomInformation GetRoomInformation() const;
@@ -128,8 +128,7 @@ public:
      */
     void Join(const std::string& nickname, u64 console_id, const char* server_addr = "127.0.0.1",
               const u16 server_port = DefaultRoomPort,
-              const MacAddressdress& preferred_mac = BroadcastMac,
-              const std::string& password = "");
+              const MacAddress& preferred_mac = BroadcastMac, const std::string& password = "");
 
     /**
      * Sends a Wifi packet to the room.
