@@ -342,7 +342,7 @@ void ChatRoom::PopupContextMenu(const QPoint& menu_location) {
         else {
             auto result{QMessageBox::question(
                 this, "Block Member",
-                QString("When you block a member, you will no longer receive chat messages from "
+                QString("When you block a member, you'll no longer receive chat messages from "
                         "them.<br><br>Are you sure you would like to block %1?")
                     .arg(QString::fromStdString(nickname)),
                 QMessageBox::Yes | QMessageBox::No)};

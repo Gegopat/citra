@@ -224,7 +224,7 @@ void SoftwareKeyboard::Update() {
             return error == ValidationError::None;
         }};
         do {
-            std::cout << "Enter the text you will send to the program:" << std::endl;
+            std::cout << "Enter the text you'll send to the program:" << std::endl;
             std::getline(std::cin, input);
         } while (!ValidateInputString());
         std::string option_text;
@@ -261,7 +261,7 @@ void SoftwareKeyboard::Update() {
             return valid;
         }};
         do {
-            std::cout << "\nPlease type the number of the button you will press: \n"
+            std::cout << "\nPlease type the number of the button you'll press: \n"
                       << option_text << std::endl;
             std::getline(std::cin, option);
         } while (!ValidateButtonString());

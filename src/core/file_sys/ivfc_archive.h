@@ -21,7 +21,7 @@ namespace FileSys {
 class IVFCDelayGenerator : public DelayGenerator {
     u64 GetReadDelayNs(std::size_t length) override {
         // This is the delay measured for a romfs read.
-        // For now we will take that as a default
+        // For now we'lll take that as a default
         constexpr u64 slope{94};
         constexpr u64 offset{582778};
         constexpr u64 minimum{663124};
@@ -30,7 +30,7 @@ class IVFCDelayGenerator : public DelayGenerator {
 
     u64 GetOpenDelayNs() override {
         // This is the delay measured for a romfs open.
-        // For now we will take that as a default
+        // For now we'lll take that as a default
         return 9438006;
     }
 };

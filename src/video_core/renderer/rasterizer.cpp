@@ -1294,7 +1294,7 @@ bool Rasterizer::AccelerateTextureCopy(const GPU::Regs::DisplayTransferConfig& c
     dst_params.height = src_rect.GetHeight() / src_surface->res_scale;
     dst_params.res_scale = src_surface->res_scale;
     dst_params.UpdateParams();
-    // Since we're going to invalidate the gap if there is one, we will have to load it first
+    // Since we're going to invalidate the gap if there is one, we'lll have to load it first
     const bool load_gap{output_gap != 0};
     auto [dst_surface,
           dst_rect]{res_cache.GetSurfaceSubRect(dst_params, ScaleMatch::Upscale, load_gap)};
