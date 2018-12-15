@@ -6,13 +6,13 @@
 
 #ifdef _WIN32
 #include <windows.h>
-#endif
+#endif // _WIN32
 
+#include "common/file_util.h"
 #include "common/logging/log.h"
 
 extern "C" {
 #include "libavcodec/avcodec.h"
-#include "libavformat/avformat.h"
 }
 
 #ifdef _WIN32
@@ -21,9 +21,9 @@ template <typename T>
 struct FuncDL {
     FuncDL() = default;
 
-    explicit FuncDL(HMODULE dll, const char* name) {
+    FuncDL(HMODULE dll, const char* name) {
         if (dll)
-            *(void**)&ptr_function = (void*)GetProcAddress(dll, name);
+            ptr_function = static_cast<T*>(static_cast<void*>(GetProcAddress(dll, name)));
     }
 
     operator T*() const {
@@ -37,18 +37,18 @@ struct FuncDL {
     T* ptr_function{};
 };
 
-FuncDL<int(AVSampleFormat)> av_get_bytes_per_sample_dl;
-FuncDL<AVFrame*(void)> av_frame_alloc_dl;
-FuncDL<void(AVFrame**)> av_frame_free_dl;
-FuncDL<void(void)> av_register_all_dl;
 FuncDL<AVCodecContext*(const AVCodec*)> avcodec_alloc_context3_dl;
 FuncDL<void(AVCodecContext**)> avcodec_free_context_dl;
 FuncDL<int(AVCodecContext*, const AVCodec*, AVDictionary**)> avcodec_open2_dl;
-FuncDL<AVPacket*(void)> av_packet_alloc_dl;
-FuncDL<void(AVPacket**)> av_packet_free_dl;
 FuncDL<AVCodec*(AVCodecID)> avcodec_find_decoder_dl;
 FuncDL<int(AVCodecContext*, const AVPacket*)> avcodec_send_packet_dl;
 FuncDL<int(AVCodecContext*, AVFrame*)> avcodec_receive_frame_dl;
+FuncDL<void()> avcodec_register_all_dl;
+FuncDL<int(AVSampleFormat)> av_get_bytes_per_sample_dl;
+FuncDL<AVFrame*()> av_frame_alloc_dl;
+FuncDL<void(AVFrame**)> av_frame_free_dl;
+FuncDL<AVPacket*()> av_packet_alloc_dl;
+FuncDL<void(AVPacket**)> av_packet_free_dl;
 FuncDL<AVCodecParserContext*(int)> av_parser_init_dl;
 FuncDL<int(AVCodecParserContext*, AVCodecContext*, uint8_t**, int*, const uint8_t*, int, int64_t,
            int64_t, int64_t)>
@@ -56,6 +56,8 @@ FuncDL<int(AVCodecParserContext*, AVCodecContext*, uint8_t**, int*, const uint8_
 FuncDL<void(AVCodecParserContext*)> av_parser_close_dl;
 
 bool InitFFmpegDL() {
+    FileUtil::CreateDir(FileUtil::GetUserPath(FileUtil::UserPath::DLLDir));
+    SetDllDirectoryA(FileUtil::GetUserPath(FileUtil::UserPath::DLLDir).c_str());
     auto dll_util{LoadLibrary("avutil-56.dll")};
     if (!dll_util) {
         DWORD error_message_id{GetLastError()};
@@ -86,21 +88,6 @@ bool InitFFmpegDL() {
         LOG_ERROR(Audio_DSP, "Couldn't load avcodec-58.dll: {}", message);
         return false;
     }
-    av_get_bytes_per_sample_dl = FuncDL<int(AVSampleFormat)>(dll_util, "av_get_bytes_per_sample");
-    if (!av_get_bytes_per_sample_dl) {
-        LOG_ERROR(Audio_DSP, "Can't load function av_get_bytes_per_sample");
-        return false;
-    }
-    av_frame_alloc_dl = FuncDL<AVFrame*()>(dll_util, "av_frame_alloc");
-    if (!av_frame_alloc_dl) {
-        LOG_ERROR(Audio_DSP, "Can't load function av_frame_alloc");
-        return false;
-    }
-    av_frame_free_dl = FuncDL<void(AVFrame**)>(dll_util, "av_frame_free");
-    if (!av_frame_free_dl) {
-        LOG_ERROR(Audio_DSP, "Can't load function av_frame_free");
-        return false;
-    }
     avcodec_alloc_context3_dl =
         FuncDL<AVCodecContext*(const AVCodec*)>(dll_codec, "avcodec_alloc_context3");
     if (!avcodec_alloc_context3_dl) {
@@ -118,17 +105,7 @@ bool InitFFmpegDL() {
         LOG_ERROR(Audio_DSP, "Can't load function avcodec_open2");
         return false;
     }
-    av_packet_alloc_dl = FuncDL<AVPacket*(void)>(dll_codec, "av_packet_alloc");
-    if (!av_packet_alloc_dl) {
-        LOG_ERROR(Audio_DSP, "Can't load function av_packet_alloc");
-        return false;
-    }
-    av_packet_free_dl = FuncDL<void(AVPacket**)>(dll_codec, "av_packet_free");
-    if (!av_packet_free_dl) {
-        LOG_ERROR(Audio_DSP, "Can't load function av_packet_free");
-        return false;
-    }
-    avcodec_find_decoder_dl = FuncDL<AVCodec*(AVCodecID)>(dll_codec, "avcodec_find_decoder");
+    avcodec_find_decoder_dl = FuncDL<void()>(dll_codec, "avcodec_find_decoder");
     if (!avcodec_find_decoder_dl) {
         LOG_ERROR(Audio_DSP, "Can't load function avcodec_find_decoder");
         return false;
@@ -143,6 +120,36 @@ bool InitFFmpegDL() {
         FuncDL<int(AVCodecContext*, AVFrame*)>(dll_codec, "avcodec_receive_frame");
     if (!avcodec_receive_frame_dl) {
         LOG_ERROR(Audio_DSP, "Can't load function avcodec_receive_frame");
+        return false;
+    }
+    avcodec_register_all_dl = FuncDL<void()>(dll_codec, "avcodec_register_all");
+    if (!avcodec_receive_frame_dl) {
+        LOG_ERROR(Audio_DSP, "Can't load function avcodec_register_all");
+        return false;
+    }
+    av_get_bytes_per_sample_dl = FuncDL<int(AVSampleFormat)>(dll_util, "av_get_bytes_per_sample");
+    if (!av_get_bytes_per_sample_dl) {
+        LOG_ERROR(Audio_DSP, "Can't load function av_get_bytes_per_sample");
+        return false;
+    }
+    av_frame_alloc_dl = FuncDL<AVFrame*()>(dll_util, "av_frame_alloc");
+    if (!av_frame_alloc_dl) {
+        LOG_ERROR(Audio_DSP, "Can't load function av_frame_alloc");
+        return false;
+    }
+    av_frame_free_dl = FuncDL<void(AVFrame**)>(dll_util, "av_frame_free");
+    if (!av_frame_free_dl) {
+        LOG_ERROR(Audio_DSP, "Can't load function av_frame_free");
+        return false;
+    }
+    av_packet_alloc_dl = FuncDL<AVPacket*()>(dll_codec, "av_packet_alloc");
+    if (!av_packet_alloc_dl) {
+        LOG_ERROR(Audio_DSP, "Can't load function av_packet_alloc");
+        return false;
+    }
+    av_packet_free_dl = FuncDL<void(AVPacket**)>(dll_codec, "av_packet_free");
+    if (!av_packet_free_dl) {
+        LOG_ERROR(Audio_DSP, "Can't load function av_packet_free");
         return false;
     }
     av_parser_init_dl = FuncDL<AVCodecParserContext*(int)>(dll_codec, "av_parser_init");
@@ -162,12 +169,6 @@ bool InitFFmpegDL() {
         LOG_ERROR(Audio_DSP, "Can't load function av_parser_close");
         return false;
     }
-    auto dll_format{LoadLibrary("avformat-58.dll")};
-    av_register_all_dl = FuncDL<void(void)>(dll_format, "av_register_all");
-    if (!av_frame_free_dl) {
-        LOG_ERROR(Audio_DSP, "Can't load function av_register_all");
-        return false;
-    }
     return true;
 }
 
@@ -177,18 +178,18 @@ bool InitFFmpegDL() {
 
 // No dynamic loading for Linux and Apple
 
-const auto av_get_bytes_per_sample_dl{&av_get_bytes_per_sample};
-const auto av_frame_alloc_dl{&av_frame_alloc};
-const auto av_frame_free_dl{&av_frame_free};
-const auto av_register_all_dl{&av_register_all};
 const auto avcodec_alloc_context3_dl{&avcodec_alloc_context3};
 const auto avcodec_free_context_dl{&avcodec_free_context};
 const auto avcodec_open2_dl{&avcodec_open2};
-const auto av_packet_alloc_dl{&av_packet_alloc};
-const auto av_packet_free_dl{&av_packet_free};
 const auto avcodec_find_decoder_dl{&avcodec_find_decoder};
 const auto avcodec_send_packet_dl{&avcodec_send_packet};
 const auto avcodec_receive_frame_dl{&avcodec_receive_frame};
+const auto avcodec_register_all_dl{&avcodec_register_all};
+const auto av_get_bytes_per_sample_dl{&av_get_bytes_per_sample};
+const auto av_frame_alloc_dl{&av_frame_alloc};
+const auto av_frame_free_dl{&av_frame_free};
+const auto av_packet_alloc_dl{&av_packet_alloc};
+const auto av_packet_free_dl{&av_packet_free};
 const auto av_parser_init_dl{&av_parser_init};
 const auto av_parser_parse2_dl{&av_parser_parse2};
 const auto av_parser_close_dl{&av_parser_close};

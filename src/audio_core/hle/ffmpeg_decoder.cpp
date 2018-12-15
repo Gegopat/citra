@@ -36,6 +36,7 @@ private:
 FFmpegDecoder::Impl::Impl(Memory::MemorySystem& memory) : memory{memory} {
     initialized = false;
     have_ffmpeg_dl = InitFFmpegDL();
+    avcodec_register_all();
 }
 
 FFmpegDecoder::Impl::~Impl() {
@@ -68,33 +69,32 @@ std::optional<BinaryResponse> FFmpegDecoder::Impl::ProcessRequest(const BinaryRe
 std::optional<BinaryResponse> FFmpegDecoder::Impl::Initialize(const BinaryRequest& request) {
     if (initialized)
         Clear();
+    BinaryResponse response;
+    std::memcpy(&response, &request, sizeof(response));
+    response.unknown1 = 0x0;
     if (!have_ffmpeg_dl)
-        return {};
+        return response;
     av_packet = av_packet_alloc_dl();
-    av_register_all_dl();
     codec = avcodec_find_decoder_dl(AV_CODEC_ID_AAC);
     if (!codec) {
         LOG_ERROR(Audio_DSP, "Codec not found\n");
-        return {};
+        return response;
     }
     parser = av_parser_init_dl(codec->id);
     if (!parser) {
         LOG_ERROR(Audio_DSP, "Parser not found\n");
-        return {};
+        return response;
     }
     av_context = avcodec_alloc_context3_dl(codec);
     if (!av_context) {
         LOG_ERROR(Audio_DSP, "Couldn't allocate audio codec context\n");
-        return {};
+        return response;
     }
     if (avcodec_open2_dl(av_context, codec, NULL) < 0) {
         LOG_ERROR(Audio_DSP, "Couldn't open codec\n");
-        return {};
+        return response;
     }
     initialized = true;
-    BinaryResponse response;
-    std::memcpy(&response, &request, sizeof(response));
-    response.unknown1 = 0x0;
     return response;
 }
 
@@ -120,13 +120,13 @@ std::optional<BinaryResponse> FFmpegDecoder::Impl::Decode(const BinaryRequest& r
         return response;
     }
     if (request.src_addr < Memory::FCRAM_PADDR ||
-        request.src_addr + request.size > Memory::FCRAM_PADDR + Memory::FCRAM_N3DS_SIZE) {
+        request.src_addr + request.size > Memory::FCRAM_N3DS_PADDR_END) {
         LOG_ERROR(Audio_DSP, "Got out of bounds src_addr {:08x}", request.src_addr);
         return {};
     }
     u8* data{memory.GetFCRAMPointer(request.src_addr - Memory::FCRAM_PADDR)};
     std::array<std::vector<u8>, 2> out_streams;
-    std::size_t data_size = request.size;
+    std::size_t data_size{request.size};
     while (data_size > 0) {
         if (!decoded_frame)
             if (!(decoded_frame = av_frame_alloc_dl())) {
@@ -177,14 +177,14 @@ std::optional<BinaryResponse> FFmpegDecoder::Impl::Decode(const BinaryRequest& r
                 }
             }
         if (request.dst_addr_ch0 < Memory::FCRAM_PADDR ||
-            request.dst_addr_ch0 + request.size > Memory::FCRAM_PADDR + Memory::FCRAM_N3DS_SIZE) {
+            request.dst_addr_ch0 + out_streams[0].size() > Memory::FCRAM_N3DS_PADDR_END) {
             LOG_ERROR(Audio_DSP, "Got out of bounds dst_addr_ch0 {:08x}", request.dst_addr_ch0);
             return {};
         }
         std::memcpy(memory.GetFCRAMPointer(request.dst_addr_ch0 - Memory::FCRAM_PADDR),
                     out_streams[0].data(), out_streams[0].size());
         if (request.dst_addr_ch1 < Memory::FCRAM_PADDR ||
-            request.dst_addr_ch1 + request.size > Memory::FCRAM_PADDR + Memory::FCRAM_N3DS_SIZE) {
+            request.dst_addr_ch1 + out_streams[1].size() > Memory::FCRAM_N3DS_PADDR_END) {
             LOG_ERROR(Audio_DSP, "Got out of bounds dst_addr_ch1 {:08x}", request.dst_addr_ch1);
             return {};
         }

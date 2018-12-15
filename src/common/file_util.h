@@ -22,6 +22,7 @@ namespace FileUtil {
 // User paths for GetUserPath
 enum class UserPath {
     ConfigDir,
+    DLLDir,
     NANDDir,
     RootDir,
     SDMCDir,

@@ -590,6 +590,7 @@ const std::string GetUserPath(UserPath path, const std::string& settings_dir) {
         paths.emplace(UserPath::NANDDir, user_path + NAND_DIR DIR_SEP);
         paths.emplace(UserPath::SysDataDir, user_path + SYSDATA_DIR DIR_SEP);
         paths.emplace(UserPath::CheatsDir, user_path + CHEATS_DIR DIR_SEP);
+        paths.emplace(UserPath::DLLDir, user_path + DLL_DIR DIR_SEP);
     }
     return paths[path];
 }

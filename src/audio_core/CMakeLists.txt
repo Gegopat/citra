@@ -33,7 +33,7 @@ target_link_libraries(audio_core PRIVATE SoundTouch teakra cubeb)
 
 if(FFMPEG_FOUND)
     if(UNIX)
-        target_link_libraries(audio_core PRIVATE FFmpeg::avcodec FFmpeg::avformat)
+        target_link_libraries(audio_core PRIVATE FFmpeg::avcodec)
     else()
         target_include_directories(audio_core PRIVATE ${FFMPEG_DIR}/include)
     endif()

@@ -24,6 +24,7 @@
 #define NAND_DIR "nand"
 #define SYSDATA_DIR "sysdata"
 #define CHEATS_DIR "cheats"
+#define DLL_DIR "external_dlls"
 
 // Filenames
 #define LOG_FILE "log.txt"

@@ -232,11 +232,9 @@ if (ENABLE_FFMPEG)
             set(FFMPEG_FOUND YES)
         endif()
     else()
-        find_package(FFmpeg REQUIRED COMPONENTS avcodec avformat)
+        find_package(FFmpeg REQUIRED COMPONENTS avcodec)
         if ("${FFmpeg_avcodec_VERSION}" VERSION_LESS "57.48.101")
             message(FATAL_ERROR "Found version for libavcodec is too low. The required version is at least 57.48.101 (included in FFmpeg 3.1 and later).")
-        elseif("${FFmpeg_avformat_VERSION}" VERSION_LESS "57.83.100")
-            message(FATAL_ERROR "Found version for libavformat is too low. The required version is at least 57.83.100")
         else()
             set(FFMPEG_FOUND YES)
         endif()
@@ -253,7 +251,7 @@ endif()
 # ======================================
 
 IF (APPLE)
-    find_library(COCOA_LIBRARY Cocoa)           # Umbrella framework for everything GUI-related
+    find_library(COCOA_LIBRARY Cocoa) # Umbrella framework for everything GUI-related
     set(PLATFORM_LIBRARIES ${COCOA_LIBRARY} ${IOKIT_LIBRARY} ${COREVIDEO_LIBRARY})
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL Clang)
