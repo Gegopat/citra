@@ -23,7 +23,7 @@ struct FuncDL {
 
     explicit FuncDL(HMODULE dll, const char* name) {
         if (dll)
-            ptr_function = static_cast<T>(GetProcAddress(dll, name));
+            *(void**)&ptr_function = (void*)GetProcAddress(dll, name);
     }
 
     operator T*() const {
