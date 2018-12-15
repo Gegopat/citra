@@ -219,7 +219,7 @@ void NWM_UDS::HandleEAPoLPacket(const Network::WifiPacket& packet) {
         // broadcast packet for all other clients
         // On a console the eapol packet is only sent to packet.transmitter_address
         // while a packet containing the node information is broadcasted
-        // For now we'lll broadcast the eapol packet instead
+        // For now we'll broadcast the eapol packet instead
         eapol_logoff.destination_address = BroadcastMac;
         eapol_logoff.type = WifiPacket::PacketType::Data;
         SendPacket(eapol_logoff);

@@ -11,7 +11,7 @@ DelayGenerator::~DelayGenerator() = default;
 
 u64 DefaultDelayGenerator::GetReadDelayNs(std::size_t length) {
     // This is the delay measured for a romfs read.
-    // For now we'lll take that as a default
+    // For now we'll take that as a default
     constexpr u64 slope{94};
     constexpr u64 offset{582778};
     constexpr u64 minimum{663124};
@@ -20,7 +20,7 @@ u64 DefaultDelayGenerator::GetReadDelayNs(std::size_t length) {
 
 u64 DefaultDelayGenerator::GetOpenDelayNs() {
     // This is the delay measured for a romfs open.
-    // For now we'lll take that as a default
+    // For now we'll take that as a default
     return 9438006;
 }
 

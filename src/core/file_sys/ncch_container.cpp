@@ -321,7 +321,7 @@ Loader::ResultStatus NCCHContainer::Load() {
 }
 
 Loader::ResultStatus NCCHContainer::LoadOverrides() {
-    // Check for split-off files, mark the archive as tainted if we'lll use them
+    // Check for split-off files, mark the archive as tainted if we'll use them
     std::string romfs_override{filepath + ".romfs"};
     if (FileUtil::Exists(romfs_override))
         is_tainted = true;

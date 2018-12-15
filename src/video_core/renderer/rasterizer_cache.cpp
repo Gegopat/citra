@@ -632,7 +632,7 @@ void CachedSurface::UploadGLTexture(const MathUtil::Rectangle<u32>& rect, GLuint
     std::size_t buffer_offset{(y0 * stride + x0) * GetGLBytesPerPixel(pixel_format)};
     const FormatTuple& tuple{GetFormatTuple(pixel_format)};
     GLuint target_tex{texture.handle};
-    // If not 1x scale, create 1x texture that we'lll blit from to replace texture subrect in
+    // If not 1x scale, create 1x texture that we'll blit from to replace texture subrect in
     // surface
     Texture unscaled_tex{};
     if (res_scale != 1) {

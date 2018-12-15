@@ -60,7 +60,7 @@ public:
     u64 GetReadDelayNs(std::size_t length) override {
         // This is the delay measured for a savedata read,
         // not for ExtSaveData
-        // For now we'lll take that
+        // For now we'll take that
         constexpr u64 slope{183};
         constexpr u64 offset{524879};
         constexpr u64 minimum{631826};

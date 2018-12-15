@@ -142,7 +142,7 @@ private:
      * @param block_id The id of the block we want to read
      * @param size The size of the block we want to read
      * @param flag The requested block must have this flag set
-     * @param output A pointer where we'lll write the read data
+     * @param output A pointer where we'll write the read data
      * @returns ResultCode indicating the result of the operation, 0 on success
      */
     ResultCode GetConfigInfoBlock(u32 block_id, u32 size, u32 flag, void* output);
@@ -155,7 +155,7 @@ private:
      * @param block_id The id of the block we want to write
      * @param size The size of the block we want to write
      * @param flag The target block must have this flag set
-     * @param input A pointer where we'lll read data and write to Config savegame buffer
+     * @param input A pointer where we'll read data and write to Config savegame buffer
      * @returns ResultCode indicating the result of the operation, 0 on success
      */
     ResultCode SetConfigInfoBlock(u32 block_id, u32 size, u32 flag, const void* input);
@@ -167,7 +167,7 @@ private:
      * @param block_id The id of the block we want to create
      * @param size The size of the block we want to create
      * @param flags The flags of the new block
-     * @param data A pointer containing the data we'lll write to the new block
+     * @param data A pointer containing the data we'll write to the new block
      * @returns ResultCode indicating the result of the operation, 0 on success
      */
     ResultCode CreateConfigInfoBlk(u32 block_id, u16 size, u16 flags, const void* data);
