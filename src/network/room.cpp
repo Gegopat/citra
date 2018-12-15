@@ -69,7 +69,8 @@ void from_json(const nlohmann::json& json, JsonRoom& room) {
 struct Room::RoomImpl {
     RoomImpl()
         : random_gen{std::random_device{}()}, client{std::make_unique<httplib::Client>(
-                                                  "citra-valentin-api.herokuapp.com", 80)} {
+                                                  "citra-valentin-api-valentinvanelslande.cs50.io",
+                                                  80)} {
         http_server.Get("/", [this](const httplib::Request& req, httplib::Response& res) {
             res.status = 200;
             res.body = "OK";
