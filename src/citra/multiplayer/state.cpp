@@ -94,7 +94,7 @@ void MultiplayerState::OnNetworkError(const Network::RoomMember::Error& error) {
         break;
     case Network::RoomMember::Error::HostKicked:
         if (client_room)
-            client_room->Disconnect(false);
+            client_room->close();
         NetworkMessage::ShowError(NetworkMessage::HOST_KICKED);
         break;
     case Network::RoomMember::Error::CouldNotConnect:
@@ -109,9 +109,6 @@ void MultiplayerState::OnNetworkError(const Network::RoomMember::Error& error) {
     case Network::RoomMember::Error::ConsoleIdCollision:
         NetworkMessage::ShowError(NetworkMessage::CONSOLE_ID_COLLISION);
         break;
-    case Network::RoomMember::Error::RoomIsFull:
-        NetworkMessage::ShowError(NetworkMessage::ROOM_IS_FULL);
-        break;
     case Network::RoomMember::Error::WrongPassword:
         NetworkMessage::ShowError(NetworkMessage::WRONG_PASSWORD);
         break;
@@ -120,7 +117,7 @@ void MultiplayerState::OnNetworkError(const Network::RoomMember::Error& error) {
         break;
     case Network::RoomMember::Error::HostBanned:
         if (client_room)
-            client_room->Disconnect(false);
+            client_room->close();
         NetworkMessage::ShowError(NetworkMessage::HOST_BANNED);
         break;
     case Network::RoomMember::Error::UnknownError:
@@ -170,8 +167,8 @@ void MultiplayerState::OnCreateRoom() {
     BringWidgetToFront(host_room);
 }
 
-bool MultiplayerState::OnCloseRoom(bool confirm) {
-    if (!NetworkMessage::WarnCloseRoom(confirm))
+bool MultiplayerState::OnCloseRoom() {
+    if (!NetworkMessage::WarnCloseRoom())
         return false;
     auto& room{system.Room()};
     auto& member{system.RoomMember()};
@@ -187,11 +184,6 @@ bool MultiplayerState::OnCloseRoom(bool confirm) {
     LOG_DEBUG(Frontend, "Closed the room (as a server)");
     replies.clear();
     return true;
-}
-
-void MultiplayerState::OnCloseRoomClient() {
-    if (client_room)
-        client_room->Disconnect();
 }
 
 void MultiplayerState::OnOpenRoom() {

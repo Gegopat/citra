@@ -21,7 +21,6 @@ const ConnectionError UNABLE_TO_CONNECT{
     "Unable to connect to the host. Verify that the connection settings are correct. If "
     "you still can't connect, contact the room host and verify that the host is "
     "properly configured with the external port forwarded."};
-const ConnectionError ROOM_IS_FULL{"Unable to connect to the room because it is already full."};
 const ConnectionError COULD_NOT_CREATE_ROOM{
     "Creating a room failed. Please retry. Restarting Citra might be necessary."};
 const ConnectionError HOST_BANNED{
@@ -53,9 +52,7 @@ void ShowError(const ConnectionError& e) {
     QMessageBox::critical(nullptr, "Error", QString::fromStdString(e.GetString()));
 }
 
-bool WarnCloseRoom(bool confirm) {
-    if (!confirm)
-        return true;
+bool WarnCloseRoom() {
     return WarnMessage("Leave Room",
                        "You're about to close the room. Any network connections will be closed.");
 }

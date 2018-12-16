@@ -28,7 +28,6 @@ extern const ConnectionError
 extern const ConnectionError IP_ADDRESS_NOT_VALID;
 extern const ConnectionError NO_INTERNET;
 extern const ConnectionError UNABLE_TO_CONNECT;
-extern const ConnectionError ROOM_IS_FULL;
 extern const ConnectionError COULD_NOT_CREATE_ROOM;
 extern const ConnectionError HOST_BANNED;
 extern const ConnectionError WRONG_VERSION;
@@ -46,13 +45,13 @@ void ShowError(const ConnectionError& e);
 
 /**
  * Show a standard QMessageBox with a warning message about leaving the room
- * return true if the user wants to close the network connection
+ * returns true if the user wants to close the network connection
  */
-bool WarnCloseRoom(bool confirm = true);
+bool WarnCloseRoom();
 
 /**
  * Show a standard QMessageBox with a warning message about disconnecting from the room
- * return true if the user wants to disconnect
+ * returns true if the user wants to disconnect
  */
 bool WarnDisconnect();
 

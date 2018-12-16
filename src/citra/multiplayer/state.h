@@ -43,13 +43,16 @@ public:
         return replies;
     }
 
+    ClientRoomWindow* GetRoomWindow() {
+        return client_room;
+    }
+
 public slots:
     void OnNetworkStateChanged(const Network::RoomMember::State& state);
     void OnNetworkError(const Network::RoomMember::Error& error);
     void OnViewLobby();
     void OnCreateRoom();
-    bool OnCloseRoom(bool confirm = true);
-    void OnCloseRoomClient();
+    bool OnCloseRoom();
     void OnOpenRoom();
     void OnDirectConnect();
     void OnAnnounceFailed(const Common::WebResult&);
