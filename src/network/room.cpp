@@ -951,18 +951,16 @@ void Room::Destroy() {
     room_impl->room_thread.reset();
     if (room_impl->server)
         enet_host_destroy(room_impl->server);
+    if (room_impl->is_public.load(std::memory_order_relaxed)) {
+        nlohmann::json json;
+        json["delete"] = room_impl->room_information.port;
+        room_impl->MakeRequest("POST", json.dump());
+    }
     room_impl->room_information = {};
     room_impl->server = nullptr;
     {
         std::lock_guard lock{room_impl->member_mutex};
         room_impl->members.clear();
-    }
-    room_impl->room_information.max_members = 0;
-    room_impl->room_information.name.clear();
-    if (room_impl->is_public.load(std::memory_order_relaxed)) {
-        nlohmann::json json;
-        json["delete"] = room_impl->room_information.port;
-        room_impl->MakeRequest("POST", json.dump());
     }
     room_impl->http_server.stop();
 }
