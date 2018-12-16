@@ -105,7 +105,7 @@ bool InitFFmpegDL() {
         LOG_ERROR(Audio_DSP, "Can't load function avcodec_open2");
         return false;
     }
-    avcodec_find_decoder_dl = FuncDL<void()>(dll_codec, "avcodec_find_decoder");
+    avcodec_find_decoder_dl = FuncDL<AVCodec*(AVCodecID)>(dll_codec, "avcodec_find_decoder");
     if (!avcodec_find_decoder_dl) {
         LOG_ERROR(Audio_DSP, "Can't load function avcodec_find_decoder");
         return false;
