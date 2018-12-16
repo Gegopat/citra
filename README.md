@@ -13,7 +13,7 @@ Citra emulates a subset of the hardware and therefore is useful for running/debu
 
 Citra is licensed under the GPLv2 (or any later version). Refer to the license.txt file included.
 
-Discord Server: https://discord.gg/ahMhkkp
+Discord Server: https://discord.gg/J9dE9MC
 
 ### Development
 
