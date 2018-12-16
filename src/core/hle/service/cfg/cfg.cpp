@@ -527,7 +527,7 @@ ResultCode Module::FormatConfig() {
     if (!res.IsSuccess())
         return res;
     u16_le country_name_buffer[16][0x40]{};
-    std::u16string region_name{Common::UTF8ToUTF16("Gensokyo")};
+    auto region_name{Common::UTF8ToUTF16("Gensokyo")};
     for (std::size_t i{}; i < 16; ++i)
         std::copy(region_name.cbegin(), region_name.cend(), country_name_buffer[i]);
     // 0x000B0001 - Localized names for the profile Country

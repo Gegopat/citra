@@ -565,7 +565,7 @@ void Module::Interface::RecvFromOther(Kernel::HLERequestContext& ctx) {
         }
     } else {
         ret = ::recvfrom(socket_handle, reinterpret_cast<char*>(output_buff.data()), len, flags,
-                         NULL, 0);
+                         nullptr, 0);
         addr_buff.resize(0);
     }
     if (ret == SOCKET_ERROR_VALUE)
@@ -606,7 +606,7 @@ void Module::Interface::RecvFrom(Kernel::HLERequestContext& ctx) {
         }
     } else {
         ret = ::recvfrom(socket_handle, reinterpret_cast<char*>(output_buff.data()), len, flags,
-                         NULL, 0);
+                         nullptr, 0);
         addr_buff.resize(0);
     }
     s32 total_received{ret};

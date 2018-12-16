@@ -103,16 +103,14 @@ void ColorConsoleBackend::Write(const Entry& entry) {
 FileBackend::FileBackend(const std::string& filename) : file{filename, "w", _SH_DENYWR} {}
 
 void FileBackend::Write(const Entry& entry) {
-    // prevent logs from going over the maximum size (in case its spamming and the user doesn't
+    // Prevent logs from going over the maximum size (in case its spamming and the user doesn't
     // know)
     constexpr std::size_t MAX_BYTES_WRITTEN{50 * 1024L * 1024L};
-    if (!file.IsOpen() || bytes_written > MAX_BYTES_WRITTEN) {
+    if (!file.IsOpen() || bytes_written > MAX_BYTES_WRITTEN)
         return;
-    }
     bytes_written += file.WriteString(FormatLogMessage(entry).append(1, '\n'));
-    if (entry.log_level >= Level::Error) {
+    if (entry.log_level >= Level::Error)
         file.Flush();
-    }
 }
 
 void DebuggerBackend::Write(const Entry& entry) {

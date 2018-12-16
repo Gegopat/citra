@@ -55,7 +55,7 @@ struct SpecialRegion {
  * A (reasonably) fast way of allowing switchable and remappable process address spaces. It loosely
  * mimics the way a real CPU page table works, but instead is optimized for minimal decoding and
  * fetching requirements when accessing. In the usual case of an access to regular memory, it only
- * requires an indexed fetch and a check for NULL.
+ * requires an indexed fetch and a check for `nullptr`.
  */
 struct PageTable {
     /**

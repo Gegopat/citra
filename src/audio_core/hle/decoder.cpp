@@ -6,7 +6,9 @@
 
 namespace AudioCore::HLE {
 
-NullDecoder::NullDecoder() {}
+DecoderBase::~DecoderBase() = default;
+
+NullDecoder::NullDecoder() = default;
 
 NullDecoder::~NullDecoder() = default;
 

@@ -21,7 +21,7 @@ private:
 
     std::optional<BinaryResponse> Decode(const BinaryRequest& request);
 
-    bool initialized;
+    bool initialized{};
     bool have_ffmpeg_dl;
 
     Memory::MemorySystem& memory;
@@ -34,7 +34,6 @@ private:
 };
 
 FFmpegDecoder::Impl::Impl(Memory::MemorySystem& memory) : memory{memory} {
-    initialized = false;
     have_ffmpeg_dl = InitFFmpegDL();
     avcodec_register_all();
 }
@@ -90,7 +89,7 @@ std::optional<BinaryResponse> FFmpegDecoder::Impl::Initialize(const BinaryReques
         LOG_ERROR(Audio_DSP, "Couldn't allocate audio codec context\n");
         return response;
     }
-    if (avcodec_open2_dl(av_context, codec, NULL) < 0) {
+    if (avcodec_open2_dl(av_context, codec, nullptr) < 0) {
         LOG_ERROR(Audio_DSP, "Couldn't open codec\n");
         return response;
     }

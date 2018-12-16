@@ -1559,7 +1559,7 @@ void GMainWindow::InitializeDiscordRPC() {
     DiscordEventHandlers handlers{};
     handlers.disconnected = HandleDiscordDisconnected;
     handlers.errored = HandleDiscordError;
-    Discord_Initialize("519577000537489408", &handlers, 0, NULL);
+    Discord_Initialize("519577000537489408", &handlers, 0, nullptr);
     discord_rpc_start_time = std::chrono::duration_cast<std::chrono::seconds>(
                                  std::chrono::system_clock::now().time_since_epoch())
                                  .count();
