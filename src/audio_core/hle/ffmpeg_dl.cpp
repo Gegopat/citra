@@ -42,7 +42,7 @@ FuncDL<void(AVCodecParserContext*)> av_parser_close_dl;
 
 bool InitFFmpegDL() {
     FileUtil::CreateDir(FileUtil::GetUserPath(FileUtil::UserPath::DLLDir));
-    SetDllDirectoryA(
+    SetDllDirectoryW(
         Common::UTF8ToUTF16W(FileUtil::GetUserPath(FileUtil::UserPath::DLLDir)).c_str());
     dll_util.reset(LoadLibrary("avutil-56.dll"));
     if (!dll_util) {
