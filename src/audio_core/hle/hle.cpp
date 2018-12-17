@@ -87,7 +87,7 @@ DspHle::Impl::Impl(DspHle& parent, Core::System& system) : system{system}, paren
     for (auto& s : sources)
         s.SetMemory(memory);
 #ifdef HAVE_FFMPEG
-    decoder = std::make_unique<HLE::FFmpegDecoder>(memory);
+    decoder = std::make_unique<HLE::FfmpegDecoder>(memory);
 #else
     LOG_WARNING(Audio_DSP, "FFmpeg missing, this could lead to missing audio");
     decoder = std::make_unique<HLE::NullDecoder>();

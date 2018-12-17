@@ -23,7 +23,7 @@ add_library(audio_core STATIC
     sink.h
     time_stretch.cpp
     time_stretch.h
-    $<$<BOOL:${FFMPEG_FOUND}>:hle/ffmpeg_decoder.cpp hle/ffmpeg_decoder.h hle/ffmpeg_dl.h>
+    $<$<BOOL:${FFMPEG_FOUND}>:hle/ffmpeg_decoder.cpp hle/ffmpeg_decoder.h hle/ffmpeg_dl.cpp hle/ffmpeg_dl.h>
 )
 
 create_target_directory_groups(audio_core)

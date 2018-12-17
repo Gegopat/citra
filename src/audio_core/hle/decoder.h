@@ -36,8 +36,8 @@ struct BinaryResponse {
     enum_le<DecoderCodec> codec{
         DecoderCodec::None}; // This could be something else. until now only 0x1 was observed here
     enum_le<DecoderCommand> cmd{DecoderCommand::Init};
-    u32_le unknown1{}, unknown2{},
-        num_channels{}; // This is a guess, so far we only observed 2 here
+    u32_le unknown1{}, unknown2{};
+    u32_le num_channels{}; // This is a guess, so far we only observed 2 here
     u32_le size{}, unknown3{}, unknown4{},
         num_samples{}; // This is a guess, so far we only observed 1024 here
 };
@@ -46,7 +46,6 @@ static_assert(sizeof(BinaryResponse) == 32, "Unexpected struct size for BinaryRe
 class DecoderBase {
 public:
     virtual ~DecoderBase();
-
     virtual std::optional<BinaryResponse> ProcessRequest(const BinaryRequest& request) = 0;
 };
 
