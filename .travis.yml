@@ -51,12 +51,7 @@ matrix:
     after_success: "./.travis/linux-mingw/upload.sh"
     cache: ccache
 before_deploy:
-  if ! [[ $TAG_CREATED ]]; then
-    export TAG_CREATED="1" &&
-    git config --local user.name "Valentin Vanelslande"
-    git config --local user.email "valentinvanelslandeacnl@gmail.com"
-    git tag "$(git log --format=%h -1)"
-  fi
+  - sh .travis/branch.sh
 deploy:
   provider: releases
   api_key:

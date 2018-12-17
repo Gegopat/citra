@@ -132,8 +132,8 @@ int main(int argc, char** argv) {
         PrintHelp(argv[0]);
         return -1;
     }
-    if (port > 65535) {
-        std::cout << "port needs to be in the range 0 - 65535!\n\n";
+    if (port == 0 || port > 65535) {
+        std::cout << "port needs to be in the range 1 - 65535!\n\n";
         PrintHelp(argv[0]);
         return -1;
     }
