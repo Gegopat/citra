@@ -349,7 +349,6 @@ RoomMember::RoomMember() : room_member_impl{std::make_unique<RoomMemberImpl>()} 
     room_member_impl->client.set_close_handler([this](ConnectionHandle connection) {
         auto connection_ptr{room_member_impl->client.get_con_from_hdl(connection)};
         if (connection_ptr->get_local_close_reason() == "Leaving") {
-            LOG_DEBUG(Log, "leaving");
             room_member_impl->client.stop();
             return;
         }
@@ -363,11 +362,12 @@ RoomMember::RoomMember() : room_member_impl{std::make_unique<RoomMemberImpl>()} 
             room_member_impl->client.stop();
             return;
         }
-        LOG_DEBUG(Log, "{}", connection_ptr->get_remote_close_reason());
-        if (room_member_impl->state == State::Joined) {
-            room_member_impl->SetError(Error::LostConnection);
-            room_member_impl->client.stop();
-        }
+        room_member_impl->SetError(Error::LostConnection);
+        room_member_impl->client.stop();
+    });
+    room_member_impl->client.set_fail_handler([this](ConnectionHandle connection) {
+        room_member_impl->SetError(Error::CouldNotConnect);
+        room_member_impl->client.stop();
     });
     room_member_impl->client.set_message_handler(
         [this](ConnectionHandle connection, Client::message_ptr msg) {
@@ -376,8 +376,7 @@ RoomMember::RoomMember() : room_member_impl{std::make_unique<RoomMemberImpl>()} 
 }
 
 RoomMember::~RoomMember() {
-    if (IsConnected())
-        Leave();
+    Leave();
 }
 
 RoomMember::State RoomMember::GetState() const {
@@ -405,8 +404,7 @@ void RoomMember::Join(const std::string& nickname, u64 console_id, const char* s
                       u16 server_port, const MacAddress& preferred_mac,
                       const std::string& password) {
     // If the member is connected, kill the connection first
-    if (IsConnected())
-        Leave();
+    Leave();
     room_member_impl->SetState(State::Joining);
     room_member_impl->client.set_open_handler([=](ConnectionHandle) {
         room_member_impl->nickname = nickname;
@@ -417,7 +415,6 @@ void RoomMember::Join(const std::string& nickname, u64 console_id, const char* s
     auto connection{room_member_impl->client.get_connection(
         fmt::format("ws://{}:{}", server_addr, server_port), ec)};
     if (ec) {
-        LOG_ERROR(Network, "{}", ec.message());
         room_member_impl->SetState(State::Idle);
         room_member_impl->SetError(Error::CouldNotConnect);
         return;
@@ -526,8 +523,9 @@ void RoomMember::Unbind(CallbackHandle<T> handle) {
 }
 
 void RoomMember::Leave() {
-    room_member_impl->client.close(room_member_impl->connection->get_handle(),
-                                   websocketpp::close::status::normal, "Leaving");
+    if (room_member_impl->client.is_listening())
+        room_member_impl->client.close(room_member_impl->connection->get_handle(),
+                                       websocketpp::close::status::normal, "Leaving");
 }
 
 template void RoomMember::Unbind(CallbackHandle<WifiPacket>);
