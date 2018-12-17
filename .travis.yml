@@ -54,6 +54,14 @@ before_deploy:
 - git config --local user.name "Valentin Vanelslande"
 - git config --local user.email "valentinvanelslandeacnl@gmail.com"
 - git tag "$(git log --format=%h -1)"
+before_deploy:
+  if ! [[ $JOB ]]; then
+    export JOB="1.$TRAVIS_BUILD_NUMBER" &&
+    git config --local user.name "Valentin Vanelslande"
+    git config --local user.email "valentinvanelslandeacnl@gmail.com"
+    git tag "$(git log --format=%h -1)"
+  fi
+
 deploy:
   provider: releases
   api_key:
@@ -62,7 +70,8 @@ deploy:
   file: "artifacts/*"
   skip_cleanup: true
   on:
-    tags: true
+    repo: valentinvanelslande/citra
+    branch: master
 
 notifications:
   webhooks:
