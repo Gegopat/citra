@@ -68,8 +68,3 @@ notifications:
   webhooks:
     urls:
       - https://citra-valentin-api.glitch.me/travis
-    on_success: never
-    on_failure: never
-    on_start: always
-    on_cancel: never
-    on_error: never
