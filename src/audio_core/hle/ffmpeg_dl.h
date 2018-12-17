@@ -18,9 +18,9 @@ template <typename T>
 struct FuncDL {
     FuncDL() = default;
 
-    FuncDL(void* dll, const char* name) {
+    FuncDL(HMODULE dll, const char* name) {
         if (dll)
-            ptr_function = reinterpret_cast<T*>(GetProcAddress((HMODULE)dll, name));
+            ptr_function = reinterpret_cast<T*>(GetProcAddress(dll, name));
     }
 
     operator T*() const {
