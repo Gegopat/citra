@@ -13,8 +13,10 @@
 namespace {
 
 struct LibraryDeleter {
-    void operator()(void* h) const {
-        if (h != nullptr)
+    using pointer = HMODULE;
+
+    void operator()(pointer h) const {
+        if (h)
             FreeLibrary(h);
     }
 };
@@ -44,8 +46,7 @@ FuncDL<void(AVCodecParserContext*)> av_parser_close_dl;
 
 bool InitFFmpegDL() {
     auto dll_path{FileUtil::GetUserPath(FileUtil::UserPath::DLLDir)};
-    if (!FileUtil::CreateDir(dll_path))
-        return false;
+    FileUtil::CreateDir(dll_path);
     SetDllDirectoryW(Common::UTF8ToUTF16W(dll_path).c_str());
     dll_util.reset(LoadLibrary("avutil-56.dll"));
     if (!dll_util) {
