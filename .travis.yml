@@ -51,17 +51,12 @@ matrix:
     after_success: "./.travis/linux-mingw/upload.sh"
     cache: ccache
 before_deploy:
-- git config --local user.name "Valentin Vanelslande"
-- git config --local user.email "valentinvanelslandeacnl@gmail.com"
-- git tag "$(git log --format=%h -1)"
-before_deploy:
-  if ! [[ $JOB ]]; then
-    export JOB="1.$TRAVIS_BUILD_NUMBER" &&
+  if ! [[ $TAG_CREATED ]]; then
+    export TAG_CREATED="1" &&
     git config --local user.name "Valentin Vanelslande"
     git config --local user.email "valentinvanelslandeacnl@gmail.com"
     git tag "$(git log --format=%h -1)"
   fi
-
 deploy:
   provider: releases
   api_key:
@@ -72,13 +67,3 @@ deploy:
   on:
     repo: valentinvanelslande/citra
     branch: master
-
-notifications:
-  webhooks:
-    urls:
-      - https://citra-valentin-api.glitch.me/travis
-    on_success: nevr
-    on_failure: never
-    on_start: always
-    on_cancel: never
-    on_error: never
