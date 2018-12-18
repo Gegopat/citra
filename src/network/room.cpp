@@ -114,7 +114,7 @@ struct Room::RoomImpl {
 
     /**
      * Parses and answers a room join request from a client.
-     * Validates the uniqueness of the nicknamename and assigns the MAC address
+     * Validates the uniqueness of the nickname and assigns the MAC address
      * that the client will use for the remainder of the connection.
      */
     void HandleJoinRequest(const ENetEvent* event);
