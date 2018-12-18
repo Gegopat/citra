@@ -4,7 +4,7 @@ matrix:
   include:
   - if: repo = valentinvanelslande/citra AND branch = master AND type = push
     os: linux
-    env: NAME="tag"
+    env: NAME="Tag"
     sudo: false
     dist: trusty
     script: "./.travis/tag.sh"
@@ -16,7 +16,7 @@ matrix:
     install: "./.travis/clang-format/deps.sh"
     script: "./.travis/clang-format/build.sh"
   - os: linux
-    env: NAME="linux build"
+    env: NAME="Linux build"
     sudo: required
     dist: trusty
     services: docker
@@ -29,7 +29,7 @@ matrix:
     after_success: "./.travis/linux/upload.sh"
     cache: ccache
   - os: osx
-    env: NAME="macos build"
+    env: NAME="macOS build"
     sudo: false
     osx_image: xcode10
     install: "./.travis/macos/deps.sh"
@@ -37,7 +37,7 @@ matrix:
     after_success: "./.travis/macos/upload.sh"
     cache: ccache
   - os: linux
-    env: NAME="linux build (frozen versions of dependencies)"
+    env: NAME="Linux build (frozen versions of dependencies)"
     sudo: required
     dist: trusty
     services: docker
