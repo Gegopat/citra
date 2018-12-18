@@ -849,7 +849,7 @@ Common::WebResult Room::RoomImpl::MakeRequest(const std::string& method, const s
         LOG_ERROR(Network, "Request returned wrong content: {}", content_type->second);
         return Common::WebResult{Common::WebResult::Code::WrongContent, "Wrong content"};
     }
-    if (response->body == "You need to open both TCP & UDP ports to create a public room.")
+    if (response->body.find("TCP") != std::string::npos)
         return Common::WebResult{Common::WebResult::Code::HttpError, response->body};
     return Common::WebResult{Common::WebResult::Code::Success, "", response->body};
 }
