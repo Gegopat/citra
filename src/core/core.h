@@ -63,7 +63,7 @@ class System {
 public:
     ~System();
 
-    void Init1();
+    void InitNetworkAndMovie();
 
     /**
      * Gets the instance of the System singleton class.

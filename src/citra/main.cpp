@@ -1620,8 +1620,8 @@ int main(int argc, char* argv[]) {
     ToggleConsole();
     config.LogErrors();
     Settings::LogSettings();
-    // Initialize ENet and movie system
-    system.Init1();
+    // Initialize network and movie system
+    system.InitNetworkAndMovie();
     // Register types to use in slots and signals
     qRegisterMetaType<std::size_t>("std::size_t");
     qRegisterMetaType<std::string>("std::string");

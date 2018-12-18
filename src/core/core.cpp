@@ -37,7 +37,7 @@ namespace Core {
 
 System System::s_instance;
 
-void System::Init1() {
+void System::InitNetworkAndMovie() {
     if (enet_initialize() != 0) {
         LOG_ERROR(Network, "Error when initializing ENet");
         return;
