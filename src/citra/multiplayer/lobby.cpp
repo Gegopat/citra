@@ -70,7 +70,7 @@ QString Lobby::PasswordPrompt() {
 }
 
 void Lobby::OnExpandRoom(const QModelIndex& index) {
-    auto member_index{proxy->index(index.row(), Column::MEMBER)};
+    auto member_index{proxy->index(index.row(), Column::Members)};
     auto member_list{proxy->data(member_index, LobbyItemMemberList::MemberListRole).toList()};
 }
 
@@ -194,7 +194,7 @@ bool LobbyFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& s
     // Filter by search parameters
     if (!filter_search.isEmpty()) {
         auto room_name{sourceModel()->index(sourceRow, Column::RoomName, sourceParent)};
-        auto host_name{sourceModel()->index(sourceRow, Column::Host, sourceParent)};
+        auto host_name{sourceModel()->index(sourceRow, Column::Creator, sourceParent)};
         bool room_name_match{sourceModel()
                                  ->data(room_name, LobbyItemName::NameRole)
                                  .toString()
