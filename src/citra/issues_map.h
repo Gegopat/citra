@@ -58,10 +58,10 @@ static const std::unordered_map<u64, std::vector<Issue>> issues_map{{
     {0x00040000001B5100, {Issue{"Needs Nintendo Network support"}}},
 
     // Pokémon X
-    {0x0004000000055D00, {GitHubIssue("citra-emu/citra", 3009)}},
+    {0x0004000000055D00, {Issue{"Needs Nintendo Network support"}}},
 
     // Pokémon Y
-    {0x0004000000055E00, {GitHubIssue("citra-emu/citra", 3009)}},
+    {0x0004000000055E00, {Issue{"Needs Nintendo Network support"}}},
 
     // Test Program (CTRAging)
     {0x000400000F980000, {Issue{"Crashes Citra when booting"}}},
