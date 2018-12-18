@@ -7,20 +7,18 @@
 #include <mutex>
 #include <set>
 #include <thread>
-#include <websocketpp/client.hpp>
-#include <websocketpp/config/asio_no_tls_client.hpp>
+#include <enet/enet.h>
 #include "common/assert.h"
-#include "network/message.h"
+#include "network/packet.h"
 #include "network/room_member.h"
-
-using Client = websocketpp::client<websocketpp::config::asio_client>;
-using ConnectionHandle = websocketpp::connection_hdl;
 
 namespace Network {
 
+constexpr u32 ConnectionTimeoutMs{5000};
+
 struct RoomMember::RoomMemberImpl {
-    Client client;
-    Client::connection_ptr connection;
+    ENetHost* client; ///< ENet network interface.
+    ENetPeer* server; ///< The server peer the client is connected to
 
     /// Information about the clients connected to the same room as us.
     MemberList member_information;
@@ -36,10 +34,15 @@ struct RoomMember::RoomMemberImpl {
     void SetState(const State new_state);
     void SetError(const Error new_error);
     bool IsConnected() const;
-    void HandleMessage(ConnectionHandle, Client::message_ptr msg);
 
     std::string nickname;   ///< The nickname of this member.
     MacAddress mac_address; ///< The mac_address of this member.
+
+    std::mutex network_mutex; ///< Mutex that controls access to the client variable.
+    std::unique_ptr<std::thread>
+        loop_thread;             ///< Thread that receives and dispatches network packets
+    std::mutex send_list_mutex;  ///< Mutex that controls access to the send_list variable.
+    std::list<Packet> send_list; ///< A list that stores all packets to send the async
 
     template <typename T>
     using CallbackSet = std::set<CallbackHandle<T>>;
@@ -61,16 +64,16 @@ struct RoomMember::RoomMemberImpl {
         CallbackSet<Room::BanList> callback_set_ban_list;
     };
 
-    Callbacks callbacks; ///< All CallbackSets to all messages
+    Callbacks callbacks; ///< All CallbackSets to all events
 
     void MemberLoop();
     void StartLoop();
 
     /**
      * Sends data to the room. It will be send on channel 0 with flag RELIABLE
-     * @param message The data to send
+     * @param packet The data to send
      */
-    void Send(Message&& message);
+    void Send(Packet&& packet);
 
     /**
      * Sends a request to the server, asking for permission to join a room with the specified
@@ -84,27 +87,45 @@ struct RoomMember::RoomMemberImpl {
     void SendJoinRequest(const std::string& nickname, u64 console_id,
                          const MacAddress& preferred_mac = BroadcastMac,
                          const std::string& password = "");
-
-    /// Extracts a MAC address from a received message and sends the current program.
-    void HandleJoinMessage(const std::vector<u8>& data);
-
-    /// Extracts RoomInformation and MemberInformation from a received message.
-    void HandleRoomInformationMessage(const std::vector<u8>& data);
-
-    /// Extracts a WifiPacket from a received message.
-    void HandleWifiPacket(const std::vector<u8>& data);
-
-    /// Extracts a chat entry from a received message and adds it to the chat queue.
-    void HandleChatMessage(const std::vector<u8>& data);
+    /**
+     * Extracts a MAC address from a received ENet packet.
+     * @param event The ENet event that was received.
+     */
+    void HandleJoinPacket(const ENetEvent* event);
 
     /**
-     * Extracts a system message entry from a received message and adds it to the system message
-     * queue.
+     * Extracts RoomInformation and MemberInformation from a received ENet packet.
+     * @param event The ENet event that was received.
      */
-    void HandleStatusMessageMessage(const std::vector<u8>& data);
+    void HandleRoomInformationPacket(const ENetEvent* event);
 
-    /// Extracts a ban list request response from a received message.
-    void HandleModBanListResponseMessage(const std::vector<u8>& data);
+    /**
+     * Extracts a WifiPacket from a received ENet packet.
+     * @param event The  ENet event that was received.
+     */
+    void HandleWifiPacket(const ENetEvent* event);
+
+    /**
+     * Extracts a chat entry from a received ENet packet and adds it to the chat queue.
+     * @param event The ENet event that was received.
+     */
+    void HandleChatPacket(const ENetEvent* event);
+
+    /**
+     * Extracts a system message entry from a received ENet packet and adds it to the system message
+     * queue.
+     * @param event The ENet event that was received.
+     */
+    void HandleStatusMessagePacket(const ENetEvent* event);
+
+    /**
+     * Extracts a ban list request response from a received ENet packet.
+     * @param event The ENet event that was received.
+     */
+    void HandleModBanListResponsePacket(const ENetEvent* event);
+
+    /// Disconnects the RoomMember from the Room
+    void Disconnect();
 
     template <typename T>
     void Invoke(const T& data);
@@ -129,159 +150,236 @@ bool RoomMember::RoomMemberImpl::IsConnected() const {
     return state == State::Joining || state == State::Joined;
 }
 
-void RoomMember::RoomMemberImpl::HandleMessage(ConnectionHandle, Client::message_ptr msg) {
-    auto s{msg->get_payload()};
-    std::vector<u8> data(s.size());
-    std::memcpy(&data[0], &s[0], s.size());
-    switch (data[0]) {
-    case IdWifiPacket:
-        HandleWifiPacket(data);
-        break;
-    case IdChatMessage:
-        HandleChatMessage(data);
-        break;
-    case IdStatusMessage:
-        HandleStatusMessageMessage(data);
-        break;
-    case IdRoomInformation:
-        HandleRoomInformationMessage(data);
-        break;
-    case IdJoinSuccess:
-        // The join request was successful, we're now in the room.
-        // If we joined successfully, there must be at least one client in the room: us.
-        ASSERT_MSG(member_information.size() > 0, "We have not yet received member information.");
-        HandleJoinMessage(data);
-        SetState(State::Joined);
-        break;
-    case IdModBanListResponse:
-        HandleModBanListResponseMessage(data);
-        break;
-    case IdInvalidNickname:
-        SetState(State::Idle);
-        SetError(Error::InvalidNickname);
-        break;
-    case IdMacCollision:
-        SetState(State::Idle);
-        SetError(Error::MacCollision);
-        break;
-    case IdConsoleIdCollision:
-        SetState(State::Idle);
-        SetError(Error::ConsoleIdCollision);
-        break;
-    case IdVersionMismatch:
-        SetState(State::Idle);
-        SetError(Error::WrongVersion);
-        break;
-    case IdWrongPassword:
-        SetState(State::Idle);
-        SetError(Error::WrongPassword);
-        break;
-    case IdModPermissionDenied:
-        SetError(Error::PermissionDenied);
-        break;
-    case IdModNoSuchUser:
-        SetError(Error::NoSuchUser);
-        break;
+void RoomMember::RoomMemberImpl::MemberLoop() {
+    // Receive packets while the connection is open
+    while (IsConnected()) {
+        std::lock_guard lock{network_mutex};
+        ENetEvent event;
+        if (enet_host_service(client, &event, 100) > 0) {
+            switch (event.type) {
+            case ENET_EVENT_TYPE_RECEIVE:
+                switch (event.packet->data[0]) {
+                case IdWifiPacket:
+                    HandleWifiPacket(&event);
+                    break;
+                case IdChatMessage:
+                    HandleChatPacket(&event);
+                    break;
+                case IdStatusMessage:
+                    HandleStatusMessagePacket(&event);
+                    break;
+                case IdRoomInformation:
+                    HandleRoomInformationPacket(&event);
+                    break;
+                case IdJoinSuccess:
+                    // The join request was successful, we're now in the room.
+                    // If we joined successfully, there must be at least one client in the room: us.
+                    ASSERT_MSG(member_information.size() > 0,
+                               "We have not yet received member information.");
+                    HandleJoinPacket(&event);
+                    SetState(State::Joined);
+                    break;
+                case IdModBanListResponse:
+                    HandleModBanListResponsePacket(&event);
+                    break;
+                case IdRoomIsFull:
+                    SetState(State::Idle);
+                    SetError(Error::RoomIsFull);
+                    break;
+                case IdInvalidNickname:
+                    SetState(State::Idle);
+                    SetError(Error::InvalidNickname);
+                    break;
+                case IdMacCollision:
+                    SetState(State::Idle);
+                    SetError(Error::MacCollision);
+                    break;
+                case IdConsoleIdCollision:
+                    SetState(State::Idle);
+                    SetError(Error::ConsoleIdCollision);
+                    break;
+                case IdVersionMismatch:
+                    SetState(State::Idle);
+                    SetError(Error::WrongVersion);
+                    break;
+                case IdWrongPassword:
+                    SetState(State::Idle);
+                    SetError(Error::WrongPassword);
+                    break;
+                case IdCloseRoom:
+                    SetState(State::Idle);
+                    SetError(Error::LostConnection);
+                    break;
+                case IdHostKicked:
+                    SetState(State::Idle);
+                    SetError(Error::HostKicked);
+                    break;
+                case IdHostBanned:
+                    SetState(State::Idle);
+                    SetError(Error::HostBanned);
+                    break;
+                case IdModPermissionDenied:
+                    SetError(Error::PermissionDenied);
+                    break;
+                case IdModNoSuchUser:
+                    SetError(Error::NoSuchUser);
+                    break;
+                }
+                enet_packet_destroy(event.packet);
+                break;
+            case ENET_EVENT_TYPE_DISCONNECT:
+                if (state == State::Joined) {
+                    SetState(State::Idle);
+                    SetError(Error::LostConnection);
+                }
+                break;
+            }
+        }
+        {
+            std::lock_guard lock{send_list_mutex};
+            for (const auto& packet : send_list) {
+                auto enet_packet{enet_packet_create(packet.GetData(), packet.GetDataSize(),
+                                                    ENET_PACKET_FLAG_RELIABLE)};
+                enet_peer_send(server, 0, enet_packet);
+            }
+            enet_host_flush(client);
+            send_list.clear();
+        }
     }
+    Disconnect();
 }
 
-void RoomMember::RoomMemberImpl::Send(Message&& message) {
-    client.send(connection->get_handle(), message.GetData(), message.GetDataSize(),
-                websocketpp::frame::opcode::binary);
+void RoomMember::RoomMemberImpl::StartLoop() {
+    loop_thread = std::make_unique<std::thread>(&RoomMember::RoomMemberImpl::MemberLoop, this);
+}
+
+void RoomMember::RoomMemberImpl::Send(Packet&& packet) {
+    std::lock_guard lock{send_list_mutex};
+    send_list.push_back(std::move(packet));
 }
 
 void RoomMember::RoomMemberImpl::SendJoinRequest(const std::string& nickname, u64 console_id,
                                                  const MacAddress& preferred_mac,
                                                  const std::string& password) {
-    Message message;
-    message << static_cast<u8>(IdJoinRequest);
-    message << nickname;
-    message << console_id;
-    message << preferred_mac;
-    message << NetworkVersion;
-    message << password;
-    Send(std::move(message));
+    Packet packet;
+    packet << static_cast<u8>(IdJoinRequest);
+    packet << nickname;
+    packet << console_id;
+    packet << preferred_mac;
+    packet << NetworkVersion;
+    packet << password;
+    Send(std::move(packet));
 }
 
-void RoomMember::RoomMemberImpl::HandleRoomInformationMessage(const std::vector<u8>& data) {
-    Message message;
-    message.Append(data.data(), data.size());
+void RoomMember::RoomMemberImpl::HandleRoomInformationPacket(const ENetEvent* event) {
+    Packet packet;
+    packet.Append(event->packet->data, event->packet->dataLength);
     // Ignore the first byte, which is the message type.
-    message.IgnoreBytes(sizeof(u8)); // Ignore the message type
-    message >> room_information.name;
-    message >> room_information.description;
-    message >> room_information.port;
-    message >> room_information.creator;
+    packet.IgnoreBytes(sizeof(u8)); // Ignore the message type
+    packet >> room_information.name;
+    packet >> room_information.description;
+    packet >> room_information.max_members;
+    packet >> room_information.port;
+    packet >> room_information.creator;
     u32 num_members;
-    message >> num_members;
+    packet >> num_members;
     member_information.resize(num_members);
     for (auto& member : member_information) {
-        message >> member.nickname;
-        message >> member.mac_address;
-        message >> member.program;
+        packet >> member.nickname;
+        packet >> member.mac_address;
+        packet >> member.program;
     }
     Invoke(room_information);
 }
 
-void RoomMember::RoomMemberImpl::HandleJoinMessage(const std::vector<u8>& data) {
-    Message message;
-    message.Append(data.data(), data.size());
+void RoomMember::RoomMemberImpl::HandleJoinPacket(const ENetEvent* event) {
+    Packet packet;
+    packet.Append(event->packet->data, event->packet->dataLength);
     // Ignore the first byte, which is the message type.
-    message.IgnoreBytes(sizeof(u8)); // Ignore the message type
-    // Parse the MAC address from the message
-    message >> mac_address;
+    packet.IgnoreBytes(sizeof(u8)); // Ignore the message type
+    // Parse the MAC address from the packet
+    packet >> mac_address;
 }
 
-void RoomMember::RoomMemberImpl::HandleWifiPacket(const std::vector<u8>& data) {
+void RoomMember::RoomMemberImpl::HandleWifiPacket(const ENetEvent* event) {
     WifiPacket wifi_packet;
-    Message message;
-    message.Append(data.data(), data.size());
+    Packet packet;
+    packet.Append(event->packet->data, event->packet->dataLength);
     // Ignore the first byte, which is the message type.
-    message.IgnoreBytes(sizeof(u8)); // Ignore the message type
-    // Parse the WifiPacket from the message
+    packet.IgnoreBytes(sizeof(u8)); // Ignore the message type
+    // Parse the WifiPacket from the packet
     u8 frame_type;
-    message >> frame_type;
+    packet >> frame_type;
     WifiPacket::PacketType type{static_cast<WifiPacket::PacketType>(frame_type)};
     wifi_packet.type = type;
-    message >> wifi_packet.channel;
-    message >> wifi_packet.transmitter_address;
-    message >> wifi_packet.destination_address;
-    message >> wifi_packet.data;
+    packet >> wifi_packet.channel;
+    packet >> wifi_packet.transmitter_address;
+    packet >> wifi_packet.destination_address;
+    packet >> wifi_packet.data;
     Invoke<WifiPacket>(wifi_packet);
 }
 
-void RoomMember::RoomMemberImpl::HandleChatMessage(const std::vector<u8>& data) {
-    Message message;
-    message.Append(data.data(), data.size());
+void RoomMember::RoomMemberImpl::HandleChatPacket(const ENetEvent* event) {
+    Packet packet;
+    packet.Append(event->packet->data, event->packet->dataLength);
     // Ignore the first byte, which is the message type.
-    message.IgnoreBytes(sizeof(u8));
+    packet.IgnoreBytes(sizeof(u8));
     ChatEntry chat_entry;
-    message >> chat_entry.nickname;
-    message >> chat_entry.message;
+    packet >> chat_entry.nickname;
+    packet >> chat_entry.message;
     Invoke<ChatEntry>(chat_entry);
 }
 
-void RoomMember::RoomMemberImpl::HandleStatusMessageMessage(const std::vector<u8>& data) {
-    Message message;
-    message.Append(data.data(), data.size());
+void RoomMember::RoomMemberImpl::HandleStatusMessagePacket(const ENetEvent* event) {
+    Packet packet;
+    packet.Append(event->packet->data, event->packet->dataLength);
     // Ignore the first byte, which is the message type.
-    message.IgnoreBytes(sizeof(u8));
+    packet.IgnoreBytes(sizeof(u8));
     StatusMessageEntry status_message_entry;
     u8 type;
-    message >> type;
+    packet >> type;
     status_message_entry.type = static_cast<StatusMessageTypes>(type);
-    message >> status_message_entry.nickname;
+    packet >> status_message_entry.nickname;
     Invoke<StatusMessageEntry>(status_message_entry);
 }
 
-void RoomMember::RoomMemberImpl::HandleModBanListResponseMessage(const std::vector<u8>& data) {
-    Message message;
-    message.Append(data.data(), data.size());
+void RoomMember::RoomMemberImpl::HandleModBanListResponsePacket(const ENetEvent* event) {
+    Packet packet;
+    packet.Append(event->packet->data, event->packet->dataLength);
     // Ignore the first byte, which is the message type.
-    message.IgnoreBytes(sizeof(u8));
+    packet.IgnoreBytes(sizeof(u8));
     Room::BanList ban_list;
-    message >> ban_list;
+    packet >> ban_list;
     Invoke<Room::BanList>(ban_list);
+}
+
+void RoomMember::RoomMemberImpl::Disconnect() {
+    member_information.clear();
+    room_information.name.clear();
+    room_information.description.clear();
+    room_information.creator.clear();
+    room_information.max_members = 0;
+    room_information.port = 0;
+    if (!server)
+        return;
+    enet_peer_disconnect(server, 0);
+    ENetEvent event;
+    while (enet_host_service(client, &event, ConnectionTimeoutMs) > 0) {
+        switch (event.type) {
+        case ENET_EVENT_TYPE_RECEIVE:
+            enet_packet_destroy(event.packet); // Ignore all incoming data
+            break;
+        case ENET_EVENT_TYPE_DISCONNECT:
+            server = nullptr;
+            return;
+        case ENET_EVENT_TYPE_NONE:
+        case ENET_EVENT_TYPE_CONNECT:
+            break;
+        }
+    }
+    // Didn't disconnect gracefully force disconnect
+    enet_peer_reset(server);
+    server = nullptr;
 }
 
 template <>
@@ -342,41 +440,11 @@ RoomMember::CallbackHandle<T> RoomMember::RoomMemberImpl::Bind(
 }
 
 // RoomMember
-RoomMember::RoomMember() : room_member_impl{std::make_unique<RoomMemberImpl>()} {
-    room_member_impl->client.clear_access_channels(websocketpp::log::alevel::all);
-    room_member_impl->client.clear_error_channels(websocketpp::log::elevel::all);
-    room_member_impl->client.init_asio();
-    room_member_impl->client.set_close_handler([this](ConnectionHandle connection) {
-        auto connection_ptr{room_member_impl->client.get_con_from_hdl(connection)};
-        if (connection_ptr->get_local_close_reason() == "Leaving") {
-            LOG_DEBUG(Log, "leaving");
-            room_member_impl->client.stop();
-            return;
-        }
-        auto reason{connection_ptr->get_remote_close_reason()};
-        if (reason == "Kicked") {
-            room_member_impl->SetError(Error::HostKicked);
-            room_member_impl->client.stop();
-            return;
-        } else if (reason == "Banned") {
-            room_member_impl->SetError(Error::HostBanned);
-            room_member_impl->client.stop();
-            return;
-        }
-        LOG_DEBUG(Log, "{}", connection_ptr->get_remote_close_reason());
-        if (room_member_impl->state == State::Joined) {
-            room_member_impl->SetError(Error::LostConnection);
-            room_member_impl->client.stop();
-        }
-    });
-    room_member_impl->client.set_message_handler(
-        [this](ConnectionHandle connection, Client::message_ptr msg) {
-            room_member_impl->HandleMessage(connection, msg);
-        });
-}
+RoomMember::RoomMember() : room_member_impl{std::make_unique<RoomMemberImpl>()} {}
 
 RoomMember::~RoomMember() {
-    if (IsConnected())
+    ASSERT_MSG(!IsConnected(), "RoomMember is being destroyed while connected");
+    if (room_member_impl->loop_thread)
         Leave();
 }
 
@@ -405,32 +473,38 @@ void RoomMember::Join(const std::string& nickname, u64 console_id, const char* s
                       u16 server_port, const MacAddress& preferred_mac,
                       const std::string& password) {
     // If the member is connected, kill the connection first
-    if (IsConnected())
+    if (room_member_impl->loop_thread && room_member_impl->loop_thread->joinable())
         Leave();
+    // If the thread isn't running but the ptr still exists, reset it
+    else if (room_member_impl->loop_thread)
+        room_member_impl->loop_thread.reset();
+    if (!room_member_impl->client) {
+        room_member_impl->client = enet_host_create(nullptr, 1, NumChannels, 0, 0);
+        ASSERT_MSG(room_member_impl->client, "Couldn't create client");
+    }
     room_member_impl->SetState(State::Joining);
-    room_member_impl->client.set_open_handler([=](ConnectionHandle) {
-        room_member_impl->nickname = nickname;
-        room_member_impl->SendJoinRequest(nickname, console_id, preferred_mac, password);
-        SetProgram(room_member_impl->current_program);
-    });
-    std::error_code ec;
-    auto connection{room_member_impl->client.get_connection(
-        fmt::format("ws://{}:{}", server_addr, server_port), ec)};
-    if (ec) {
-        LOG_ERROR(Network, "{}", ec.message());
+    ENetAddress address;
+    enet_address_set_host(&address, server_addr);
+    address.port = server_port;
+    room_member_impl->server =
+        enet_host_connect(room_member_impl->client, &address, NumChannels, 0);
+    if (!room_member_impl->server) {
         room_member_impl->SetState(State::Idle);
-        room_member_impl->SetError(Error::CouldNotConnect);
+        room_member_impl->SetError(Error::UnknownError);
         return;
     }
-    room_member_impl->connection = room_member_impl->client.connect(connection);
-    std::thread([this] {
-        room_member_impl->client.run();
-        room_member_impl->connection.reset();
-        room_member_impl->client.reset();
+    ENetEvent event;
+    int net{enet_host_service(room_member_impl->client, &event, ConnectionTimeoutMs)};
+    if (net > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
+        room_member_impl->nickname = nickname;
+        room_member_impl->StartLoop();
+        room_member_impl->SendJoinRequest(nickname, console_id, preferred_mac, password);
+        SetProgram(room_member_impl->current_program);
+    } else {
+        enet_peer_disconnect(room_member_impl->server, 0);
         room_member_impl->SetState(State::Idle);
-        room_member_impl->Invoke(RoomInformation{});
-    })
-        .detach();
+        room_member_impl->SetError(Error::CouldNotConnect);
+    }
 }
 
 bool RoomMember::IsConnected() const {
@@ -438,31 +512,31 @@ bool RoomMember::IsConnected() const {
 }
 
 void RoomMember::SendWifiPacket(const WifiPacket& wifi_packet) {
-    Message message;
-    message << static_cast<u8>(IdWifiPacket);
-    message << static_cast<u8>(wifi_packet.type);
-    message << wifi_packet.channel;
-    message << wifi_packet.transmitter_address;
-    message << wifi_packet.destination_address;
-    message << wifi_packet.data;
-    room_member_impl->Send(std::move(message));
+    Packet packet;
+    packet << static_cast<u8>(IdWifiPacket);
+    packet << static_cast<u8>(wifi_packet.type);
+    packet << wifi_packet.channel;
+    packet << wifi_packet.transmitter_address;
+    packet << wifi_packet.destination_address;
+    packet << wifi_packet.data;
+    room_member_impl->Send(std::move(packet));
 }
 
 void RoomMember::SendChatMessage(const std::string& message) {
-    Message smessage;
-    smessage << static_cast<u8>(IdChatMessage);
-    smessage << message;
-    room_member_impl->Send(std::move(smessage));
+    Packet packet;
+    packet << static_cast<u8>(IdChatMessage);
+    packet << message;
+    room_member_impl->Send(std::move(packet));
 }
 
 void RoomMember::SetProgram(const std::string& program) {
     room_member_impl->current_program = program;
     if (!IsConnected())
         return;
-    Message message;
-    message << static_cast<u8>(IdSetProgram);
-    message << program;
-    room_member_impl->Send(std::move(message));
+    Packet packet;
+    packet << static_cast<u8>(IdSetProgram);
+    packet << program;
+    room_member_impl->Send(std::move(packet));
 }
 
 void RoomMember::SendModerationRequest(RoomMessageTypes type, const std::string& nickname) {
@@ -470,18 +544,18 @@ void RoomMember::SendModerationRequest(RoomMessageTypes type, const std::string&
                "Type isn't a moderation request");
     if (!IsConnected())
         return;
-    Message message;
-    message << static_cast<u8>(type);
-    message << nickname;
-    room_member_impl->Send(std::move(message));
+    Packet packet;
+    packet << static_cast<u8>(type);
+    packet << nickname;
+    room_member_impl->Send(std::move(packet));
 }
 
 void RoomMember::RequestBanList() {
     if (!IsConnected())
         return;
-    Message message;
-    message << static_cast<u8>(IdModGetBanList);
-    room_member_impl->Send(std::move(message));
+    Packet packet;
+    packet << static_cast<u8>(IdModGetBanList);
+    room_member_impl->Send(std::move(packet));
 }
 
 RoomMember::CallbackHandle<RoomMember::State> RoomMember::BindOnStateChanged(
@@ -526,8 +600,12 @@ void RoomMember::Unbind(CallbackHandle<T> handle) {
 }
 
 void RoomMember::Leave() {
-    room_member_impl->client.close(room_member_impl->connection->get_handle(),
-                                   websocketpp::close::status::normal, "Leaving");
+    room_member_impl->SetState(State::Idle);
+    room_member_impl->loop_thread->join();
+    room_member_impl->loop_thread.reset();
+    enet_host_destroy(room_member_impl->client);
+    room_member_impl->client = nullptr;
+    room_member_impl->Invoke(RoomInformation{});
 }
 
 template void RoomMember::Unbind(CallbackHandle<WifiPacket>);

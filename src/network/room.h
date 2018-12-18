@@ -14,14 +14,17 @@
 
 namespace Network {
 
-constexpr u32 NetworkVersion{0xFF05}; ///< The network version
+constexpr u32 NetworkVersion{0xFF04}; ///< The network version
 constexpr u16 DefaultRoomPort{24872};
 constexpr u32 MaxMessageSize{500};
+constexpr u32 MaxConcurrentConnections{
+    254}; ///< Maximum number of concurrent connections allowed to rooms.
 constexpr std::size_t NumChannels{1}; // Number of channels used for the connection
 
 struct RoomInformation {
     std::string name;        ///< Name of the room
     std::string description; ///< Room description
+    u32 max_members;         ///< Maximum number of members in this room
     u16 port;                ///< The port of this room
     std::string creator;     ///< The creator of this room
 };
@@ -33,7 +36,7 @@ struct JsonRoom {
     };
     std::string name, creator, description, ip;
     u16 port;
-    u32 net_version;
+    u32 max_members, net_version;
     bool has_password;
     std::vector<Member> members;
 };
@@ -50,8 +53,12 @@ enum RoomMessageTypes : u8 {
     IdMacCollision,
     IdVersionMismatch,
     IdWrongPassword,
+    IdCloseRoom,
+    IdRoomIsFull,
     IdStatusMessage,
     IdConsoleIdCollision,
+    IdHostKicked,
+    IdHostBanned,
     // Moderation requests
     IdModKick,
     IdModBan,
@@ -103,7 +110,8 @@ public:
     /// Creates the socket for this room
     bool Create(bool is_public, const std::string& name, const std::string& description,
                 const std::string& creator, u16 port = DefaultRoomPort,
-                const std::string& password = "", const BanList& ban_list = {});
+                const std::string& password = "",
+                const u32 max_connections = MaxConcurrentConnections, const BanList& ban_list = {});
 
     /// Gets the banned IPs of the room.
     BanList GetBanList() const;

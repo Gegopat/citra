@@ -84,17 +84,23 @@ int main(int argc, char** argv) {
     int option_index{};
     char* endarg;
     std::string room_name, room_description, creator, password, ban_list_file;
-    u32 port{Network::DefaultRoomPort};
+    u32 port{Network::DefaultRoomPort}, max_members{16};
     bool announce{};
     static struct option long_options[]{
-        {"room-name", required_argument, 0, 'n'}, {"room-description", required_argument, 0, 'd'},
-        {"port", required_argument, 0, 'p'},      {"password", required_argument, 0, 'w'},
-        {"creator", required_argument, 0, 'c'},   {"ban-list-file", required_argument, 0, 'b'},
-        {"announce", no_argument, 0, 'a'},        {"help", no_argument, 0, 'h'},
-        {"version", no_argument, 0, 'v'},         {0, 0, 0, 0},
+        {"room-name", required_argument, 0, 'n'},
+        {"room-description", required_argument, 0, 'd'},
+        {"port", required_argument, 0, 'p'},
+        {"max-members", required_argument, 0, 'm'},
+        {"password", required_argument, 0, 'w'},
+        {"creator", required_argument, 0, 'c'},
+        {"ban-list-file", required_argument, 0, 'b'},
+        {"announce", no_argument, 0, 'a'},
+        {"help", no_argument, 0, 'h'},
+        {"version", no_argument, 0, 'v'},
+        {0, 0, 0, 0},
     };
     while (optind < argc) {
-        int arg{getopt_long(argc, argv, "n:d:p:w:c:b:a:hv", long_options, &option_index)};
+        int arg{getopt_long(argc, argv, "n:d:p:m:w:c:b:a:hv", long_options, &option_index)};
         if (arg != -1) {
             switch (arg) {
             case 'n':
@@ -105,6 +111,9 @@ int main(int argc, char** argv) {
                 break;
             case 'p':
                 port = strtoul(optarg, &endarg, 0);
+                break;
+            case 'm':
+                max_members = strtoul(optarg, &endarg, 0);
                 break;
             case 'w':
                 password.assign(optarg);
@@ -133,7 +142,12 @@ int main(int argc, char** argv) {
         return -1;
     }
     if (port == 0 || port > 65535) {
-        std::cout << "port needs to be in the range 1 - 65535!\n\n";
+        std::cout << "Port needs to be in the range 1 - 65535!\n\n";
+        PrintHelp(argv[0]);
+        return -1;
+    }
+    if (creator.empty()) {
+        std::cout << "Creator is empty!\n\n";
         PrintHelp(argv[0]);
         return -1;
     }
@@ -150,7 +164,8 @@ int main(int argc, char** argv) {
             announce = false;
         std::cout << result.result_string << std::endl;
     });
-    if (!room.Create(announce, room_name, room_description, creator, port, password, ban_list)) {
+    if (!room.Create(announce, room_name, room_description, creator, port, password, max_members,
+                     ban_list)) {
         std::cout << "Failed to create room!\n\n";
         return -1;
     }

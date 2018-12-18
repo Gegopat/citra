@@ -57,9 +57,9 @@ void ClientRoomWindow::OnStateChange(const Network::RoomMember::State& state) {
     UpdateView();
 }
 
-void ClientRoomWindow::Disconnect() {
+void ClientRoomWindow::Disconnect(bool confirm) {
     auto parent{static_cast<MultiplayerState*>(parentWidget())};
-    if (parent->OnCloseRoom()) {
+    if (parent->OnCloseRoom(confirm)) {
         ui->chat->AppendStatusMessage("Disconnected");
         close();
     }
@@ -73,9 +73,10 @@ void ClientRoomWindow::UpdateView() {
         auto member_list{member.GetMemberInformation()};
         ui->chat->SetMemberList(member_list);
         const auto information{member.GetRoomInformation()};
-        setWindowTitle(QString("%1 (%2 members) - connected")
+        setWindowTitle(QString("%1 (%2/%3 members) - connected")
                            .arg(QString::fromStdString(information.name))
-                           .arg(member_list.size()));
+                           .arg(member_list.size())
+                           .arg(information.max_members));
         ui->description->setText(QString::fromStdString(information.description));
         return;
     }

@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <utility>
+#include <enet/enet.h>
 #include "audio_core/hle/hle.h"
 #include "audio_core/lle/lle.h"
 #include "common/logging/log.h"
@@ -37,16 +38,27 @@ namespace Core {
 System System::s_instance;
 
 void System::Init1() {
+    if (enet_initialize() != 0) {
+        LOG_ERROR(Network, "Error when initializing ENet");
+        return;
+    }
     room = std::make_unique<Network::Room>();
     room_member = std::make_unique<Network::RoomMember>();
     movie = std::make_unique<Movie>(*this);
 }
 
 System::~System() {
-    if (room_member)
+    if (room_member) {
+        if (room_member->IsConnected())
+            room_member->Leave();
         room_member.reset();
-    if (room)
+    }
+    if (room) {
+        if (room->IsOpen())
+            room->Destroy();
         room.reset();
+    }
+    enet_deinitialize();
     movie.reset();
 }
 

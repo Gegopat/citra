@@ -11,12 +11,12 @@
 
 namespace Column {
 
-enum List {
-    EXPAND,
-    ROOM_NAME,
-    HOST,
-    MEMBER,
-    TOTAL,
+enum {
+    Expand,
+    RoomName,
+    Creator,
+    Members,
+    Total,
 };
 
 } // namespace Column
@@ -24,6 +24,7 @@ enum List {
 class LobbyItem : public QStandardItem {
 public:
     LobbyItem() = default;
+
     explicit LobbyItem(const QString& string) : QStandardItem{string} {}
     virtual ~LobbyItem() override = default;
 };
@@ -86,26 +87,26 @@ public:
     LobbyItemHost() = default;
 
     explicit LobbyItemHost(QString creator, QString ip, u16 port) {
-        setData(creator, HostCreatorRole);
-        setData(ip, HostIPRole);
-        setData(port, HostPortRole);
+        setData(creator, CreatorRole);
+        setData(ip, IpRole);
+        setData(port, PortRole);
     }
 
     QVariant data(int role) const override {
         if (role != Qt::DisplayRole)
             return LobbyItem::data(role);
-        return data(HostCreatorRole).toString();
+        return data(CreatorRole).toString();
     }
 
     bool operator<(const QStandardItem& other) const override {
-        return data(HostCreatorRole)
+        return data(CreatorRole)
                    .toString()
                    .localeAwareCompare(other.data(HostCreatorRole).toString()) < 0;
     }
 
-    static constexpr int HostCreatorRole{Qt::UserRole + 1};
-    static constexpr int HostIPRole{Qt::UserRole + 2};
-    static constexpr int HostPortRole{Qt::UserRole + 3};
+    static constexpr int CreatorRole{Qt::UserRole + 1};
+    static constexpr int IpRole{Qt::UserRole + 2};
+    static constexpr int PortRole{Qt::UserRole + 3};
 };
 
 class LobbyMember {
@@ -137,15 +138,17 @@ class LobbyItemMemberList : public LobbyItem {
 public:
     LobbyItemMemberList() = default;
 
-    explicit LobbyItemMemberList(QList<QVariant> members) {
+    explicit LobbyItemMemberList(QList<QVariant> members, u32 max_members) {
         setData(members, MemberListRole);
+        setData(max_members, MaxMembersRole);
     }
 
     QVariant data(int role) const override {
         if (role != Qt::DisplayRole)
             return LobbyItem::data(role);
         auto members = data(MemberListRole).toList();
-        return QString::number(members.size());
+        return QString("%1 / %2").arg(QString::number(members.size()),
+                                      data(MaxMembersRole).toString());
     }
 
     bool operator<(const QStandardItem& other) const override {
@@ -156,6 +159,7 @@ public:
     }
 
     static constexpr int MemberListRole{Qt::UserRole + 1};
+    static constexpr int MaxMembersRole{Qt::UserRole + 2};
 };
 
 /// Member information for when a lobby is expanded in the UI

@@ -48,6 +48,7 @@ Lobby::Lobby(QWidget* parent, Core::System& system)
     ui->nickname->setText(UISettings::values.lobby_nickname);
     // UI Buttons
     connect(ui->refresh_list, &QPushButton::released, this, &Lobby::RefreshLobby);
+    connect(ui->hide_full, &QCheckBox::stateChanged, proxy, &LobbyFilterProxyModel::SetFilterFull);
     connect(ui->search, &QLineEdit::textChanged, proxy, &LobbyFilterProxyModel::SetFilterSearch);
     connect(ui->room_list, &QTreeView::doubleClicked, this, &Lobby::OnJoinRoom);
     connect(ui->room_list, &QTreeView::clicked, this, &Lobby::OnExpandRoom);
@@ -91,16 +92,15 @@ void Lobby::OnJoinRoom(const QModelIndex& source) {
         return;
     }
     // Get a password to pass if the room is password protected
-    auto password_index{proxy->index(index.row(), Column::ROOM_NAME)};
+    auto password_index{proxy->index(index.row(), Column::RoomName)};
     bool has_password{proxy->data(password_index, LobbyItemName::PasswordRole).toBool()};
     const auto password{has_password ? PasswordPrompt().toStdString() : ""};
     if (has_password && password.empty())
         return;
-    auto connection_index{proxy->index(index.row(), Column::HOST)};
+    auto connection_index{proxy->index(index.row(), Column::Creator)};
     const auto nickname{ui->nickname->text().toStdString()};
-    const auto ip{
-        proxy->data(connection_index, LobbyItemHost::HostIPRole).toString().toStdString()};
-    int port{proxy->data(connection_index, LobbyItemHost::HostPortRole).toInt()};
+    const auto ip{proxy->data(connection_index, LobbyItemHost::IpRole).toString().toStdString()};
+    int port{proxy->data(connection_index, LobbyItemHost::PortRole).toInt()};
     // Attempt to connect in a different thread
     auto f{QtConcurrent::run([this, nickname, ip, port, password] {
         system.RoomMember().Join(nickname, Service::CFG::GetConsoleID(system), ip.c_str(), port,
@@ -110,17 +110,17 @@ void Lobby::OnJoinRoom(const QModelIndex& source) {
     // TODO: disable widgets and display a connecting while we wait
     // Save settings
     UISettings::values.lobby_nickname = ui->nickname->text();
-    UISettings::values.ip = proxy->data(connection_index, LobbyItemHost::HostIPRole).toString();
-    UISettings::values.port = proxy->data(connection_index, LobbyItemHost::HostPortRole).toUInt();
+    UISettings::values.ip = proxy->data(connection_index, LobbyItemHost::IpRole).toString();
+    UISettings::values.port = proxy->data(connection_index, LobbyItemHost::PortRole).toUInt();
 }
 
 void Lobby::ResetModel() {
     model->clear();
-    model->insertColumns(0, Column::TOTAL);
-    model->setHeaderData(Column::EXPAND, Qt::Horizontal, "", Qt::DisplayRole);
-    model->setHeaderData(Column::ROOM_NAME, Qt::Horizontal, "Room Name", Qt::DisplayRole);
-    model->setHeaderData(Column::HOST, Qt::Horizontal, "Host", Qt::DisplayRole);
-    model->setHeaderData(Column::MEMBER, Qt::Horizontal, "Members", Qt::DisplayRole);
+    model->insertColumns(0, Column::Total);
+    model->setHeaderData(Column::Expand, Qt::Horizontal, "", Qt::DisplayRole);
+    model->setHeaderData(Column::RoomName, Qt::Horizontal, "Room Name", Qt::DisplayRole);
+    model->setHeaderData(Column::Creator, Qt::Horizontal, "Creator", Qt::DisplayRole);
+    model->setHeaderData(Column::Members, Qt::Horizontal, "Members", Qt::DisplayRole);
 }
 
 void Lobby::RefreshLobby() {
@@ -148,7 +148,7 @@ void Lobby::OnRefreshLobby() {
             new LobbyItemName(room.has_password, QString::fromStdString(room.name)),
             new LobbyItemHost(QString::fromStdString(room.creator), QString::fromStdString(room.ip),
                               room.port),
-            new LobbyItemMemberList(members),
+            new LobbyItemMemberList(members, room.max_members),
         };
         model->appendRow(row);
         // To make the rows expandable, add the member data as a child of the first column of the
@@ -164,7 +164,7 @@ void Lobby::OnRefreshLobby() {
     ui->refresh_list->setEnabled(true);
     ui->refresh_list->setText("Refresh List");
     ui->room_list->header()->stretchLastSection();
-    for (int i{}; i < Column::TOTAL - 1; ++i)
+    for (int i{}; i < Column::Total - 1; ++i)
         ui->room_list->resizeColumnToContents(i);
     // Set the member list child items to span all columns
     for (int i{}; i < proxy->rowCount(); i++) {
@@ -181,16 +181,26 @@ bool LobbyFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& s
     // Pass over any child rows (aka row that shows the members in the room)
     if (sourceParent != QModelIndex())
         return true;
+    // Filter by filled rooms
+    if (filter_full) {
+        auto member_list{sourceModel()->index(sourceRow, Column::Members, sourceParent)};
+        int member_count{
+            sourceModel()->data(member_list, LobbyItemMemberList::MemberListRole).toList().size()};
+        int max_members{
+            sourceModel()->data(member_list, LobbyItemMemberList::MaxMembersRole).toInt()};
+        if (member_count >= max_members)
+            return false;
+    }
     // Filter by search parameters
     if (!filter_search.isEmpty()) {
-        auto room_name{sourceModel()->index(sourceRow, Column::ROOM_NAME, sourceParent)};
-        auto host_name{sourceModel()->index(sourceRow, Column::HOST, sourceParent)};
+        auto room_name{sourceModel()->index(sourceRow, Column::RoomName, sourceParent)};
+        auto host_name{sourceModel()->index(sourceRow, Column::Host, sourceParent)};
         bool room_name_match{sourceModel()
                                  ->data(room_name, LobbyItemName::NameRole)
                                  .toString()
                                  .contains(filter_search, filterCaseSensitivity())};
         bool nickname_match{sourceModel()
-                                ->data(host_name, LobbyItemHost::HostCreatorRole)
+                                ->data(host_name, LobbyItemHost::CreatorRole)
                                 .toString()
                                 .contains(filter_search, filterCaseSensitivity())};
         if (!room_name_match && !nickname_match)
@@ -201,6 +211,11 @@ bool LobbyFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& s
 
 void LobbyFilterProxyModel::sort(int column, Qt::SortOrder order) {
     sourceModel()->sort(column, order);
+}
+
+void LobbyFilterProxyModel::SetFilterFull(bool filter) {
+    filter_full = filter;
+    invalidate();
 }
 
 void LobbyFilterProxyModel::SetFilterSearch(const QString& filter) {

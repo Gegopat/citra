@@ -30,7 +30,6 @@
 #include "citra/control_panel.h"
 #include "citra/hotkeys.h"
 #include "citra/main.h"
-#include "citra/multiplayer/client_room.h"
 #include "citra/multiplayer/state.h"
 #include "citra/program_list.h"
 #include "citra/ui_settings.h"
@@ -433,7 +432,7 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Start_Room, &QAction::triggered, multiplayer_state,
             &MultiplayerState::OnCreateRoom);
     connect(ui.action_Leave_Room, &QAction::triggered, multiplayer_state,
-            [this] { multiplayer_state->GetRoomWindow()->Disconnect(); });
+            &MultiplayerState::OnCloseRoomClient);
     connect(ui.action_Connect_To_Room, &QAction::triggered, multiplayer_state,
             &MultiplayerState::OnDirectConnect);
     connect(ui.action_Show_Room, &QAction::triggered, multiplayer_state,
@@ -1587,6 +1586,7 @@ void GMainWindow::UpdateDiscordRPC(const Network::RoomInformation& info) {
         if (member.IsConnected()) {
             const auto& member_info{member.GetMemberInformation()};
             presence.partySize = member_info.size();
+            presence.partyMax = info.max_members;
             presence.state = info.name.c_str();
         }
         auto details{
@@ -1620,7 +1620,7 @@ int main(int argc, char* argv[]) {
     ToggleConsole();
     config.LogErrors();
     Settings::LogSettings();
-    // Initialize network and movie system
+    // Initialize ENet and movie system
     system.Init1();
     // Register types to use in slots and signals
     qRegisterMetaType<std::size_t>("std::size_t");

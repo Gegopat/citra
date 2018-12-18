@@ -10,9 +10,9 @@
 namespace Column {
 
 enum {
-    SUBJECT,
-    TYPE,
-    COUNT,
+    Subject,
+    Type,
+    Count,
 };
 
 } // namespace Column
@@ -32,9 +32,9 @@ ModerationDialog::ModerationDialog(Network::RoomMember& member, QWidget* parent)
     connect(this, &ModerationDialog::BanListReceived, this, &ModerationDialog::PopulateBanList);
     // Initialize the UI
     model = new QStandardItemModel(ui->ban_list_view);
-    model->insertColumns(0, Column::COUNT);
-    model->setHeaderData(Column::SUBJECT, Qt::Horizontal, "Subject");
-    model->setHeaderData(Column::TYPE, Qt::Horizontal, "Type");
+    model->insertColumns(0, Column::Count);
+    model->setHeaderData(Column::Subject, Qt::Horizontal, "Subject");
+    model->setHeaderData(Column::Type, Qt::Horizontal, "Type");
     ui->ban_list_view->setModel(model);
     // Load the ban list in background
     LoadBanList();
@@ -67,7 +67,7 @@ void ModerationDialog::PopulateBanList(const Network::Room::BanList& ban_list) {
         auto type_item{new QStandardItem("IP Address")};
         model->invisibleRootItem()->appendRow({subject_item, type_item});
     }
-    for (int i{}; i < Column::COUNT - 1; ++i)
+    for (int i{}; i < Column::Count - 1; ++i)
         ui->ban_list_view->resizeColumnToContents(i);
     ui->refresh->setEnabled(true);
     ui->refresh->setText("Refresh");

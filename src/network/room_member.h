@@ -72,6 +72,7 @@ public:
         WrongVersion,       ///< The room version isn't the same as for this RoomMember
         WrongPassword,      ///< The password doesn't match the one from the Room
         CouldNotConnect,    ///< The room isn't responding to a connection attempt
+        RoomIsFull,         ///< Room is already at the maximum number of members
         HostBanned,         ///< The user is banned by the host
 
         // Reasons why moderation request failed
@@ -130,8 +131,8 @@ public:
               const MacAddress& preferred_mac = BroadcastMac, const std::string& password = "");
 
     /**
-     * Sends a WiFi packet to the room.
-     * @param packet The WiFi packet to send.
+     * Sends a Wifi packet to the room.
+     * @param packet The Wifi packet to send.
      */
     void SendWifiPacket(const WifiPacket& packet);
 
@@ -268,6 +269,8 @@ static const char* GetErrorStr(const RoomMember::Error& e) {
         return "WrongPassword";
     case RoomMember::Error::CouldNotConnect:
         return "CouldNotConnect";
+    case RoomMember::Error::RoomIsFull:
+        return "RoomIsFull";
     case RoomMember::Error::HostBanned:
         return "HostBanned";
     case RoomMember::Error::PermissionDenied:

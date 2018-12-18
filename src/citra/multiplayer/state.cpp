@@ -94,7 +94,7 @@ void MultiplayerState::OnNetworkError(const Network::RoomMember::Error& error) {
         break;
     case Network::RoomMember::Error::HostKicked:
         if (client_room)
-            client_room->close();
+            client_room->Disconnect(false);
         NetworkMessage::ShowError(NetworkMessage::HOST_KICKED);
         break;
     case Network::RoomMember::Error::CouldNotConnect:
@@ -109,6 +109,9 @@ void MultiplayerState::OnNetworkError(const Network::RoomMember::Error& error) {
     case Network::RoomMember::Error::ConsoleIdCollision:
         NetworkMessage::ShowError(NetworkMessage::CONSOLE_ID_COLLISION);
         break;
+    case Network::RoomMember::Error::RoomIsFull:
+        NetworkMessage::ShowError(NetworkMessage::ROOM_IS_FULL);
+        break;
     case Network::RoomMember::Error::WrongPassword:
         NetworkMessage::ShowError(NetworkMessage::WRONG_PASSWORD);
         break;
@@ -117,7 +120,7 @@ void MultiplayerState::OnNetworkError(const Network::RoomMember::Error& error) {
         break;
     case Network::RoomMember::Error::HostBanned:
         if (client_room)
-            client_room->close();
+            client_room->Disconnect(false);
         NetworkMessage::ShowError(NetworkMessage::HOST_BANNED);
         break;
     case Network::RoomMember::Error::UnknownError:
@@ -167,8 +170,8 @@ void MultiplayerState::OnCreateRoom() {
     BringWidgetToFront(host_room);
 }
 
-bool MultiplayerState::OnCloseRoom() {
-    if (!NetworkMessage::WarnCloseRoom())
+bool MultiplayerState::OnCloseRoom(bool confirm) {
+    if (!NetworkMessage::WarnCloseRoom(confirm))
         return false;
     auto& room{system.Room()};
     auto& member{system.RoomMember()};
@@ -186,6 +189,11 @@ bool MultiplayerState::OnCloseRoom() {
     return true;
 }
 
+void MultiplayerState::OnCloseRoomClient() {
+    if (client_room)
+        client_room->Disconnect();
+}
+
 void MultiplayerState::OnOpenRoom() {
     auto& member{system.RoomMember()};
     if (member.IsConnected()) {
@@ -194,11 +202,11 @@ void MultiplayerState::OnOpenRoom() {
             connect(client_room, &ClientRoomWindow::ShowNotification, this,
                     &MultiplayerState::ShowNotification);
         }
-        const auto host{member.GetRoomInformation().creator};
-        if (host.empty())
+        const auto creator{member.GetRoomInformation().creator};
+        if (creator.empty())
             client_room->SetModPerms(false);
         else
-            client_room->SetModPerms(member.GetNickname() == host);
+            client_room->SetModPerms(member.GetNickname() == creator);
         BringWidgetToFront(client_room);
         return;
     }

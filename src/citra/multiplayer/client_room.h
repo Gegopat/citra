@@ -17,7 +17,7 @@ public:
     explicit ClientRoomWindow(QWidget* parent, Core::System& system);
     ~ClientRoomWindow();
 
-    void Disconnect();
+    void Disconnect(bool confirm = true);
     void SetModPerms(bool is_mod);
 
     Core::System& system;
