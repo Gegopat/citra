@@ -466,6 +466,7 @@ bool Room::RoomImpl::IsValidMacAddress(const MacAddress& address) const {
 }
 
 bool Room::RoomImpl::IsValidConsoleId(u64 console_id) const {
+    return true;
     // A console ID is valid if it isn't already taken by anybody else in the room.
     std::lock_guard lock{member_mutex};
     return std::all_of(members.begin(), members.end(), [&console_id](const Member& member) {
