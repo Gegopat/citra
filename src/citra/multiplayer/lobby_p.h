@@ -82,11 +82,11 @@ private:
     static constexpr int DescriptionRole{Qt::UserRole + 1};
 };
 
-class LobbyItemHost : public LobbyItem {
+class LobbyItemCreator : public LobbyItem {
 public:
-    LobbyItemHost() = default;
+    LobbyItemCreator() = default;
 
-    explicit LobbyItemHost(QString creator, QString ip, u16 port) {
+    explicit LobbyItemCreator(QString creator, QString ip, u16 port) {
         setData(creator, CreatorRole);
         setData(ip, IpRole);
         setData(port, PortRole);
@@ -99,9 +99,8 @@ public:
     }
 
     bool operator<(const QStandardItem& other) const override {
-        return data(CreatorRole)
-                   .toString()
-                   .localeAwareCompare(other.data(HostCreatorRole).toString()) < 0;
+        return data(CreatorRole).toString().localeAwareCompare(other.data(CreatorRole).toString()) <
+               0;
     }
 
     static constexpr int CreatorRole{Qt::UserRole + 1};

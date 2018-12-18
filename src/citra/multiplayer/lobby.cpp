@@ -99,8 +99,8 @@ void Lobby::OnJoinRoom(const QModelIndex& source) {
         return;
     auto connection_index{proxy->index(index.row(), Column::Creator)};
     const auto nickname{ui->nickname->text().toStdString()};
-    const auto ip{proxy->data(connection_index, LobbyItemHost::IpRole).toString().toStdString()};
-    int port{proxy->data(connection_index, LobbyItemHost::PortRole).toInt()};
+    const auto ip{proxy->data(connection_index, LobbyItemCreator::IpRole).toString().toStdString()};
+    int port{proxy->data(connection_index, LobbyItemCreator::PortRole).toInt()};
     // Attempt to connect in a different thread
     auto f{QtConcurrent::run([this, nickname, ip, port, password] {
         system.RoomMember().Join(nickname, Service::CFG::GetConsoleID(system), ip.c_str(), port,
@@ -110,8 +110,8 @@ void Lobby::OnJoinRoom(const QModelIndex& source) {
     // TODO: disable widgets and display a connecting while we wait
     // Save settings
     UISettings::values.lobby_nickname = ui->nickname->text();
-    UISettings::values.ip = proxy->data(connection_index, LobbyItemHost::IpRole).toString();
-    UISettings::values.port = proxy->data(connection_index, LobbyItemHost::PortRole).toUInt();
+    UISettings::values.ip = proxy->data(connection_index, LobbyItemCreator::IpRole).toString();
+    UISettings::values.port = proxy->data(connection_index, LobbyItemCreator::PortRole).toUInt();
 }
 
 void Lobby::ResetModel() {
@@ -146,8 +146,8 @@ void Lobby::OnRefreshLobby() {
         QList<QStandardItem*> row{
             first_item,
             new LobbyItemName(room.has_password, QString::fromStdString(room.name)),
-            new LobbyItemHost(QString::fromStdString(room.creator), QString::fromStdString(room.ip),
-                              room.port),
+            new LobbyItemCreator(QString::fromStdString(room.creator),
+                                 QString::fromStdString(room.ip), room.port),
             new LobbyItemMemberList(members, room.max_members),
         };
         model->appendRow(row);
@@ -194,16 +194,16 @@ bool LobbyFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& s
     // Filter by search parameters
     if (!filter_search.isEmpty()) {
         auto room_name{sourceModel()->index(sourceRow, Column::RoomName, sourceParent)};
-        auto host_name{sourceModel()->index(sourceRow, Column::Creator, sourceParent)};
+        auto creator_name{sourceModel()->index(sourceRow, Column::Creator, sourceParent)};
         bool room_name_match{sourceModel()
                                  ->data(room_name, LobbyItemName::NameRole)
                                  .toString()
                                  .contains(filter_search, filterCaseSensitivity())};
-        bool nickname_match{sourceModel()
-                                ->data(host_name, LobbyItemHost::CreatorRole)
-                                .toString()
-                                .contains(filter_search, filterCaseSensitivity())};
-        if (!room_name_match && !nickname_match)
+        bool creator_match{sourceModel()
+                               ->data(creator_name, LobbyItemCreator::CreatorRole)
+                               .toString()
+                               .contains(filter_search, filterCaseSensitivity())};
+        if (!room_name_match && !creator_match)
             return false;
     }
     return true;
