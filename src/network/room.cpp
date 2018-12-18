@@ -143,6 +143,10 @@ struct Room::RoomImpl {
     std::unique_ptr<std::thread>
         room_thread; ///< Thread that receives and dispatches network packets
 
+    void ServerLoop(); ///< Thread function that will receive and dispatch messages until the room
+                       ///< is destroyed.
+    void StartLoop();
+
     /**
      * Parses and answers a room join request from a client.
      * Validates the uniqueness of the nickname and assigns the MAC address
@@ -273,6 +277,14 @@ struct Room::RoomImpl {
 };
 
 // RoomImpl
+void Room::RoomImpl::ServerLoop() {
+    server.run();
+}
+
+void Room::RoomImpl::StartLoop() {
+    room_thread = std::make_unique<std::thread>(&Room::RoomImpl::ServerLoop, this);
+}
+
 void Room::RoomImpl::HandleJoinRequest(ConnectionHandle client, const std::vector<u8>& data) {
     Message message;
     message.Append(data.data(), data.size());
@@ -567,10 +579,8 @@ void Room::RoomImpl::SendModBanListResponse(ConnectionHandle client) {
 void Room::RoomImpl::SendCloseMessage() {
     std::lock_guard lock{member_mutex};
     for (const auto& member : members) {
-        auto c{server.get_con_from_hdl(member.client)};
-        c->pause_reading();
-        c->get_raw_socket().non_blocking(false);
-        c->close(websocketpp::close::status::going_away, "Room closing");
+        //        server.get_con_from_hdl(member.client)->get_raw_socket().non_blocking(true);
+        server.close(member.client, websocketpp::close::status::going_away, "Room closing");
     }
 }
 
@@ -773,7 +783,7 @@ void Room::RoomImpl::UpdateAPIInformation() {
 Room::Room() : room_impl{std::make_unique<RoomImpl>()} {}
 
 Room::~Room() {
-    if (room_impl->is_open.load(std::memory_order_relaxed))
+    if (IsOpen())
         Destroy();
 }
 
@@ -791,26 +801,11 @@ bool Room::Create(bool is_public, const std::string& name, const std::string& de
     try {
         room_impl->server.listen(port);
     } catch (const websocketpp::exception& e) {
-        if (room_impl->server.is_listening())
-            room_impl->server.stop_listening();
+        LOG_ERROR(Network, "{}", e.what());
         return false;
     }
     room_impl->server.start_accept();
-    std::thread([&] {
-        room_impl->server.run();
-        room_impl->server.reset();
-        if (room_impl->is_public.load(std::memory_order_relaxed)) {
-            nlohmann::json json;
-            json["delete"] = room_impl->room_information.port;
-            room_impl->MakeRequest("POST", json.dump());
-        }
-        room_impl->room_information = {};
-        {
-            std::lock_guard lock{room_impl->member_mutex};
-            room_impl->members.clear();
-        }
-    })
-        .detach();
+    room_impl->StartLoop();
     if (is_public)
         room_impl->UpdateAPIInformation();
     return true;
@@ -847,11 +842,24 @@ bool Room::HasPassword() const {
 }
 
 void Room::Destroy() {
-    room_impl->is_public.store(false, std::memory_order_relaxed);
     room_impl->is_open.store(false, std::memory_order_relaxed);
     room_impl->server.stop_listening();
+    // Close the connection to all members
     room_impl->SendCloseMessage();
     room_impl->server.stop();
+    room_impl->room_thread->join();
+    room_impl->room_thread.reset();
+    room_impl->server.reset();
+    if (room_impl->is_public.load(std::memory_order_relaxed)) {
+        nlohmann::json json;
+        json["delete"] = room_impl->room_information.port;
+        room_impl->MakeRequest("POST", json.dump());
+    }
+    room_impl->room_information = {};
+    {
+        std::lock_guard lock{room_impl->member_mutex};
+        room_impl->members.clear();
+    }
 }
 
 std::vector<JsonRoom> Room::GetRoomList() {

@@ -14,7 +14,7 @@
 
 namespace Network {
 
-constexpr u32 NetworkVersion{0xFF06}; ///< The network version
+constexpr u32 NetworkVersion{0xFF05}; ///< The network version
 constexpr u16 DefaultRoomPort{24872};
 constexpr u32 MaxMessageSize{500};
 constexpr std::size_t NumChannels{1}; // Number of channels used for the connection
@@ -114,7 +114,7 @@ public:
     // Gets the room list
     std::vector<JsonRoom> GetRoomList();
 
-    /// Sets a function to call when a error happens in `MakeRequest`
+    /// Sets a function to call when a error happens in 'MakeRequest'
     void SetErrorCallback(ErrorCallback cb);
 
     /// Stops announcing the room
