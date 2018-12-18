@@ -71,6 +71,9 @@ add_subdirectory(lurlparser EXCLUDE_FROM_ALL)
 add_library(httplib INTERFACE)
 target_include_directories(httplib INTERFACE ./httplib)
 
+# asl
+add_subdirectory(asl EXCLUDE_FROM_ALL)
+
 # JSON
 add_library(json-headers INTERFACE)
 target_include_directories(json-headers INTERFACE ./json)

@@ -10,6 +10,7 @@
 #include <regex>
 #include <sstream>
 #include <thread>
+#include <asl/Http.h>
 #include <enet/enet.h>
 #include <httplib.h>
 #include <json.hpp>
@@ -827,31 +828,34 @@ void Room::RoomImpl::HandleClientDisconnection(ENetPeer* client) {
 }
 
 Common::WebResult Room::RoomImpl::MakeRequest(const std::string& method, const std::string& body) {
-    auto response{method == "GET" ? client->Get("/lobby")
-                                  : client->Post("/lobby", body, "application/json")};
-    if (!response) {
-        LOG_ERROR(Network, "Request returned null");
-        return Common::WebResult{Common::WebResult::Code::LibError, "Null response"};
+    asl::HttpRequest req{method.c_str(), "http://citra-valentin-api.glitch.me/lobby"};
+    if (method == "POST") {
+        req.setHeader("Content-Type", "application/json");
+        req.setHeader("Content-Length", std::to_string(body.length()).c_str());
+        req.put(body.c_str());
     }
-    if (response->status >= 400) {
-        LOG_ERROR(Network, "Request returned error status code: {}", response->status);
-        return Common::WebResult{Common::WebResult::Code::HttpError,
-                                 std::to_string(response->status)};
+    auto res{asl::Http::request(req)};
+    int code{res.code()};
+    if (code >= 400) {
+        LOG_ERROR(Network, "Request returned error status code: {}", code);
+        return Common::WebResult{Common::WebResult::Code::HttpError, std::to_string(code)};
     }
-    auto content_type{response->headers.find("Content-Type")};
-    if (content_type == response->headers.end()) {
+    if (!res.hasHeader("Content-Type")) {
         LOG_ERROR(Network, "Request returned no content");
         return Common::WebResult{Common::WebResult::Code::WrongContent, "No content"};
     }
-    if (content_type->second.find("application/json") == std::string::npos &&
-        content_type->second.find("text/html") == std::string::npos &&
-        content_type->second.find("text/plain") == std::string::npos) {
-        LOG_ERROR(Network, "Request returned wrong content: {}", content_type->second);
+    auto content_type{res.header("Content-Type")};
+    if (!content_type.contains("application/json") && !content_type.contains("text/html") &&
+        !content_type.contains("text/plain")) {
+        LOG_ERROR(Network, "Request returned wrong content: {}", content_type);
         return Common::WebResult{Common::WebResult::Code::WrongContent, "Wrong content"};
     }
-    if (response->body.find("TCP") != std::string::npos)
-        return Common::WebResult{Common::WebResult::Code::HttpError, response->body};
-    return Common::WebResult{Common::WebResult::Code::Success, "", response->body};
+    auto res_body{res.text()};
+    if (res_body.contains("TCP"))
+        return Common::WebResult{Common::WebResult::Code::HttpError,
+                                 std::string{static_cast<const char*>(res_body)}};
+    return Common::WebResult{Common::WebResult::Code::Success, "",
+                             std::string{static_cast<const char*>(res_body)}};
 }
 
 std::vector<JsonRoom> Room::RoomImpl::GetRoomList() {

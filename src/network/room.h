@@ -131,8 +131,6 @@ public:
     bool IsPublic() const;
 
 private:
-    Common::WebResult MakeRequest(const std::string& method, const std::string& body = "");
-
     struct RoomImpl;
     std::unique_ptr<RoomImpl> room_impl;
 };

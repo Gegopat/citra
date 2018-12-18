@@ -40,3 +40,6 @@
 [submodule "teakra"]
     path = externals/teakra
     url = https://github.com/wwylele/teakra.git
+[submodule "externals/asl"]
+	path = externals/asl
+	url = https://github.com/aslze/asl.git
