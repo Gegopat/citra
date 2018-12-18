@@ -46,7 +46,8 @@ public:
     /// Format the message using the member's color
     QString GetMemberChatMessage(u16 member) const {
         auto color{member_color[member % 16]};
-        return QString("[%1] <font color='%2'>&lt;%3&gt;</font> <font style='%4'>%5</font>")
+        return QString("[%1] <font color='%2'>&lt;%3&gt;</font> <font style='%4' "
+                       "color='#000000'>%5</font>")
             .arg(timestamp, color, nickname.toHtmlEscaped(),
                  contains_ping ? "background-color: #FFFF00" : "", message.toHtmlEscaped());
     }

@@ -2,13 +2,12 @@ language: cpp
 if: tag IS blank
 matrix:
   include:
-  - os: linux
-    env: NAME="clang-format"
-    sudo: required
+  - if: repo = valentinvanelslande/citra AND branch = master AND type = push
+    os: linux
+    env: NAME="tag"
+    sudo: false
     dist: trusty
-    services: docker
-    install: "./.travis/clang-format/deps.sh"
-    script: "./.travis/clang-format/build.sh"
+    script: "./.travis/tag.sh"
   - os: linux
     env: NAME="linux build"
     sudo: required
@@ -50,8 +49,6 @@ matrix:
     script: "./.travis/linux-mingw/build.sh"
     after_success: "./.travis/linux-mingw/upload.sh"
     cache: ccache
-before_deploy:
-  - sh .travis/branch.sh
 deploy:
   provider: releases
   api_key:
@@ -62,3 +59,4 @@ deploy:
   on:
     repo: valentinvanelslande/citra
     branch: master
+    type: push
