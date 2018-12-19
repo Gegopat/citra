@@ -71,11 +71,16 @@ add_subdirectory(lurlparser EXCLUDE_FROM_ALL)
 add_library(httplib INTERFACE)
 target_include_directories(httplib INTERFACE ./httplib)
 
-# asl
-add_subdirectory(asl EXCLUDE_FROM_ALL)
-
 # mbedtls
-add_subdirectory(mbedtls EXCLUDE_FROM_ALL)
+set(ENABLE_PROGRAMS OFF)
+set(ENABLE_TESTING OFF)
+set(USE_SHARED_MBEDTLS_LIBRARY OFF)
+add_subdirectory(mbedtls)
+target_include_directories(mbedtls PUBLIC ./mbedtls/include)
+
+# asl
+set(ASL_TLS ON)
+add_subdirectory(asl)
 
 # JSON
 add_library(json-headers INTERFACE)
