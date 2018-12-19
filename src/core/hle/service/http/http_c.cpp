@@ -85,7 +85,7 @@ void Context::Send() {
         {RequestMethod::PutEmpty, "PUT"},
     }};
     req.setMethod(method_string_map.find(method)->second);
-    req.setUrl(fmt::format("/{}", url).c_str());
+    req.setUrl(url.c_str());
     for (const auto& header : headers)
         req.setHeader(header.first.c_str(), header.second.c_str());
     if (!post_data.empty()) {
