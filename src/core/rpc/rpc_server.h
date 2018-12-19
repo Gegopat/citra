@@ -42,8 +42,8 @@ private:
     void HandleRestart(Packet& packet);
     void HandleSetSpeedLimit(Packet& packet, u16 speed_limit);
     void HandleSetBackgroundColor(Packet& packet, float r, float g, float b);
-    void HandleSetScreenRefreshRate(Packet& packet, int rate);
-    void HandleIsButtonPressed(Packet& packet, int button);
+    void HandleSetScreenRefreshRate(Packet& packet, float rate);
+    void HandleAreButtonsPressed(Packet& packet, int button);
     void HandleSetFrameAdvancing(Packet& packet, bool enable);
     void HandleAdvanceFrame(Packet& packet);
     void HandleGetCurrentFrame(Packet& packet);

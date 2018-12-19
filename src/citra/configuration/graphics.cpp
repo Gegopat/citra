@@ -28,7 +28,7 @@ void ConfigurationGraphics::LoadConfiguration(Core::System& system) {
     ui->toggle_frame_limit->setChecked(Settings::values.use_frame_limit);
     ui->frame_limit->setEnabled(Settings::values.use_frame_limit);
     ui->frame_limit->setValue(Settings::values.frame_limit);
-    ui->screen_refresh_rate->setValue(Settings::values.screen_refresh_rate);
+    ui->screen_refresh_rate->setValue(static_cast<double>(Settings::values.screen_refresh_rate));
     ui->min_vertices_per_thread->setValue(Settings::values.min_vertices_per_thread);
     ui->resolution_factor_combobox->setCurrentIndex(Settings::values.resolution_factor - 1);
     ui->toggle_hw_shaders->setChecked(Settings::values.use_hw_shaders);
@@ -85,7 +85,7 @@ void ConfigurationGraphics::ApplyConfiguration() {
     Settings::values.enable_shadows = ui->enable_shadows->isChecked();
     Settings::values.use_frame_limit = ui->toggle_frame_limit->isChecked();
     Settings::values.frame_limit = ui->frame_limit->value();
-    Settings::values.screen_refresh_rate = ui->screen_refresh_rate->value();
+    Settings::values.screen_refresh_rate = static_cast<float>(ui->screen_refresh_rate->value());
     Settings::values.min_vertices_per_thread = ui->min_vertices_per_thread->value();
     Settings::values.resolution_factor =
         static_cast<u16>(ui->resolution_factor_combobox->currentIndex() + 1);

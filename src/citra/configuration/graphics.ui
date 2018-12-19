@@ -64,12 +64,12 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="screen_refresh_rate">
+         <widget class="QDoubleSpinBox" name="screen_refresh_rate">
           <property name="minimum">
            <number>1</number>
           </property>
           <property name="maximum">
-           <number>999</number>
+           <number>1000</number>
           </property>
           <property name="value">
            <number>60</number>
