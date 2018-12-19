@@ -85,7 +85,7 @@ void Context::Send() {
         {RequestMethod::PutEmpty, "PUT"},
     }};
     req.setMethod(method_string_map.find(method)->second);
-    req.setUrl(url.c_str());
+    req.setUrl(fmt::format("/{}", url).c_str());
     for (const auto& header : headers)
         req.setHeader(header.first.c_str(), header.second.c_str());
     if (!post_data.empty()) {
@@ -115,8 +115,9 @@ void Context::Send() {
         req.put(body.c_str());
     }
     auto res{asl::Http::request(req)};
-    if (res.code() != 0) {
-        response.status_code = static_cast<u32>(res.code());
+    int code{res.code()};
+    if (code != 0) {
+        response.status_code = static_cast<u32>(code);
         response.body = std::string{static_cast<const char*>(res.text())};
         response.headers.clear();
         for (const auto [name, value] : res.headers())
