@@ -58,19 +58,6 @@ if (ENABLE_DISCORD_RPC)
     target_include_directories(discord-rpc INTERFACE ./discord-rpc/include)
 endif()
 
-# LibreSSL
-set(LIBRESSL_SKIP_INSTALL ON CACHE BOOL "")
-add_definitions(-DHAVE_INET_NTOP)
-add_subdirectory(libressl)
-target_include_directories(ssl INTERFACE ./libressl/include)
-
-# lurlparser
-add_subdirectory(lurlparser EXCLUDE_FROM_ALL)
-
-# httplib
-add_library(httplib INTERFACE)
-target_include_directories(httplib INTERFACE ./httplib)
-
 # mbedtls
 set(ENABLE_PROGRAMS OFF)
 set(ENABLE_TESTING OFF)

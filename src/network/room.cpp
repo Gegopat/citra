@@ -10,6 +10,7 @@
 #include <regex>
 #include <sstream>
 #include <thread>
+#include <utility>
 #include <asl/Http.h>
 #include <asl/HttpServer.h>
 #include <asl/JSON.h>
@@ -21,13 +22,10 @@
 
 namespace Network {
 
-Common::WebResult MakeRequest(const std::string& method, const std::string& body = "") {
+Common::WebResult MakeRequest(const std::string& method, const asl::Var& data = {}) {
     asl::HttpRequest req{method.c_str(), "http://citra-valentin-api.glitch.me/lobby"};
-    if (method == "POST") {
-        req.setHeader("Content-Type", "application/json");
-        req.setHeader("Content-Length", static_cast<int>(body.length()));
-        req.put(body.c_str());
-    }
+    if (method == "POST")
+        req.put(data);
     auto res{asl::Http::request(req)};
     int code{res.code()};
     if (code >= 400) {
@@ -370,7 +368,7 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
     SendStatusMessage(IdMemberJoined, member.nickname);
     {
         std::lock_guard lock{member_mutex};
-        members.push_back(std::move(member));
+        members.emplace_back(std::move(member));
     }
     // Notify everyone that the room information has changed.
     BroadcastRoomInformation();
@@ -439,7 +437,7 @@ void Room::RoomImpl::HandleModBanPacket(const ENetEvent* event) {
         std::lock_guard lock{ban_list_mutex};
         // Ban the member's IP
         if (std::find(ban_list.begin(), ban_list.end(), ip) == ban_list.end())
-            ban_list.push_back(ip);
+            ban_list.emplace_back(std::move(ip));
     }
     // Announce the change to all clients.
     SendStatusMessage(IdMemberBanned, nickname);
@@ -834,23 +832,16 @@ std::vector<JsonRoom> Room::RoomImpl::GetRoomList() {
 }
 
 void Room::RoomImpl::Announce() {
-    asl::Var room;
-    room["port"] = room_information.port;
-    room["name"] = room_information.name.c_str();
-    room["creator"] = room_information.creator.c_str();
-    room["description"] = room_information.description.c_str();
-    room["max_members"] = room_information.max_members;
-    room["net_version"] = Network::NetworkVersion;
-    room["has_password"] = !password.empty();
     std::lock_guard lock{member_mutex};
-    if (members.size() != 0) {
-        room["members"] = asl::Array<asl::Var>();
-        for (const auto& member : members)
-            room["members"] << asl::Var{"nickname",
-                                        member.nickname.c_str()}("program", member.program.c_str());
-    }
-    auto result{
-        MakeRequest("POST", std::string{static_cast<const char*>(asl::Json::encode(room))})};
+    asl::Array<asl::Var> members;
+    for (const auto& member : this->members)
+        members << asl::Var{"nickname", member.nickname.c_str()}("program", member.program.c_str());
+    auto result{MakeRequest(
+        "POST", asl::Var{"port", room_information.port}("name", room_information.name.c_str())(
+                    "creator", room_information.creator.c_str())(
+                    "description", room_information.description.c_str())(
+                    "max_members", room_information.max_members)("net_version", NetworkVersion)(
+                    "has_password", !password.empty())("members", members))};
     if (result.result_code != Common::WebResult::Code::Success &&
         is_public.load(std::memory_order_relaxed) && error_callback) {
         is_public.store(false, std::memory_order_relaxed);
@@ -913,7 +904,7 @@ std::vector<Room::Member> Room::GetRoomMemberList() const {
         member.nickname = member_impl.nickname;
         member.mac_address = member_impl.mac_address;
         member.program = member_impl.program;
-        member_list.push_back(member);
+        member_list.emplace_back(std::move(member));
     }
     return member_list;
 }
@@ -930,8 +921,7 @@ void Room::Destroy() {
         enet_host_destroy(room_impl->server);
     if (room_impl->is_public.load(std::memory_order_relaxed))
         MakeRequest("POST",
-                    std::string{static_cast<const char*>(asl::Json::encode(asl::Var{
-                        "delete", static_cast<unsigned>(room_impl->room_information.port)}))});
+                    asl::Var{"delete", static_cast<unsigned>(room_impl->room_information.port)});
     room_impl->room_information = {};
     room_impl->server = nullptr;
     {

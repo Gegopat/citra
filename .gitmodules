@@ -22,9 +22,6 @@
 [submodule "enet"]
     path = externals/enet
     url = https://github.com/lsalzman/enet.git
-[submodule "libressl"]
-    path = externals/libressl
-    url = https://github.com/citra-emu/ext-libressl-portable.git
 [submodule "cubeb"]
     path = externals/cubeb
     url = https://github.com/kinetiknz/cubeb.git
