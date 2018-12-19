@@ -82,10 +82,6 @@ target_include_directories(mbedtls PUBLIC ./mbedtls/include)
 set(ASL_TLS ON)
 add_subdirectory(asl)
 
-# JSON
-add_library(json-headers INTERFACE)
-target_include_directories(json-headers INTERFACE ./json)
-
 # Cubeb
 set(BUILD_TESTS OFF CACHE BOOL "")
 add_subdirectory(cubeb EXCLUDE_FROM_ALL)

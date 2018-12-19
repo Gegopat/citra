@@ -37,8 +37,17 @@ struct JsonRoom {
 
         std::string nickname, program;
     };
-    std::string name, creator, description, ip;
+
+    explicit JsonRoom(std::string ip, u16 port, std::string name, std::string creator,
+                      std::string description, u32 max_members, u32 net_version, bool has_password,
+                      std::vector<Member> members)
+        : ip{std::move(ip)}, port{port}, name{std::move(name)}, creator{std::move(creator)},
+          description{std::move(description)}, max_members{max_members}, net_version{net_version},
+          has_password{has_password}, members{std::move(members)} {}
+
+    std::string ip;
     u16 port;
+    std::string name, creator, description;
     u32 max_members, net_version;
     bool has_password;
     std::vector<Member> members;

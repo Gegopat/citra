@@ -14,7 +14,6 @@
 #include <asl/JSON.h>
 #include <enet/enet.h>
 #include <httplib.h>
-#include <json.hpp>
 #include "common/logging/log.h"
 #include "common/thread_pool.h"
 #include "network/packet.h"
@@ -22,30 +21,39 @@
 
 namespace Network {
 
-void to_json(nlohmann::json& json, const JsonRoom::Member& member) {
-    json["nickname"] = member.nickname;
-    json["program"] = member.program;
-}
-
-void to_json(nlohmann::json& json, const JsonRoom& room) {
-    json["name"] = room.name;
-    json["creator"] = room.creator;
-    if (!room.description.empty())
-        json["description"] = room.description;
-    json["port"] = room.port;
-    json["max_members"] = room.max_members;
-    json["net_version"] = room.net_version;
-    json["has_password"] = room.has_password;
-    if (room.members.size() > 0) {
-        nlohmann::json member_json = room.members;
-        json["members"] = member_json;
+Common::WebResult MakeRequest(const std::string& method, const std::string& body = "") {
+    asl::HttpRequest req{method.c_str(), "http://citra-valentin-api.glitch.me/lobby"};
+    if (method == "POST") {
+        req.setHeader("Content-Type", "application/json");
+        req.setHeader("Content-Length", static_cast<int>(body.length()));
+        req.put(body.c_str());
     }
+    auto res{asl::Http::request(req)};
+    int code{res.code()};
+    if (code >= 400) {
+        LOG_ERROR(Network, "Request returned error status code: {}", code);
+        return Common::WebResult{Common::WebResult::Code::HttpError, std::to_string(code)};
+    }
+    if (!res.hasHeader("Content-Type")) {
+        LOG_ERROR(Network, "Request returned no content");
+        return Common::WebResult{Common::WebResult::Code::WrongContent, "No content"};
+    }
+    auto content_type{res.header("Content-Type")};
+    if (!content_type.contains("application/json") && !content_type.contains("text/html") &&
+        !content_type.contains("text/plain")) {
+        LOG_ERROR(Network, "Request returned wrong content: {}", content_type);
+        return Common::WebResult{Common::WebResult::Code::WrongContent, "Wrong content"};
+    }
+    auto res_body{res.text()};
+    if (res_body.contains("TCP"))
+        return Common::WebResult{Common::WebResult::Code::HttpError,
+                                 std::string{static_cast<const char*>(res_body)}};
+    return Common::WebResult{Common::WebResult::Code::Success, "",
+                             std::string{static_cast<const char*>(res_body)}};
 }
 
 struct Room::RoomImpl {
-    RoomImpl()
-        : random_gen{std::random_device{}()}, client{std::make_unique<httplib::Client>(
-                                                  "citra-valentin-api.glitch.me", 80)} {
+    RoomImpl() : random_gen{std::random_device{}()} {
         http_server.Get("/", [this](const httplib::Request& req, httplib::Response& res) {
             res.status = 200;
             res.body = "OK";
@@ -54,7 +62,6 @@ struct Room::RoomImpl {
 
     ErrorCallback error_callback;
 
-    std::unique_ptr<httplib::Client> client;
     httplib::Server http_server;
 
     std::mt19937 random_gen; ///< Random number generator. Used for GenerateMacAddress
@@ -231,9 +238,8 @@ struct Room::RoomImpl {
      */
     void HandleClientDisconnection(ENetPeer* client);
 
-    Common::WebResult MakeRequest(const std::string& method, const std::string& body = "");
     std::vector<JsonRoom> GetRoomList();
-    void UpdateAPIInformation();
+    void Announce();
 
     void SetErrorCallback(ErrorCallback cb) {
         error_callback = cb;
@@ -675,7 +681,7 @@ void Room::RoomImpl::BroadcastRoomInformation() {
     if (is_public.load(std::memory_order_relaxed)) {
         // Update API information
         auto& thread_pool{Common::ThreadPool::GetPool()};
-        thread_pool.Push([this] { UpdateAPIInformation(); });
+        thread_pool.Push([this] { Announce(); });
     }
 }
 
@@ -802,37 +808,6 @@ void Room::RoomImpl::HandleClientDisconnection(ENetPeer* client) {
     BroadcastRoomInformation();
 }
 
-Common::WebResult Room::RoomImpl::MakeRequest(const std::string& method, const std::string& body) {
-    asl::HttpRequest req{method.c_str(), "http://citra-valentin-api.glitch.me/lobby"};
-    if (method == "POST") {
-        req.setHeader("Content-Type", "application/json");
-        req.setHeader("Content-Length", std::to_string(body.length()).c_str());
-        req.put(body.c_str());
-    }
-    auto res{asl::Http::request(req)};
-    int code{res.code()};
-    if (code >= 400) {
-        LOG_ERROR(Network, "Request returned error status code: {}", code);
-        return Common::WebResult{Common::WebResult::Code::HttpError, std::to_string(code)};
-    }
-    if (!res.hasHeader("Content-Type")) {
-        LOG_ERROR(Network, "Request returned no content");
-        return Common::WebResult{Common::WebResult::Code::WrongContent, "No content"};
-    }
-    auto content_type{res.header("Content-Type")};
-    if (!content_type.contains("application/json") && !content_type.contains("text/html") &&
-        !content_type.contains("text/plain")) {
-        LOG_ERROR(Network, "Request returned wrong content: {}", content_type);
-        return Common::WebResult{Common::WebResult::Code::WrongContent, "Wrong content"};
-    }
-    auto res_body{res.text()};
-    if (res_body.contains("TCP"))
-        return Common::WebResult{Common::WebResult::Code::HttpError,
-                                 std::string{static_cast<const char*>(res_body)}};
-    return Common::WebResult{Common::WebResult::Code::Success, "",
-                             std::string{static_cast<const char*>(res_body)}};
-}
-
 std::vector<JsonRoom> Room::RoomImpl::GetRoomList() {
     auto reply{MakeRequest("GET").returned_data};
     if (reply.empty())
@@ -840,39 +815,41 @@ std::vector<JsonRoom> Room::RoomImpl::GetRoomList() {
     auto json{asl::decodeJSON(reply.c_str())};
     std::vector<JsonRoom> rooms;
     for (const auto& o : json) {
-        JsonRoom room;
-        room.ip = std::string{static_cast<const char*>(o["ip"])};
-        room.port = static_cast<u16>(static_cast<unsigned>(o["port"]));
-        room.name = std::string{static_cast<const char*>(o["name"])};
-        room.creator = std::string{static_cast<const char*>(o["creator"])};
+        std::string description;
         if (o.has("description"))
-            room.description = std::string{static_cast<const char*>(o["description"])};
-        room.max_members = o["max_members"];
-        room.net_version = o["net_version"];
-        room.has_password = o["has_password"];
+            description = std::string{static_cast<const char*>(o["description"])};
+        std::vector<JsonRoom::Member> members;
         if (o.has("members"))
             for (const auto& m : o["members"])
-                room.members.emplace_back(std::string{static_cast<const char*>(m["nickname"])},
-                                          std::string{static_cast<const char*>(m["program"])});
-        rooms.emplace_back(std::move(room));
+                members.emplace_back(std::string{static_cast<const char*>(m["nickname"])},
+                                     std::string{static_cast<const char*>(m["program"])});
+        rooms.emplace_back(std::string{static_cast<const char*>(o["ip"])},
+                           static_cast<u16>(static_cast<unsigned>(o["port"])),
+                           std::string{static_cast<const char*>(o["name"])},
+                           std::string{static_cast<const char*>(o["creator"])}, description,
+                           o["max_members"], o["net_version"], o["has_password"], members);
     }
     return rooms;
 }
 
-void Room::RoomImpl::UpdateAPIInformation() {
+void Room::RoomImpl::Announce() {
+    asl::Var room;
+    room["port"] = room_information.port;
+    room["name"] = room_information.name.c_str();
+    room["creator"] = room_information.creator.c_str();
+    room["description"] = room_information.description.c_str();
+    room["max_members"] = room_information.max_members;
+    room["net_version"] = Network::NetworkVersion;
+    room["has_password"] = !password.empty();
     std::lock_guard lock{member_mutex};
-    JsonRoom room;
-    room.name = room_information.name;
-    room.creator = room_information.creator;
-    room.description = room_information.description;
-    room.port = room_information.port;
-    room.max_members = room_information.max_members;
-    room.net_version = Network::NetworkVersion;
-    room.has_password = !password.empty();
-    for (const auto& member : members)
-        room.members.emplace_back(member.nickname, member.program);
-    nlohmann::json json = room;
-    auto result{MakeRequest("POST", json.dump())};
+    if (members.size() != 0) {
+        room["members"] = asl::Array<asl::Var>();
+        for (const auto& member : members)
+            room["members"] << asl::Var{"nickname",
+                                        member.nickname.c_str()}("program", member.program.c_str());
+    }
+    auto result{
+        MakeRequest("POST", std::string{static_cast<const char*>(asl::Json::encode(room))})};
     if (result.result_code != Common::WebResult::Code::Success &&
         is_public.load(std::memory_order_relaxed) && error_callback)
         return error_callback(result);
@@ -907,7 +884,7 @@ bool Room::Create(bool is_public, const std::string& name, const std::string& de
         std::thread(
             [this] { room_impl->http_server.listen("0.0.0.0", room_impl->room_information.port); })
             .detach();
-        room_impl->UpdateAPIInformation();
+        room_impl->Announce();
     }
     return true;
 }
@@ -948,11 +925,10 @@ void Room::Destroy() {
     room_impl->room_thread.reset();
     if (room_impl->server)
         enet_host_destroy(room_impl->server);
-    if (room_impl->is_public.load(std::memory_order_relaxed)) {
-        nlohmann::json json;
-        json["delete"] = room_impl->room_information.port;
-        room_impl->MakeRequest("POST", json.dump());
-    }
+    if (room_impl->is_public.load(std::memory_order_relaxed))
+        MakeRequest("POST",
+                    std::string{static_cast<const char*>(asl::Json::encode(asl::Var{
+                        "delete", static_cast<unsigned>(room_impl->room_information.port)}))});
     room_impl->room_information = {};
     room_impl->server = nullptr;
     {

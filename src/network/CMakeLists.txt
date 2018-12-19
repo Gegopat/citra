@@ -9,4 +9,4 @@ add_library(network STATIC
 
 create_target_directory_groups(network)
 
-target_link_libraries(network PRIVATE common enet json-headers httplib asls)
+target_link_libraries(network PRIVATE common enet httplib asls)

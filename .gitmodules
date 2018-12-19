@@ -42,7 +42,7 @@
     url = https://github.com/wwylele/teakra.git
 [submodule "asl"]
 	path = externals/asl
-	url = https://github.com/aslze/asl.git
+	url = https://github.com/valentinvanelslande/asl
 [submodule "mbedtls"]
     path = externals/mbedtls
     url = https://github.com/ARMmbed/mbedtls.git
