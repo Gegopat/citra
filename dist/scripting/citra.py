@@ -23,7 +23,7 @@ class RequestType(enum.IntEnum):
     SetSpeedLimit = 13,
     SetBackgroundColor = 14,
     SetScreenRefreshRate = 15,
-    IsButtonPressed = 16,
+    AreButtonsPressed = 16,
     SetFrameAdvancing = 17,
     AdvanceFrame = 18,
     GetCurrentFrame = 19
@@ -267,27 +267,27 @@ class Citra:
     # Sets the screen refresh rate.
     #   rate: Screen refresh rate.
     def set_screen_refresh_rate(self, rate):
-        if rate == 0:
+        if rate < 1 or rate > 1000:
             raise Exception("Invalid screen refresh rate")
-        request_data = struct.pack("IIi", 0, 0, rate)
+        request_data = struct.pack("IIf", 0, 0, rate)
         request, request_id = self._generate_header(
             RequestType.SetScreenRefreshRate, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
 
-    # Gets whether a button is currently pressed.
-    #   button: Button (use Button enum).
-    # Returns: True if the button is pressed or False if the button is not pressed.
-    def is_button_pressed(self, button):
-        request_data = struct.pack("IIi", 0, 0, button)
+    # Gets whether buttons are currently pressed.
+    #   buttons: Buttons (use Button enum).
+    # Returns: True if the buttons are pressed or False if the buttons aren't pressed.
+    def are_buttons_pressed(self, buttons):
+        request_data = struct.pack("IIi", 0, 0, buttons)
         request, request_id = self._generate_header(
             RequestType.IsButtonPressed, len(request_data))
         request += request_data
         self.socket.send(request)
         raw_reply = self.socket.recv()
         data = self._read_and_validate_header(
-            raw_reply, request_id, RequestType.IsButtonPressed)
+            raw_reply, request_id, RequestType.AreButtonsPressed)
         return data[0] == 1
 
     # Sets whether frame advancing is enabled.

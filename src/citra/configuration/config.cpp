@@ -473,7 +473,7 @@ void Config::Save() {
     // Cast to double because Qt's written float values aren't human-readable
     WriteSetting("bg_red", static_cast<double>(Settings::values.bg_red), 0.0);
     WriteSetting("bg_green", static_cast<double>(Settings::values.bg_green), 0.0);
-    WriteSetting("bg_blue", (static_cast<double>(Settings::values.bg_blue), 0.0);
+    WriteSetting("bg_blue", static_cast<double>(Settings::values.bg_blue), 0.0);
     WriteSetting("enable_cache_clear", Settings::values.enable_cache_clear, false);
     settings->endGroup();
     settings->beginGroup("Layout");
