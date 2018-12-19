@@ -11,6 +11,7 @@
 #include <sstream>
 #include <thread>
 #include <asl/Http.h>
+#include <asl/JSON.h>
 #include <enet/enet.h>
 #include <httplib.h>
 #include <json.hpp>
@@ -26,11 +27,6 @@ void to_json(nlohmann::json& json, const JsonRoom::Member& member) {
     json["program"] = member.program;
 }
 
-void from_json(const nlohmann::json& json, JsonRoom::Member& member) {
-    member.nickname = json.at("nickname").get<std::string>();
-    member.program = json.at("program").get<std::string>();
-}
-
 void to_json(nlohmann::json& json, const JsonRoom& room) {
     json["name"] = room.name;
     json["creator"] = room.creator;
@@ -43,27 +39,6 @@ void to_json(nlohmann::json& json, const JsonRoom& room) {
     if (room.members.size() > 0) {
         nlohmann::json member_json = room.members;
         json["members"] = member_json;
-    }
-}
-
-void from_json(const nlohmann::json& json, JsonRoom& room) {
-    room.ip = json.at("ip").get<std::string>();
-    room.name = json.at("name").get<std::string>();
-    room.creator = json.at("creator").get<std::string>();
-    try {
-        room.description = json.at("description").get<std::string>();
-    } catch (const nlohmann::detail::out_of_range& e) {
-        room.description = "";
-        LOG_DEBUG(Network, "Room '{}' doesn't contain a description", room.name);
-    }
-    room.port = json.at("port").get<u16>();
-    room.max_members = json.at("max_members").get<u32>();
-    room.net_version = json.at("net_version").get<u32>();
-    room.has_password = json.at("has_password").get<bool>();
-    try {
-        room.members = json.at("members").get<std::vector<JsonRoom::Member>>();
-    } catch (const nlohmann::detail::out_of_range& e) {
-        LOG_DEBUG(Network, "Out of range {}", e.what());
     }
 }
 
@@ -862,7 +837,26 @@ std::vector<JsonRoom> Room::RoomImpl::GetRoomList() {
     auto reply{MakeRequest("GET").returned_data};
     if (reply.empty())
         return {};
-    return nlohmann::json::parse(reply).get<std::vector<JsonRoom>>();
+    auto json{asl::decodeJSON(reply.c_str())};
+    std::vector<JsonRoom> rooms;
+    for (const auto& o : json) {
+        JsonRoom room;
+        room.ip = std::string{static_cast<const char*>(o["ip"])};
+        room.port = static_cast<u16>(static_cast<unsigned>(o["port"]));
+        room.name = std::string{static_cast<const char*>(o["name"])};
+        room.creator = std::string{static_cast<const char*>(o["creator"])};
+        if (o.has("description"))
+            room.description = std::string{static_cast<const char*>(o["description"])};
+        room.max_members = o["max_members"];
+        room.net_version = o["net_version"];
+        room.has_password = o["has_password"];
+        if (o.has("members"))
+            for (const auto& m : o["members"])
+                room.members.emplace_back(std::string{static_cast<const char*>(m["nickname"])},
+                                          std::string{static_cast<const char*>(m["program"])});
+        rooms.emplace_back(std::move(room));
+    }
+    return rooms;
 }
 
 void Room::RoomImpl::UpdateAPIInformation() {
@@ -876,8 +870,7 @@ void Room::RoomImpl::UpdateAPIInformation() {
     room.net_version = Network::NetworkVersion;
     room.has_password = !password.empty();
     for (const auto& member : members)
-        room.members.emplace_back(
-            JsonRoom::Member{member.nickname, member.program, member.mac_address});
+        room.members.emplace_back(member.nickname, member.program);
     nlohmann::json json = room;
     auto result{MakeRequest("POST", json.dump())};
     if (result.result_code != Common::WebResult::Code::Success &&

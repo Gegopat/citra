@@ -8,6 +8,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 #include "common/common_types.h"
 #include "common/web_result.h"
@@ -31,8 +32,10 @@ struct RoomInformation {
 
 struct JsonRoom {
     struct Member {
+        explicit Member(std::string nickname, std::string program)
+            : nickname{std::move(nickname)}, program{std::move(program)} {}
+
         std::string nickname, program;
-        MacAddress mac_address;
     };
     std::string name, creator, description, ip;
     u16 port;
