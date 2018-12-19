@@ -377,22 +377,6 @@ void HTTP_C::CreateContext(Kernel::HLERequestContext& ctx) {
     context.socket_buffer_size = 0;
     context.handle = context_counter;
     context.session_id = session_data->session_id;
-    using PostData = Context::PostData;
-    auto q{url.find('?')};
-    if (q != std::string::npos) {
-        std::vector<std::string> params;
-        Common::SplitString(url.substr(q + 1, url.length()), '&', params);
-        for (const auto& param : params) {
-            std::vector<std::string> parts;
-            Common::SplitString(param, '=', parts);
-            PostData post_data;
-            post_data.type = PostData::Type::Ascii;
-            post_data.ascii.name = parts[0];
-            post_data.ascii.name =
-                std::string{static_cast<const char*>(asl::decodeUrl(parts[1].c_str()))};
-            context.post_data.emplace_back(std::move(post_data));
-        }
-    }
     ++session_data->num_http_contexts;
     auto rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
