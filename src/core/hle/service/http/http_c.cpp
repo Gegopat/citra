@@ -118,7 +118,8 @@ void Context::Send() {
     int code{res.code()};
     if (code != 0) {
         response.status_code = static_cast<u32>(code);
-        response.body = std::string{static_cast<const char*>(res.text())};
+        auto body{res.body()};
+        response.body = std::vector<u8>(body.ptr(), body.ptr() + body.length());
         response.headers.clear();
         for (const auto [name, value] : res.headers())
             response.headers[static_cast<const char*>(name)] = static_cast<const char*>(value);

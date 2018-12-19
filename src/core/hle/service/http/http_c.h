@@ -22,7 +22,8 @@ namespace Service::HTTP {
 using Headers = std::unordered_map<std::string, std::string>;
 
 struct Response {
-    std::string raw, body;
+    std::string raw;
+    std::vector<u8> body;
     Headers headers;
     u32 status_code;
 
