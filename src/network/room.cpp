@@ -11,9 +11,9 @@
 #include <sstream>
 #include <thread>
 #include <asl/Http.h>
+#include <asl/HttpServer.h>
 #include <asl/JSON.h>
 #include <enet/enet.h>
-#include <httplib.h>
 #include "common/logging/log.h"
 #include "common/thread_pool.h"
 #include "network/packet.h"
@@ -52,17 +52,21 @@ Common::WebResult MakeRequest(const std::string& method, const std::string& body
                              std::string{static_cast<const char*>(res_body)}};
 }
 
-struct Room::RoomImpl {
-    RoomImpl() : random_gen{std::random_device{}()} {
-        http_server.Get("/", [this](const httplib::Request& req, httplib::Response& res) {
-            res.status = 200;
-            res.body = "OK";
-        });
+class Server : public asl::HttpServer {
+public:
+    explicit Server(u16 port) : asl::HttpServer{port} {}
+
+    virtual void serve(asl::HttpRequest& req, asl::HttpResponse& res) override {
+        res.setCode(204);
     }
+};
+
+struct Room::RoomImpl {
+    RoomImpl() : random_gen{std::random_device{}()} {}
 
     ErrorCallback error_callback;
 
-    httplib::Server http_server;
+    std::shared_ptr<Server> http_server;
 
     std::mt19937 random_gen; ///< Random number generator. Used for GenerateMacAddress
 
@@ -678,11 +682,8 @@ void Room::RoomImpl::BroadcastRoomInformation() {
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_host_broadcast(server, 0, enet_packet);
     enet_host_flush(server);
-    if (is_public.load(std::memory_order_relaxed)) {
-        // Update API information
-        auto& thread_pool{Common::ThreadPool::GetPool()};
-        thread_pool.Push([this] { Announce(); });
-    }
+    if (is_public.load(std::memory_order_relaxed))
+        Common::ThreadPool::GetPool().Push([this] { Announce(); });
 }
 
 MacAddress Room::RoomImpl::GenerateMacAddress() {
@@ -851,8 +852,11 @@ void Room::RoomImpl::Announce() {
     auto result{
         MakeRequest("POST", std::string{static_cast<const char*>(asl::Json::encode(room))})};
     if (result.result_code != Common::WebResult::Code::Success &&
-        is_public.load(std::memory_order_relaxed) && error_callback)
+        is_public.load(std::memory_order_relaxed) && error_callback) {
+        is_public.store(false, std::memory_order_relaxed);
+        http_server.reset();
         return error_callback(result);
+    }
 }
 
 // Room
@@ -881,9 +885,8 @@ bool Room::Create(bool is_public, const std::string& name, const std::string& de
     room_impl->is_public.store(is_public, std::memory_order_relaxed);
     room_impl->StartLoop();
     if (room_impl->is_public.load(std::memory_order_relaxed)) {
-        std::thread(
-            [this] { room_impl->http_server.listen("0.0.0.0", room_impl->room_information.port); })
-            .detach();
+        room_impl->http_server = std::make_shared<Server>(port);
+        room_impl->http_server->start(true);
         room_impl->Announce();
     }
     return true;
@@ -935,7 +938,7 @@ void Room::Destroy() {
         std::lock_guard lock{room_impl->member_mutex};
         room_impl->members.clear();
     }
-    room_impl->http_server.stop();
+    room_impl->http_server.reset();
 }
 
 std::vector<JsonRoom> Room::GetRoomList() {
@@ -944,11 +947,6 @@ std::vector<JsonRoom> Room::GetRoomList() {
 
 void Room::SetErrorCallback(ErrorCallback cb) {
     return room_impl->SetErrorCallback(cb);
-}
-
-void Room::StopAnnouncing() {
-    room_impl->is_public.store(false, std::memory_order_relaxed);
-    room_impl->http_server.stop();
 }
 
 bool Room::IsPublic() const {
