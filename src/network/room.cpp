@@ -24,7 +24,7 @@ namespace Network {
 
 Common::WebResult MakeRequest(const std::string& method, const asl::Var& data = {}) {
     asl::HttpRequest req{method.c_str(), "http://citra-valentin-api.glitch.me/lobby"};
-    if (method == "POST")
+    if (!data.is(asl::Var::Type::NONE))
         req.put(data);
     auto res{asl::Http::request(req)};
     int code{res.code()};
