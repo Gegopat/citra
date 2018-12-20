@@ -115,6 +115,7 @@ void Context::Send() {
         req.put(body.c_str());
     }
     req.setFollowRedirects(false);
+    req.setVerify(!((ssl_config.options & 0x200) == 0x200));
     auto res{asl::Http::request(req)};
     int code{res.code()};
     if (code != 0) {
