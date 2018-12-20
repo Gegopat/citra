@@ -8,6 +8,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 #include "common/common_types.h"
 #include "common/web_result.h"
@@ -31,11 +32,22 @@ struct RoomInformation {
 
 struct JsonRoom {
     struct Member {
+        explicit Member(std::string nickname, std::string program)
+            : nickname{std::move(nickname)}, program{std::move(program)} {}
+
         std::string nickname, program;
-        MacAddress mac_address;
     };
-    std::string name, creator, description, ip;
+
+    explicit JsonRoom(std::string ip, u16 port, std::string name, std::string creator,
+                      std::string description, u32 max_members, u32 net_version, bool has_password,
+                      std::vector<Member> members)
+        : ip{std::move(ip)}, port{port}, name{std::move(name)}, creator{std::move(creator)},
+          description{std::move(description)}, max_members{max_members}, net_version{net_version},
+          has_password{has_password}, members{std::move(members)} {}
+
+    std::string ip;
     u16 port;
+    std::string name, creator, description;
     u32 max_members, net_version;
     bool has_password;
     std::vector<Member> members;
@@ -125,14 +137,9 @@ public:
     /// Sets a function to call when a error happens in 'MakeRequest'
     void SetErrorCallback(ErrorCallback cb);
 
-    /// Stops announcing the room
-    void StopAnnouncing();
-
     bool IsPublic() const;
 
 private:
-    Common::WebResult MakeRequest(const std::string& method, const std::string& body = "");
-
     struct RoomImpl;
     std::unique_ptr<RoomImpl> room_impl;
 };

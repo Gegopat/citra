@@ -136,7 +136,6 @@ void MultiplayerState::OnNetworkError(const Network::RoomMember::Error& error) {
 }
 
 void MultiplayerState::OnAnnounceFailed(const Common::WebResult& result) {
-    system.Room().StopAnnouncing();
     QMessageBox::critical(this, "Error",
                           QString("Failed to announce the room.\n") +
                               QString::fromStdString(result.result_string),

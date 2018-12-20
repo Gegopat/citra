@@ -2,12 +2,13 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include <LUrlParser.h>
+#include <utility>
+#include <asl/Http.h>
 #include <cryptopp/aes.h>
 #include <cryptopp/base64.h>
 #include <cryptopp/modes.h>
 #include <fmt/format.h>
-#include <httplib.h>
+#include "common/string_util.h"
 #include "core/core.h"
 #include "core/file_sys/archive_ncch.h"
 #include "core/file_sys/file_backend.h"
@@ -73,9 +74,8 @@ u32 Context::GetResponseContentLength() const {
 }
 
 void Context::Send() {
-    client->set_verify(!((ssl_config.options & 0x200) == 0x200));
-    httplib::Request req;
-    static const std::unordered_map<RequestMethod, std::string> method_string_map{{
+    asl::HttpRequest req;
+    const std::unordered_map<RequestMethod, asl::String> method_string_map{{
         {RequestMethod::Get, "GET"},
         {RequestMethod::Post, "POST"},
         {RequestMethod::Head, "HEAD"},
@@ -84,49 +84,55 @@ void Context::Send() {
         {RequestMethod::PostEmpty, "POST"},
         {RequestMethod::PutEmpty, "PUT"},
     }};
-    req.method = method_string_map.find(method)->second;
-    req.path = '/' + path;
+    req.setMethod(method_string_map.find(method)->second);
+    req.setUrl(url.c_str());
     for (const auto& header : headers)
-        req.headers.emplace(header.first, header.second);
+        req.setHeader(header.first.c_str(), header.second.c_str());
     if (!post_data.empty()) {
+        std::string body;
         bool first{true};
         for (const auto& item : post_data) {
             switch (item.type) {
             case PostData::Type::Ascii:
                 if (!first)
-                    req.body += '&';
-                req.body += fmt::format("{}={}", httplib::detail::encode_url(item.ascii.name),
-                                        httplib::detail::encode_url(item.ascii.value));
+                    body += '&';
+                body += fmt::format("{}={}", asl::encodeUrl(item.ascii.name.c_str()),
+                                    asl::encodeUrl(item.ascii.value.c_str()));
                 break;
             case PostData::Type::Binary:
                 if (!first)
-                    req.body += '&';
-                req.body +=
-                    fmt::format("{}={}", httplib::detail::encode_url(item.binary.name),
-                                httplib::detail::encode_url(std::string(
-                                    reinterpret_cast<const char*>(item.binary.data.data()))));
+                    body += '&';
+                body += fmt::format(
+                    "{}={}", asl::encodeUrl(item.binary.name.c_str()),
+                    asl::encodeUrl(reinterpret_cast<const char*>(item.binary.data.data())));
                 break;
             case PostData::Type::Raw:
-                req.body += item.raw.data;
+                body += item.raw.data;
                 break;
             }
             first = false;
         }
+        req.put(body.c_str());
     }
-    httplib::Response res;
-    if (client->send(req, res)) {
-        response.status_code = static_cast<u32>(res.status);
-        response.body = res.body;
-        response.raw = GetRawResponseWithoutBody();
+    req.setFollowRedirects(false);
+    req.setVerify(!((ssl_config.options & 0x200) == 0x200));
+    auto res{asl::Http::request(req)};
+    int code{res.code()};
+    if (code != 0) {
+        response.status_code = static_cast<u32>(code);
+        auto body{res.body()};
+        response.body = std::vector<u8>(body.ptr(), body.ptr() + body.length());
         response.headers.clear();
-        for (const auto& header : res.headers)
-            response.headers[header.first] = header.second;
-        LOG_DEBUG(Service_HTTP, "Raw response: {}", response.raw.append(1, '\n').append(res.body));
+        for (const auto [name, value] : res.headers())
+            response.headers[static_cast<const char*>(name)] = static_cast<const char*>(value);
+        response.raw = GetRawResponseWithoutBody();
+        LOG_DEBUG(Service_HTTP, "Raw response: {}",
+                  response.raw.append(1, '\n').append(res.text()));
     } else {
         response.status_code = 500;
         response.body.clear();
-        response.raw.clear();
         response.headers.clear();
+        response.raw.clear();
     }
 }
 
@@ -367,35 +373,13 @@ void HTTP_C::CreateContext(Kernel::HLERequestContext& ctx) {
         return;
     }
     auto& context{contexts.emplace(++context_counter, Context{}).first->second};
-    auto parsed_url{LUrlParser::clParseURL::ParseURL(url)};
-    int port;
-    if (parsed_url.m_Scheme == "http") {
-        if (!parsed_url.GetPort(&port))
-            port = 80;
-        context.client = std::make_unique<httplib::Client>(parsed_url.m_Host.c_str(), port);
-    } else if (parsed_url.m_Scheme == "https") {
-        if (!parsed_url.GetPort(&port))
-            port = 443;
-        context.client = std::make_unique<httplib::SSLClient>(parsed_url.m_Host.c_str(), port);
-    } else
-        UNREACHABLE_MSG("Invalid scheme!");
-    context.path = parsed_url.m_Path;
+    context.url = url;
     context.method = method;
     context.state = RequestState::NotStarted;
     // TODO: Find a correct default value for this field.
     context.socket_buffer_size = 0;
     context.handle = context_counter;
     context.session_id = session_data->session_id;
-    httplib::Params params;
-    httplib::detail::parse_query_text(parsed_url.m_Query, params);
-    using PostData = Context::PostData;
-    for (const auto& p : params) {
-        PostData post_data;
-        post_data.type = PostData::Type::Ascii;
-        post_data.ascii.name = p.first;
-        post_data.ascii.value = p.second;
-        context.post_data.push_back(post_data);
-    }
     ++session_data->num_http_contexts;
     auto rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
@@ -659,7 +643,7 @@ void HTTP_C::AddPostDataAscii(Kernel::HLERequestContext& ctx) {
     post_data.type = PostData::Type::Ascii;
     post_data.ascii.name = name;
     post_data.ascii.value = value;
-    itr->second.post_data.push_back(post_data);
+    itr->second.post_data.emplace_back(std::move(post_data));
     auto rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
     LOG_DEBUG(Service_HTTP, "context_id={}, name={}, value={}", context_id, name, value);
@@ -683,7 +667,7 @@ void HTTP_C::AddPostDataBinary(Kernel::HLERequestContext& ctx) {
     post_data.type = PostData::Type::Binary;
     post_data.binary.name = name;
     post_data.binary.data = data;
-    itr->second.post_data.push_back(post_data);
+    itr->second.post_data.emplace_back(std::move(post_data));
     auto rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
     LOG_DEBUG(Service_HTTP, "context_id={}, name={}, data={}", context_id, name,
@@ -703,7 +687,7 @@ void HTTP_C::AddPostDataRaw(Kernel::HLERequestContext& ctx) {
     PostData post_data;
     post_data.type = PostData::Type::Raw;
     post_data.raw.data = data;
-    itr->second.post_data.push_back(post_data);
+    itr->second.post_data.emplace_back(std::move(post_data));
     auto rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
@@ -736,7 +720,7 @@ void HTTP_C::SendPOSTDataRawTimeout(Kernel::HLERequestContext& ctx) {
     PostData post_data;
     post_data.type = PostData::Type::Raw;
     post_data.raw.data = data;
-    itr->second.post_data.push_back(post_data);
+    itr->second.post_data.emplace_back(std::move(post_data));
     auto rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
@@ -895,7 +879,7 @@ void HTTP_C::AddTrustedRootCA(Kernel::HLERequestContext& ctx) {
     cert.handle = ++itr->second.ssl_config.root_ca_chain.certs_counter;
     cert.certificate.resize(buffer_size);
     buffer.Read(cert.certificate.data(), 0, buffer_size);
-    itr->second.ssl_config.root_ca_chain.certificates.push_back(cert);
+    itr->second.ssl_config.root_ca_chain.certificates.emplace_back(std::move(cert));
     auto rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
     LOG_DEBUG(Service_HTTP, "context_id={}, buffer_size={}", context_id, buffer_size);
@@ -915,7 +899,7 @@ void HTTP_C::AddDefaultCert(Kernel::HLERequestContext& ctx) {
     cert.session_id = session_data->session_id;
     cert.handle = ++itr->second.ssl_config.root_ca_chain.certs_counter;
     cert.certificate = default_root_certs[cert_id].certificate;
-    itr->second.ssl_config.root_ca_chain.certificates.push_back(cert);
+    itr->second.ssl_config.root_ca_chain.certificates.emplace_back(std::move(cert));
     auto rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
     LOG_DEBUG(Service_HTTP, "context_id={}, cert_id={}", context_id, cert_id);
@@ -934,7 +918,7 @@ void HTTP_C::RootCertChainAddCert(Kernel::HLERequestContext& ctx) {
     cert.session_id = session_data->session_id;
     cert.handle = ++itr->second.certs_counter;
     buffer.Read(cert.certificate.data(), 0, buffer_size);
-    itr->second.certificates.push_back(cert);
+    itr->second.certificates.emplace_back(std::move(cert));
     auto rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(itr->second.certs_counter);
@@ -1177,7 +1161,7 @@ void HTTP_C::RootCertChainAddDefaultCert(Kernel::HLERequestContext& ctx) {
     cert.session_id = session_data->session_id;
     cert.handle = ++itr->second.certs_counter;
     cert.certificate = default_root_certs[cert_id].certificate;
-    itr->second.certificates.push_back(cert);
+    itr->second.certificates.emplace_back(std::move(cert));
     auto rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(itr->second.certs_counter);

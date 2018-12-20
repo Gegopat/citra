@@ -22,9 +22,6 @@
 [submodule "enet"]
     path = externals/enet
     url = https://github.com/lsalzman/enet.git
-[submodule "libressl"]
-    path = externals/libressl
-    url = https://github.com/citra-emu/ext-libressl-portable.git
 [submodule "cubeb"]
     path = externals/cubeb
     url = https://github.com/kinetiknz/cubeb.git
@@ -40,3 +37,9 @@
 [submodule "teakra"]
     path = externals/teakra
     url = https://github.com/wwylele/teakra.git
+[submodule "asl"]
+	path = externals/asl
+	url = https://github.com/valentinvanelslande/asl
+[submodule "mbedtls"]
+    path = externals/mbedtls
+    url = https://github.com/ARMmbed/mbedtls.git

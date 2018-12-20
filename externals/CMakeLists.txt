@@ -58,22 +58,16 @@ if (ENABLE_DISCORD_RPC)
     target_include_directories(discord-rpc INTERFACE ./discord-rpc/include)
 endif()
 
-# LibreSSL
-set(LIBRESSL_SKIP_INSTALL ON CACHE BOOL "")
-add_definitions(-DHAVE_INET_NTOP)
-add_subdirectory(libressl)
-target_include_directories(ssl INTERFACE ./libressl/include)
+# mbedtls
+set(ENABLE_PROGRAMS OFF)
+set(ENABLE_TESTING OFF)
+set(USE_SHARED_MBEDTLS_LIBRARY OFF)
+add_subdirectory(mbedtls)
+target_include_directories(mbedtls PUBLIC ./mbedtls/include)
 
-# lurlparser
-add_subdirectory(lurlparser EXCLUDE_FROM_ALL)
-
-# httplib
-add_library(httplib INTERFACE)
-target_include_directories(httplib INTERFACE ./httplib)
-
-# JSON
-add_library(json-headers INTERFACE)
-target_include_directories(json-headers INTERFACE ./json)
+# asl
+set(ASL_TLS ON)
+add_subdirectory(asl)
 
 # Cubeb
 set(BUILD_TESTS OFF CACHE BOOL "")

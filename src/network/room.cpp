@@ -10,9 +10,11 @@
 #include <regex>
 #include <sstream>
 #include <thread>
+#include <utility>
+#include <asl/Http.h>
+#include <asl/HttpServer.h>
+#include <asl/JSON.h>
 #include <enet/enet.h>
-#include <httplib.h>
-#include <json.hpp>
 #include "common/logging/log.h"
 #include "common/thread_pool.h"
 #include "network/packet.h"
@@ -20,66 +22,49 @@
 
 namespace Network {
 
-void to_json(nlohmann::json& json, const JsonRoom::Member& member) {
-    json["nickname"] = member.nickname;
-    json["program"] = member.program;
+Common::WebResult MakeRequest(const std::string& method, const asl::Var& data = {}) {
+    asl::HttpRequest req{method.c_str(), "http://citra-valentin-api.glitch.me/lobby"};
+    if (!data.is(asl::Var::Type::NONE))
+        req.put(data);
+    auto res{asl::Http::request(req)};
+    int code{res.code()};
+    if (code >= 400) {
+        LOG_ERROR(Network, "Request returned error status code: {}", code);
+        return Common::WebResult{Common::WebResult::Code::HttpError, std::to_string(code)};
+    }
+    if (!res.hasHeader("Content-Type")) {
+        LOG_ERROR(Network, "Request returned no content");
+        return Common::WebResult{Common::WebResult::Code::WrongContent, "No content"};
+    }
+    auto content_type{res.header("Content-Type")};
+    if (!content_type.contains("application/json") && !content_type.contains("text/html") &&
+        !content_type.contains("text/plain")) {
+        LOG_ERROR(Network, "Request returned wrong content: {}", content_type);
+        return Common::WebResult{Common::WebResult::Code::WrongContent, "Wrong content"};
+    }
+    auto res_body{res.text()};
+    if (res_body.contains("TCP"))
+        return Common::WebResult{Common::WebResult::Code::HttpError,
+                                 std::string{static_cast<const char*>(res_body)}};
+    return Common::WebResult{Common::WebResult::Code::Success, "",
+                             std::string{static_cast<const char*>(res_body)}};
 }
 
-void from_json(const nlohmann::json& json, JsonRoom::Member& member) {
-    member.nickname = json.at("nickname").get<std::string>();
-    member.program = json.at("program").get<std::string>();
-}
+class Server : public asl::HttpServer {
+public:
+    explicit Server(u16 port) : asl::HttpServer{port} {}
 
-void to_json(nlohmann::json& json, const JsonRoom& room) {
-    json["name"] = room.name;
-    json["creator"] = room.creator;
-    if (!room.description.empty())
-        json["description"] = room.description;
-    json["port"] = room.port;
-    json["max_members"] = room.max_members;
-    json["net_version"] = room.net_version;
-    json["has_password"] = room.has_password;
-    if (room.members.size() > 0) {
-        nlohmann::json member_json = room.members;
-        json["members"] = member_json;
+    virtual void serve(asl::HttpRequest& req, asl::HttpResponse& res) override {
+        res.setCode(204);
     }
-}
-
-void from_json(const nlohmann::json& json, JsonRoom& room) {
-    room.ip = json.at("ip").get<std::string>();
-    room.name = json.at("name").get<std::string>();
-    room.creator = json.at("creator").get<std::string>();
-    try {
-        room.description = json.at("description").get<std::string>();
-    } catch (const nlohmann::detail::out_of_range& e) {
-        room.description = "";
-        LOG_DEBUG(Network, "Room '{}' doesn't contain a description", room.name);
-    }
-    room.port = json.at("port").get<u16>();
-    room.max_members = json.at("max_members").get<u32>();
-    room.net_version = json.at("net_version").get<u32>();
-    room.has_password = json.at("has_password").get<bool>();
-    try {
-        room.members = json.at("members").get<std::vector<JsonRoom::Member>>();
-    } catch (const nlohmann::detail::out_of_range& e) {
-        LOG_DEBUG(Network, "Out of range {}", e.what());
-    }
-}
+};
 
 struct Room::RoomImpl {
-    RoomImpl()
-        : random_gen{std::random_device{}()}, client{std::make_unique<httplib::Client>(
-                                                  "citra-valentin-api.glitch.me", 80)} {
-        http_server.Get("/", [this](const httplib::Request& req, httplib::Response& res) {
-            res.status = 200;
-            res.body = "OK";
-        });
-    }
+    RoomImpl() : random_gen{std::random_device{}()} {}
 
     ErrorCallback error_callback;
 
-    std::unique_ptr<httplib::Client> client;
-    httplib::Server http_server;
+    std::shared_ptr<Server> http_server;
 
     std::mt19937 random_gen; ///< Random number generator. Used for GenerateMacAddress
 
@@ -255,9 +240,8 @@ struct Room::RoomImpl {
      */
     void HandleClientDisconnection(ENetPeer* client);
 
-    Common::WebResult MakeRequest(const std::string& method, const std::string& body = "");
     std::vector<JsonRoom> GetRoomList();
-    void UpdateAPIInformation();
+    void Announce();
 
     void SetErrorCallback(ErrorCallback cb) {
         error_callback = cb;
@@ -384,7 +368,7 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
     SendStatusMessage(IdMemberJoined, member.nickname);
     {
         std::lock_guard lock{member_mutex};
-        members.push_back(std::move(member));
+        members.emplace_back(std::move(member));
     }
     // Notify everyone that the room information has changed.
     BroadcastRoomInformation();
@@ -453,7 +437,7 @@ void Room::RoomImpl::HandleModBanPacket(const ENetEvent* event) {
         std::lock_guard lock{ban_list_mutex};
         // Ban the member's IP
         if (std::find(ban_list.begin(), ban_list.end(), ip) == ban_list.end())
-            ban_list.push_back(ip);
+            ban_list.emplace_back(std::move(ip));
     }
     // Announce the change to all clients.
     SendStatusMessage(IdMemberBanned, nickname);
@@ -696,11 +680,8 @@ void Room::RoomImpl::BroadcastRoomInformation() {
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_host_broadcast(server, 0, enet_packet);
     enet_host_flush(server);
-    if (is_public.load(std::memory_order_relaxed)) {
-        // Update API information
-        auto& thread_pool{Common::ThreadPool::GetPool()};
-        thread_pool.Push([this] { UpdateAPIInformation(); });
-    }
+    if (is_public.load(std::memory_order_relaxed))
+        Common::ThreadPool::GetPool().Push([this] { Announce(); });
 }
 
 MacAddress Room::RoomImpl::GenerateMacAddress() {
@@ -826,59 +807,47 @@ void Room::RoomImpl::HandleClientDisconnection(ENetPeer* client) {
     BroadcastRoomInformation();
 }
 
-Common::WebResult Room::RoomImpl::MakeRequest(const std::string& method, const std::string& body) {
-    auto response{method == "GET" ? client->Get("/lobby")
-                                  : client->Post("/lobby", body, "application/json")};
-    if (!response) {
-        LOG_ERROR(Network, "Request returned null");
-        return Common::WebResult{Common::WebResult::Code::LibError, "Null response"};
-    }
-    if (response->status >= 400) {
-        LOG_ERROR(Network, "Request returned error status code: {}", response->status);
-        return Common::WebResult{Common::WebResult::Code::HttpError,
-                                 std::to_string(response->status)};
-    }
-    auto content_type{response->headers.find("Content-Type")};
-    if (content_type == response->headers.end()) {
-        LOG_ERROR(Network, "Request returned no content");
-        return Common::WebResult{Common::WebResult::Code::WrongContent, "No content"};
-    }
-    if (content_type->second.find("application/json") == std::string::npos &&
-        content_type->second.find("text/html") == std::string::npos &&
-        content_type->second.find("text/plain") == std::string::npos) {
-        LOG_ERROR(Network, "Request returned wrong content: {}", content_type->second);
-        return Common::WebResult{Common::WebResult::Code::WrongContent, "Wrong content"};
-    }
-    if (response->body.find("TCP") != std::string::npos)
-        return Common::WebResult{Common::WebResult::Code::HttpError, response->body};
-    return Common::WebResult{Common::WebResult::Code::Success, "", response->body};
-}
-
 std::vector<JsonRoom> Room::RoomImpl::GetRoomList() {
     auto reply{MakeRequest("GET").returned_data};
     if (reply.empty())
         return {};
-    return nlohmann::json::parse(reply).get<std::vector<JsonRoom>>();
+    auto json{asl::decodeJSON(reply.c_str())};
+    std::vector<JsonRoom> rooms;
+    for (const auto& o : json) {
+        std::string description;
+        if (o.has("description"))
+            description = std::string{static_cast<const char*>(o["description"])};
+        std::vector<JsonRoom::Member> members;
+        if (o.has("members"))
+            for (const auto& m : o["members"])
+                members.emplace_back(std::string{static_cast<const char*>(m["nickname"])},
+                                     std::string{static_cast<const char*>(m["program"])});
+        rooms.emplace_back(std::string{static_cast<const char*>(o["ip"])},
+                           static_cast<u16>(static_cast<unsigned>(o["port"])),
+                           std::string{static_cast<const char*>(o["name"])},
+                           std::string{static_cast<const char*>(o["creator"])}, description,
+                           o["max_members"], o["net_version"], o["has_password"], members);
+    }
+    return rooms;
 }
 
-void Room::RoomImpl::UpdateAPIInformation() {
+void Room::RoomImpl::Announce() {
     std::lock_guard lock{member_mutex};
-    JsonRoom room;
-    room.name = room_information.name;
-    room.creator = room_information.creator;
-    room.description = room_information.description;
-    room.port = room_information.port;
-    room.max_members = room_information.max_members;
-    room.net_version = Network::NetworkVersion;
-    room.has_password = !password.empty();
-    for (const auto& member : members)
-        room.members.emplace_back(
-            JsonRoom::Member{member.nickname, member.program, member.mac_address});
-    nlohmann::json json = room;
-    auto result{MakeRequest("POST", json.dump())};
+    asl::Array<asl::Var> members;
+    for (const auto& member : this->members)
+        members << asl::Var{"nickname", member.nickname.c_str()}("program", member.program.c_str());
+    auto result{MakeRequest(
+        "POST", asl::Var{"port", room_information.port}("name", room_information.name.c_str())(
+                    "creator", room_information.creator.c_str())(
+                    "description", room_information.description.c_str())(
+                    "max_members", room_information.max_members)("net_version", NetworkVersion)(
+                    "has_password", !password.empty())("members", members))};
     if (result.result_code != Common::WebResult::Code::Success &&
-        is_public.load(std::memory_order_relaxed) && error_callback)
+        is_public.load(std::memory_order_relaxed) && error_callback) {
+        is_public.store(false, std::memory_order_relaxed);
+        http_server.reset();
         return error_callback(result);
+    }
 }
 
 // Room
@@ -907,10 +876,9 @@ bool Room::Create(bool is_public, const std::string& name, const std::string& de
     room_impl->is_public.store(is_public, std::memory_order_relaxed);
     room_impl->StartLoop();
     if (room_impl->is_public.load(std::memory_order_relaxed)) {
-        std::thread(
-            [this] { room_impl->http_server.listen("0.0.0.0", room_impl->room_information.port); })
-            .detach();
-        room_impl->UpdateAPIInformation();
+        room_impl->http_server = std::make_shared<Server>(port);
+        room_impl->http_server->start(true);
+        room_impl->Announce();
     }
     return true;
 }
@@ -936,7 +904,7 @@ std::vector<Room::Member> Room::GetRoomMemberList() const {
         member.nickname = member_impl.nickname;
         member.mac_address = member_impl.mac_address;
         member.program = member_impl.program;
-        member_list.push_back(member);
+        member_list.emplace_back(std::move(member));
     }
     return member_list;
 }
@@ -951,18 +919,16 @@ void Room::Destroy() {
     room_impl->room_thread.reset();
     if (room_impl->server)
         enet_host_destroy(room_impl->server);
-    if (room_impl->is_public.load(std::memory_order_relaxed)) {
-        nlohmann::json json;
-        json["delete"] = room_impl->room_information.port;
-        room_impl->MakeRequest("POST", json.dump());
-    }
+    if (room_impl->is_public.load(std::memory_order_relaxed))
+        MakeRequest("POST",
+                    asl::Var{"delete", static_cast<unsigned>(room_impl->room_information.port)});
     room_impl->room_information = {};
     room_impl->server = nullptr;
     {
         std::lock_guard lock{room_impl->member_mutex};
         room_impl->members.clear();
     }
-    room_impl->http_server.stop();
+    room_impl->http_server.reset();
 }
 
 std::vector<JsonRoom> Room::GetRoomList() {
@@ -971,11 +937,6 @@ std::vector<JsonRoom> Room::GetRoomList() {
 
 void Room::SetErrorCallback(ErrorCallback cb) {
     return room_impl->SetErrorCallback(cb);
-}
-
-void Room::StopAnnouncing() {
-    room_impl->is_public.store(false, std::memory_order_relaxed);
-    room_impl->http_server.stop();
 }
 
 bool Room::IsPublic() const {

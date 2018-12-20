@@ -14,10 +14,9 @@
 #include <QMetaType>
 #include <QRegularExpression>
 #include <QTime>
-#include <QUrl>
 #include <QVBoxLayout>
 #include <QtConcurrent/QtConcurrentRun>
-#include <httplib.h>
+#include <asl/Http.h>
 #include "citra/multiplayer/chat_room.h"
 #include "citra/multiplayer/client_room.h"
 #include "citra/multiplayer/message.h"
@@ -174,26 +173,16 @@ void ChatRoom::AppendChatMessage(const QString& msg) {
     while (i.hasNext()) {
         auto match{i.next()};
         if (match.hasMatch()) {
-            QUrl url{match.captured(1)};
-            if (url.isValid()) {
-                auto scheme{url.scheme()};
-                if (scheme.contains("http")) {
-                    std::unique_ptr<httplib::Client> client;
-                    if (scheme == "http")
-                        client = std::make_unique<httplib::Client>(url.host().toStdString().c_str(),
-                                                                   url.port(80));
-                    else if (scheme == "https")
-                        client = std::make_unique<httplib::SSLClient>(
-                            url.host().toStdString().c_str(), url.port(443));
-                    if (client)
-                        if (auto res{client->Get(url.path().toStdString().c_str())})
-                            ui->chat_history->append(
-                                QString("<img src='data:%1;base64,%2'>")
-                                    .arg(QString::fromStdString(
-                                             res->get_header_value("Content-Type")),
-                                         QString::fromUtf8(
-                                             QByteArray::fromStdString(res->body).toBase64())));
-                }
+            auto res{asl::Http::get(match.captured(1).toStdString().c_str())};
+            if (res.ok()) {
+                auto body{res.text()};
+                ui->chat_history->append(
+                    QString("<img src='data:%1;base64,%2'>")
+                        .arg(static_cast<const char*>(res.header("Content-Type")),
+                            QString::fromUtf8(
+                                QByteArray::fromRawData(static_cast<const char*>(body),
+                                                        body.length())
+                                    .toBase64())));
             }
         }
     }

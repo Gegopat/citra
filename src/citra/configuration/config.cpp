@@ -185,7 +185,7 @@ void Config::Load() {
     Settings::values.enable_shadows = ReadSetting("enable_shadows", true).toBool();
     Settings::values.use_frame_limit = ReadSetting("use_frame_limit", true).toBool();
     Settings::values.frame_limit = ReadSetting("frame_limit", 100).toInt();
-    Settings::values.screen_refresh_rate = ReadSetting("screen_refresh_rate", 60).toInt();
+    Settings::values.screen_refresh_rate = ReadSetting("screen_refresh_rate", 60).toFloat();
     Settings::values.min_vertices_per_thread = ReadSetting("min_vertices_per_thread", 10).toInt();
     u16 resolution_factor{static_cast<u16>(ReadSetting("resolution_factor", 1).toInt())};
     if (resolution_factor == 0)
@@ -463,16 +463,17 @@ void Config::Save() {
     WriteSetting("enable_shadows", Settings::values.enable_shadows, true);
     WriteSetting("use_frame_limit", Settings::values.use_frame_limit, true);
     WriteSetting("frame_limit", Settings::values.frame_limit, 100);
-    WriteSetting("screen_refresh_rate", Settings::values.screen_refresh_rate, 60);
+    WriteSetting("screen_refresh_rate", static_cast<double>(Settings::values.screen_refresh_rate),
+                 60);
     WriteSetting("min_vertices_per_thread", Settings::values.min_vertices_per_thread, 10);
     WriteSetting("resolution_factor", Settings::values.resolution_factor, 1);
     WriteSetting("use_hw_shaders", Settings::values.use_hw_shaders, true);
     WriteSetting("shaders_accurate_gs", Settings::values.shaders_accurate_gs, true);
     WriteSetting("shaders_accurate_mul", Settings::values.shaders_accurate_mul, false);
     // Cast to double because Qt's written float values aren't human-readable
-    WriteSetting("bg_red", (double)Settings::values.bg_red, 0.0);
-    WriteSetting("bg_green", (double)Settings::values.bg_green, 0.0);
-    WriteSetting("bg_blue", (double)Settings::values.bg_blue, 0.0);
+    WriteSetting("bg_red", static_cast<double>(Settings::values.bg_red), 0.0);
+    WriteSetting("bg_green", static_cast<double>(Settings::values.bg_green), 0.0);
+    WriteSetting("bg_blue", static_cast<double>(Settings::values.bg_blue), 0.0);
     WriteSetting("enable_cache_clear", Settings::values.enable_cache_clear, false);
     settings->endGroup();
     settings->beginGroup("Layout");

@@ -152,12 +152,8 @@ endif()
 
 create_target_directory_groups(citra)
 
-get_directory_property(OPENSSL_LIBS
-        DIRECTORY ${PROJECT_SOURCE_DIR}/externals/libressl
-        DEFINITION OPENSSL_LIBS)
-target_compile_definitions(citra PRIVATE -DCPPHTTPLIB_OPENSSL_SUPPORT)
 target_link_libraries(citra PRIVATE audio_core common core input_common network video_core)
-target_link_libraries(citra PRIVATE ${OPENSSL_LIBS} httplib Boost::boost Qt5::OpenGL Qt5::Widgets Qt5::Multimedia)
+target_link_libraries(citra PRIVATE asls Boost::boost Qt5::OpenGL Qt5::Widgets Qt5::Multimedia)
 if (ENABLE_DISCORD_RPC)
     target_link_libraries(citra PRIVATE discord-rpc)
     target_compile_definitions(citra PRIVATE -DENABLE_DISCORD_RPC)

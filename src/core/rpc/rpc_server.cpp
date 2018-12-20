@@ -135,19 +135,19 @@ void RPCServer::HandleSetBackgroundColor(Packet& packet, float r, float g, float
     packet.SendReply();
 }
 
-void RPCServer::HandleSetScreenRefreshRate(Packet& packet, int rate) {
+void RPCServer::HandleSetScreenRefreshRate(Packet& packet, float rate) {
     Settings::values.screen_refresh_rate = rate;
     packet.SetPacketDataSize(0);
     packet.SendReply();
 }
 
-void RPCServer::HandleIsButtonPressed(Packet& packet, int button) {
+void RPCServer::HandleAreButtonsPressed(Packet& packet, u32 buttons) {
     packet.SetPacketDataSize(sizeof(bool));
     packet.GetPacketData()[0] = (system.ServiceManager()
                                      .GetService<Service::HID::Module::Interface>("hid:USER")
                                      ->GetModule()
                                      ->pad_state &
-                                 button) != 0;
+                                 buttons) != 0;
     packet.SendReply();
 }
 
@@ -202,7 +202,7 @@ bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
         case PacketType::SetSpeedLimit:
         case PacketType::SetBackgroundColor:
         case PacketType::SetScreenRefreshRate:
-        case PacketType::IsButtonPressed:
+        case PacketType::AreButtonsPressed:
         case PacketType::SetFrameAdvancing:
         case PacketType::AdvanceFrame:
         case PacketType::GetCurrentFrame:
@@ -243,7 +243,7 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
         case PacketType::PadState: {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
             u32 raw;
-            std::memcpy(&raw, data, sizeof(u32));
+            std::memcpy(&raw, data, sizeof(raw));
             HandlePadState(*request_packet, raw);
             success = true;
             break;
@@ -333,7 +333,7 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
         case PacketType::SetSpeedLimit: {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
             u16 speed_limit;
-            std::memcpy(&speed_limit, data, sizeof(u16));
+            std::memcpy(&speed_limit, data, sizeof(speed_limit));
             HandleSetSpeedLimit(*request_packet, speed_limit);
             success = true;
             break;
@@ -352,24 +352,24 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
         }
         case PacketType::SetScreenRefreshRate: {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
-            int rate;
-            std::memcpy(&rate, data, sizeof(int));
+            float rate;
+            std::memcpy(&rate, data, sizeof(rate));
             HandleSetScreenRefreshRate(*request_packet, rate);
             success = true;
             break;
         }
-        case PacketType::IsButtonPressed: {
+        case PacketType::AreButtonsPressed: {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
-            int button;
-            std::memcpy(&button, data, sizeof(int));
-            HandleIsButtonPressed(*request_packet, button);
+            u32 buttons;
+            std::memcpy(&buttons, data, sizeof(buttons));
+            HandleAreButtonsPressed(*request_packet, buttons);
             success = true;
             break;
         }
         case PacketType::SetFrameAdvancing: {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
             bool enabled;
-            std::memcpy(&enabled, data, sizeof(bool));
+            std::memcpy(&enabled, data, sizeof(enabled));
             HandleSetFrameAdvancing(*request_packet, enabled);
             success = true;
             break;
