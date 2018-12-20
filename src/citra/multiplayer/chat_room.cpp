@@ -174,13 +174,16 @@ void ChatRoom::AppendChatMessage(const QString& msg) {
         auto match{i.next()};
         if (match.hasMatch()) {
             auto res{asl::Http::get(match.captured(1).toStdString().c_str())};
-            ui->chat_history->append(
-                QString("<img src='data:%1;base64,%2'>")
-                    .arg(static_cast<const char*>(res.header("Content-Type")),
-                         QString::fromUtf8(
-                             QByteArray::fromRawData(static_cast<const char*>(res.text()),
-                                                     res.text().length())
-                                 .toBase64())));
+            if (res.ok()) {
+                auto body{res.text()};
+                ui->chat_history->append(
+                    QString("<img src='data:%1;base64,%2'>")
+                        .arg(static_cast<const char*>(res.header("Content-Type")),
+                            QString::fromUtf8(
+                                QByteArray::fromRawData(static_cast<const char*>(body),
+                                                        body.length())
+                                    .toBase64())));
+            }
         }
     }
 }
