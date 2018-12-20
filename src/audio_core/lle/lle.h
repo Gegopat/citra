@@ -10,7 +10,7 @@ namespace AudioCore {
 
 class DspLle final : public DspInterface {
 public:
-    explicit DspLle(Core::System& system);
+    explicit DspLle(Core::System& system, bool multithread);
     ~DspLle() override;
 
     u16 RecvData(u32 register_number) override;

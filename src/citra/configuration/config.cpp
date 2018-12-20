@@ -180,6 +180,8 @@ void Config::Load() {
     }
     Settings::values.use_lle_applets = ReadSetting("use_lle_applets", false).toBool();
     Settings::values.use_lle_dsp = ReadSetting("use_lle_dsp", false).toBool();
+    Settings::values.enable_lle_dsp_multithread =
+        ReadSetting("enable_lle_dsp_multithread", false).toBool();
     settings->endGroup();
     settings->beginGroup("Graphics");
     Settings::values.enable_shadows = ReadSetting("enable_shadows", true).toBool();
@@ -458,6 +460,7 @@ void Config::Save() {
         WriteSetting(QString::fromStdString(service_module.first), service_module.second, false);
     WriteSetting("use_lle_applets", Settings::values.use_lle_applets, false);
     WriteSetting("use_lle_dsp", Settings::values.use_lle_dsp, false);
+    WriteSetting("enable_lle_dsp_multithread", Settings::values.enable_lle_dsp_multithread, false);
     settings->endGroup();
     settings->beginGroup("Graphics");
     WriteSetting("enable_shadows", Settings::values.enable_shadows, true);

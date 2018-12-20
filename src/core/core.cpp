@@ -183,7 +183,8 @@ System::ResultStatus System::Init(Frontend& frontend, u32 system_mode) {
     kernel->MemoryInit(system_mode);
     cpu_core = std::make_unique<Cpu>(*this);
     if (Settings::values.use_lle_dsp)
-        dsp_core = std::make_unique<AudioCore::DspLle>(*this);
+        dsp_core =
+            std::make_unique<AudioCore::DspLle>(*this, Settings::values.enable_lle_dsp_multithread);
     else
         dsp_core = std::make_unique<AudioCore::DspHle>(*this);
     dsp_core->EnableStretching(Settings::values.enable_audio_stretching);

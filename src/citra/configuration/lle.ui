@@ -24,11 +24,22 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="use_lle_dsp">
-       <property name="text">
-        <string>Use LLE DSP</string>
-       </property>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QCheckBox" name="use_lle_dsp">
+         <property name="text">
+          <string>Use LLE DSP</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="enable_lle_dsp_multithread">
+         <property name="text">
+          <string>Multithreaded</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
@@ -51,7 +62,7 @@
              <x>0</x>
              <y>0</y>
              <width>372</width>
-             <height>177</height>
+             <height>176</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_4">
