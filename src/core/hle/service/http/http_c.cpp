@@ -114,6 +114,7 @@ void Context::Send() {
         }
         req.put(body.c_str());
     }
+    req.setFollowRedirects(false);
     auto res{asl::Http::request(req)};
     int code{res.code()};
     if (code != 0) {
