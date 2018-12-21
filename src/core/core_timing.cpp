@@ -7,8 +7,8 @@
 #include <mutex>
 #include <tuple>
 #include "common/assert.h"
-#include "common/event.h"
 #include "common/logging/log.h"
+#include "common/thread.h"
 #include "core/core_timing.h"
 
 namespace Core {

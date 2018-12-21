@@ -14,8 +14,6 @@ namespace Common {
 
 class Event {
 public:
-    Event() : is_set(false) {}
-
     void Set() {
         std::lock_guard lk{mutex};
         if (!is_set) {
@@ -50,15 +48,45 @@ public:
 
     void Reset() {
         std::unique_lock lk{mutex};
-        // no other action required, since wait loops on the predicate and any lingering signal will
+        // No other action required, since wait loops on the predicate and any lingering signal will
         // get cleared on the first iteration
         is_set = false;
     }
 
 private:
-    bool is_set;
+    bool is_set{};
     std::condition_variable condvar;
     std::mutex mutex;
+};
+
+class Barrier {
+public:
+    explicit Barrier(std::size_t count_) : count{count_} {}
+
+    /// Blocks until all "count" threads have called Sync()
+    void Sync() {
+        std::unique_lock<std::mutex> lk{mutex};
+        const auto current_generation{generation};
+        if (++waiting == count) {
+            generation++;
+            waiting = 0;
+            condvar.notify_all();
+        } else
+            condvar.wait(lk,
+                         [this, current_generation] { return current_generation != generation; });
+    }
+
+    std::size_t Generation() const {
+        std::unique_lock<std::mutex> lk(mutex);
+        return generation;
+    }
+
+private:
+    std::condition_variable condvar;
+    mutable std::mutex mutex;
+    std::size_t count;
+    std::size_t waiting{};
+    std::size_t generation{}; // Incremented once each time the barrier is used
 };
 
 } // namespace Common

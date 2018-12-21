@@ -36,7 +36,7 @@ add_library(common STATIC
     string_util.cpp
     string_util.h
     swap.h
-    event.h
+    thread.h
     thread_pool.h
     thread_queue_list.h
     threadsafe_queue.h

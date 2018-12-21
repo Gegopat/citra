@@ -13,7 +13,7 @@
 #include <tuple>
 #include <vector>
 #include "common/common_types.h"
-#include "common/event.h"
+#include "common/thread.h"
 #include "common/vector_math.h"
 
 namespace InputCommon::CemuhookUDP {
@@ -24,9 +24,11 @@ constexpr const char* DEFAULT_ADDR{"127.0.0.1"};
 class Socket;
 
 namespace Response {
+
 struct PadData;
 struct PortInfo;
 struct Version;
+
 } // namespace Response
 
 struct DeviceStatus {

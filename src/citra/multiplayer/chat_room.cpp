@@ -179,10 +179,9 @@ void ChatRoom::AppendChatMessage(const QString& msg) {
                 ui->chat_history->append(
                     QString("<img src='data:%1;base64,%2'>")
                         .arg(static_cast<const char*>(res.header("Content-Type")),
-                            QString::fromUtf8(
-                                QByteArray::fromRawData(static_cast<const char*>(body),
-                                                        body.length())
-                                    .toBase64())));
+                             QString::fromUtf8(QByteArray::fromRawData(
+                                                   static_cast<const char*>(body), body.length())
+                                                   .toBase64())));
             }
         }
     }

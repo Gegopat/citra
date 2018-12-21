@@ -8,7 +8,7 @@
 #include <chrono>
 #include <mutex>
 #include "common/common_types.h"
-#include "common/event.h"
+#include "common/thread.h"
 
 namespace Core {
 
