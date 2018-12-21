@@ -28,12 +28,6 @@
 [submodule "discord-rpc"]
     path = externals/discord-rpc
     url = https://github.com/discordapp/discord-rpc.git
-[submodule "libzmq"]
-    path = externals/libzmq
-    url = https://github.com/zeromq/libzmq.git
-[submodule "cppzmq"]
-    path = externals/cppzmq
-    url = https://github.com/zeromq/cppzmq.git
 [submodule "teakra"]
     path = externals/teakra
     url = https://github.com/wwylele/teakra.git

@@ -516,6 +516,3 @@ create_target_directory_groups(core)
 
 target_link_libraries(core PUBLIC common PRIVATE audio_core network video_core)
 target_link_libraries(core PUBLIC Boost::boost amitool PRIVATE SDL2 cryptopp fmt open_source_archives dynarmic asls enet)
-if (ENABLE_SCRIPTING)
-    target_link_libraries(core PUBLIC libzmq-headers cppzmq-headers libzmq)
-endif()
