@@ -59,15 +59,14 @@ if (ENABLE_DISCORD_RPC)
 endif()
 
 # mbedtls
-set(ENABLE_PROGRAMS OFF)
-set(ENABLE_TESTING OFF)
-set(USE_SHARED_MBEDTLS_LIBRARY OFF)
+set(ENABLE_PROGRAMS OFF CACHE BOOL "")
+set(ENABLE_TESTING OFF CACHE BOOL "")
 add_subdirectory(mbedtls)
 target_include_directories(mbedtls PUBLIC ./mbedtls/include)
 
 # asl
-set(ASL_TLS ON)
-add_subdirectory(asl)
+set(ASL_TLS ON CACHE BOOL "")
+add_subdirectory(asl EXCLUDE_FROM_ALL)
 
 # Cubeb
 set(BUILD_TESTS OFF CACHE BOOL "")
