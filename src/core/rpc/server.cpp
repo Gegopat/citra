@@ -4,9 +4,7 @@
 
 #include <atomic>
 #include <functional>
-#include <thread>
-#define ZMQ_STATIC
-#include <zmq.hpp>
+#include <asl/SocketServer.h>
 #include "core/core.h"
 #include "core/rpc/packet.h"
 #include "core/rpc/rpc_server.h"
@@ -14,83 +12,76 @@
 
 namespace RPC {
 
+class TcpServer : public asl::SocketServer {
+public:
+    explicit TcpServer(std::function<void(std::unique_ptr<Packet>)> new_request_callback)
+        : new_request_callback{new_request_callback} {}
+
+    void serve(asl::Socket client) {
+        const auto send_all{[&client](void* data, std::size_t length) {
+            u8* ptr{static_cast<u8*>(data)};
+            while (length > 0) {
+                int i{client.write(data, length)};
+                if (i < 1)
+                    return false;
+                ptr += i;
+                length -= i;
+            }
+            return true;
+        }};
+        while (!client.disconnected()) {
+            auto header_buffer{client.read(MIN_PACKET_SIZE)};
+            PacketHeader header;
+            std::memcpy(&header, header_buffer.ptr(), sizeof(header));
+            std::vector<u8> data(header.packet_size);
+            if (header.packet_size != 0)
+                client.read(&data[0], header.packet_size);
+            std::unique_ptr<Packet> new_packet{
+                std::make_unique<Packet>(header, data.data(), [&](Packet& reply_packet) {
+                    auto reply_header{reply_packet.GetHeader()};
+                    send_all(&reply_header, sizeof(reply_header));
+                    send_all(reply_packet.GetPacketData().data(), reply_packet.GetPacketDataSize());
+                    LOG_INFO(RPC, "Sent reply (version={}, type={}, size={})",
+                             reply_packet.GetVersion(),
+                             static_cast<u32>(reply_packet.GetPacketType()),
+                             reply_packet.GetPacketDataSize());
+                })};
+            // Send the request to the upper layer for handling
+            new_request_callback(std::move(new_packet));
+        }
+    }
+
+private:
+    std::function<void(std::unique_ptr<Packet>)> new_request_callback;
+};
+
 struct Server::Impl {
     explicit Impl(std::function<void(std::unique_ptr<Packet>)> callback);
     ~Impl();
 
-    void WorkerLoop();
     void SendReply(Packet& request);
 
-    std::thread worker_thread;
     std::atomic_bool running{true};
 
-    std::unique_ptr<zmq::context_t> zmq_context;
-    std::unique_ptr<zmq::socket_t> zmq_socket;
+    TcpServer server;
 
     std::function<void(std::unique_ptr<Packet>)> new_request_callback;
 };
 
-Server::Impl::Impl(std::function<void(std::unique_ptr<Packet>)> callback) {
-    zmq_context = std::make_unique<zmq::context_t>(1);
-    zmq_socket = std::make_unique<zmq::socket_t>(*zmq_context, ZMQ_REP),
+Server::Impl::Impl(std::function<void(std::unique_ptr<Packet>)> callback) : server{callback} {
     new_request_callback = std::move(callback);
     // Use a random high port
     // TODO: Make configurable or increment port number on failure
-    zmq_socket->bind("tcp://127.0.0.1:45987");
-    LOG_INFO(RPC, "ZeroMQ listening on port 45987");
-    worker_thread = std::thread(&Server::Impl::WorkerLoop, this);
+    server.bind(45987);
+    server.start(true);
+    LOG_INFO(RPC, "Server listening on port 45987");
 }
 
 Server::Impl::~Impl() {
-    // Triggering the zmq_context destructor will cancel
-    // any blocking calls to zmq_socket->recv()
     running = false;
-    zmq_context.reset();
-    worker_thread.join();
-}
-
-void Server::Impl::WorkerLoop() {
-    zmq::message_t request;
-    while (running) {
-        try {
-            if (zmq_socket->recv(&request, 0)) {
-                if (request.size() >= MIN_PACKET_SIZE) {
-                    u8* request_buffer{static_cast<u8*>(request.data())};
-                    PacketHeader header;
-                    std::memcpy(&header, request_buffer, sizeof(header));
-                    if ((request.size() - MIN_PACKET_SIZE) == header.packet_size) {
-                        u8* data{request_buffer + MIN_PACKET_SIZE};
-                        std::function<void(Packet&)> send_reply_callback{
-                            std::bind(&Server::Impl::SendReply, this, std::placeholders::_1)};
-                        std::unique_ptr<Packet> new_packet{
-                            std::make_unique<Packet>(header, data, send_reply_callback)};
-                        // Send the request to the upper layer for handling
-                        new_request_callback(std::move(new_packet));
-                    }
-                }
-            }
-        } catch (...) {
-            LOG_WARNING(RPC, "Failed to receive data on ZeroMQ socket");
-        }
-    }
+    server.stop();
+    server.waitForStop();
     new_request_callback({});
-    // Destroying the socket must be done by this thread.
-    zmq_socket.reset();
-}
-
-void Server::Impl::SendReply(Packet& reply_packet) {
-    if (running) {
-        auto reply_buffer{
-            std::make_unique<u8[]>(MIN_PACKET_SIZE + reply_packet.GetPacketDataSize())};
-        auto reply_header{reply_packet.GetHeader()};
-        std::memcpy(reply_buffer.get(), &reply_header, sizeof(reply_header));
-        std::memcpy(reply_buffer.get() + (4 * sizeof(u32)), reply_packet.GetPacketData().data(),
-                    reply_packet.GetPacketDataSize());
-        zmq_socket->send(reply_buffer.get(), MIN_PACKET_SIZE + reply_packet.GetPacketDataSize());
-        LOG_INFO(RPC, "Sent reply version({}) id=({}) type=({}) size=({})",
-                 reply_packet.GetVersion(), reply_packet.GetID(),
-                 static_cast<u32>(reply_packet.GetPacketType()), reply_packet.GetPacketDataSize());
-    }
 }
 
 Server::Server(RPCServer& rpc_server) : rpc_server{rpc_server} {}
@@ -102,20 +93,19 @@ void Server::Start() {
     try {
         impl = std::make_unique<Impl>(callback);
     } catch (...) {
-        LOG_ERROR(RPC, "Error starting ZeroMQ server");
+        LOG_ERROR(RPC, "Error starting server");
     }
 }
 
 void Server::Stop() {
     impl.reset();
-    LOG_INFO(RPC, "ZeroMQ stopped");
+    LOG_INFO(RPC, "Server stopped");
 }
 
 void Server::NewRequestCallback(std::unique_ptr<RPC::Packet> new_request) {
     if (new_request)
-        LOG_INFO(RPC, "Received request (version={}, id={}, type={}, size={})",
-                 new_request->GetVersion(), new_request->GetID(),
-                 static_cast<u32>(new_request->GetPacketType()), new_request->GetPacketDataSize());
+        LOG_TRACE(RPC, "Received request (version={}, type={}, size={})", new_request->GetVersion(),
+                  static_cast<u32>(new_request->GetPacketType()), new_request->GetPacketDataSize());
     rpc_server.QueueRequest(std::move(new_request));
 }
 

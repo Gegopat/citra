@@ -111,7 +111,7 @@ public:
         return IPC::MappedBufferDesc(size, perms);
     }
 
-    u32 GetID() const {
+    u32 GetId() const {
         return id;
     }
 

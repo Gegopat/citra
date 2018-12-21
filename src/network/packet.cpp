@@ -27,7 +27,7 @@ u64 ntohll(u64 x) {
 
 void Packet::Append(const void* in_data, std::size_t size_in_bytes) {
     if (in_data && (size_in_bytes > 0)) {
-        std::size_t start = data.size();
+        auto start{data.size()};
         data.resize(start + size_in_bytes);
         std::memcpy(&data[start], in_data, size_in_bytes);
     }

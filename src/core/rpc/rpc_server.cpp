@@ -17,12 +17,12 @@ namespace RPC {
 
 RPCServer::RPCServer(Core::System& system) : server{*this}, system{system} {
     Start();
-    LOG_INFO(RPC, "RPC started.");
+    LOG_INFO(RPC, "Started");
 }
 
 RPCServer::~RPCServer() {
     Stop();
-    LOG_INFO(RPC, "RPC stopped.");
+    LOG_INFO(RPC, "Stopped");
 }
 
 void RPCServer::HandleReadMemory(Packet& packet, u32 address, u32 data_size) {
@@ -33,112 +33,86 @@ void RPCServer::HandleReadMemory(Packet& packet, u32 address, u32 data_size) {
     packet.SendReply();
 }
 
-void RPCServer::HandleWriteMemory(Packet& packet, u32 address, const u8* data, u32 data_size) {
+void RPCServer::HandleWriteMemory(u32 address, const u8* data, u32 data_size) {
     // Note: Memory write occurs asynchronously from the state of the emulator
     system.Memory().WriteBlock(*system.Kernel().GetCurrentProcess(), address, data, data_size);
     // If the memory happens to be executable code, make sure the changes become visible
     system.CPU().InvalidateCacheRange(address, data_size);
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
 }
 
-void RPCServer::HandlePadState(Packet& packet, u32 raw) {
+void RPCServer::HandlePadState(u32 raw) {
     system.ServiceManager()
         .GetService<Service::HID::Module::Interface>("hid:USER")
         ->GetModule()
         ->SetPadState(raw);
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
 }
 
-void RPCServer::HandleTouchState(Packet& packet, s16 x, s16 y, bool valid) {
+void RPCServer::HandleTouchState(s16 x, s16 y, bool valid) {
     system.ServiceManager()
         .GetService<Service::HID::Module::Interface>("hid:USER")
         ->GetModule()
         ->SetTouchState(x, y, valid);
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
 }
 
-void RPCServer::HandleMotionState(Packet& packet, s16 x, s16 y, s16 z, s16 roll, s16 pitch,
-                                  s16 yaw) {
+void RPCServer::HandleMotionState(s16 x, s16 y, s16 z, s16 roll, s16 pitch, s16 yaw) {
     system.ServiceManager()
         .GetService<Service::HID::Module::Interface>("hid:USER")
         ->GetModule()
         ->SetMotionState(x, y, z, roll, pitch, yaw);
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
 }
 
-void RPCServer::HandleCircleState(Packet& packet, s16 x, s16 y) {
+void RPCServer::HandleCircleState(s16 x, s16 y) {
     system.ServiceManager()
         .GetService<Service::HID::Module::Interface>("hid:USER")
         ->GetModule()
         ->SetCircleState(x, y);
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
 }
 
-void RPCServer::HandleSetResolution(Packet& packet, u16 resolution) {
+void RPCServer::HandleSetResolution(u16 resolution) {
     Settings::values.resolution_factor = resolution;
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
 }
 
-void RPCServer::HandleSetProgram(Packet& packet, const std::string& path) {
+void RPCServer::HandleSetProgram(const std::string& path) {
     system.SetProgram(path);
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
+    std::unique_lock lock{mutex};
+    cv.wait(lock);
 }
 
-void RPCServer::HandleSetOverrideControls(Packet& packet, bool pad, bool touch, bool motion,
-                                          bool circle) {
+void RPCServer::HandleSetOverrideControls(bool pad, bool touch, bool motion, bool circle) {
     system.ServiceManager()
         .GetService<Service::HID::Module::Interface>("hid:USER")
         ->GetModule()
         ->SetOverrideControls(pad, touch, motion, circle);
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
 }
 
-void RPCServer::HandlePause(Packet& packet) {
+void RPCServer::HandlePause() {
     system.SetRunning(false);
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
 }
 
-void RPCServer::HandleResume(Packet& packet) {
+void RPCServer::HandleResume() {
     system.SetRunning(true);
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
 }
 
-void RPCServer::HandleRestart(Packet& packet) {
+void RPCServer::HandleRestart() {
     system.Restart();
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
+    std::unique_lock lock{mutex};
+    cv.wait(lock);
 }
 
-void RPCServer::HandleSetSpeedLimit(Packet& packet, u16 speed_limit) {
+void RPCServer::HandleSetSpeedLimit(u16 speed_limit) {
     Settings::values.use_frame_limit = true;
     Settings::values.frame_limit = speed_limit;
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
 }
 
-void RPCServer::HandleSetBackgroundColor(Packet& packet, float r, float g, float b) {
+void RPCServer::HandleSetBackgroundColor(float r, float g, float b) {
     Settings::values.bg_red = r;
     Settings::values.bg_green = g;
     Settings::values.bg_blue = b;
     Settings::Apply(system);
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
 }
 
-void RPCServer::HandleSetScreenRefreshRate(Packet& packet, float rate) {
+void RPCServer::HandleSetScreenRefreshRate(float rate) {
     Settings::values.screen_refresh_rate = rate;
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
 }
 
 void RPCServer::HandleAreButtonsPressed(Packet& packet, u32 buttons) {
@@ -151,33 +125,30 @@ void RPCServer::HandleAreButtonsPressed(Packet& packet, u32 buttons) {
     packet.SendReply();
 }
 
-void RPCServer::HandleSetFrameAdvancing(Packet& packet, bool enable) {
-    system.frame_limiter.SetFrameAdvancing(enable);
+void RPCServer::HandleSetFrameAdvancing(bool enabled) {
+    system.frame_limiter.SetFrameAdvancing(enabled);
     system.GetFrontend().UpdateFrameAdvancing();
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
 }
 
-void RPCServer::HandleAdvanceFrame(Packet& packet) {
+void RPCServer::HandleAdvanceFrame() {
     system.frame_limiter.AdvanceFrame();
     system.GetFrontend().UpdateFrameAdvancing();
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
 }
 
 void RPCServer::HandleGetCurrentFrame(Packet& packet) {
+    /*if (VideoCore::g_screenshot_requested) {
+        std::condition_variable cv;
+        std::mutex m;
+        std::unique_lock lock{m};
+        cv.wait(lock, []() -> bool { return !VideoCore::g_screenshot_requested; });
+    }*/
     const auto& layout{system.GetFrontend().GetFramebufferLayout()};
     const auto size{(layout.width * layout.height) * sizeof(u32)};
     std::vector<u8> data(size);
     std::condition_variable cv;
     std::mutex m;
     std::unique_lock lock{m};
-    VideoCore::RequestScreenshot(data.data(),
-                                 [&] {
-                                     std::unique_lock lock{m};
-                                     cv.notify_one();
-                                 },
-                                 layout);
+    VideoCore::RequestScreenshot(data.data(), [&cv] { cv.notify_one(); }, layout);
     cv.wait(lock);
     packet.SetPacketDataSize(size);
     packet.GetPacketData() = std::move(data);
@@ -185,7 +156,7 @@ void RPCServer::HandleGetCurrentFrame(Packet& packet) {
 }
 
 bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
-    if (packet_header.version <= CURRENT_VERSION) {
+    if (packet_header.version == CURRENT_VERSION) {
         switch (packet_header.packet_type) {
         case PacketType::ReadMemory:
         case PacketType::WriteMemory:
@@ -217,7 +188,10 @@ bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
 }
 
 void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
-    bool success{};
+    if (!system.IsPoweredOn()) {
+        std::unique_lock lock{mutex};
+        cv.wait(lock);
+    }
     if (ValidatePacket(request_packet->GetHeader())) {
         // Currently, all request types use the address/data_size wire format
         u32 address;
@@ -227,16 +201,13 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
                     sizeof(data_size));
         switch (request_packet->GetPacketType()) {
         case PacketType::ReadMemory:
-            if (data_size > 0 && data_size <= MAX_READ_WRITE_SIZE) {
+            if (data_size > 0 && data_size <= MAX_MEMORY_REQUEST_DATA_SIZE)
                 HandleReadMemory(*request_packet, address, data_size);
-                success = true;
-            }
             break;
         case PacketType::WriteMemory: {
-            if (data_size > 0 && data_size <= MAX_READ_WRITE_SIZE) {
+            if (data_size > 0 && data_size <= MAX_MEMORY_REQUEST_DATA_SIZE) {
                 const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
-                HandleWriteMemory(*request_packet, address, data, data_size);
-                success = true;
+                HandleWriteMemory(address, data, data_size);
             }
             break;
         }
@@ -244,8 +215,7 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
             u32 raw;
             std::memcpy(&raw, data, sizeof(raw));
-            HandlePadState(*request_packet, raw);
-            success = true;
+            HandlePadState(raw);
             break;
         }
         case PacketType::TouchState: {
@@ -256,8 +226,7 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
                 bool valid;
             } state;
             std::memcpy(&state, data, sizeof(state));
-            HandleTouchState(*request_packet, state.x, state.y, state.valid);
-            success = true;
+            HandleTouchState(state.x, state.y, state.valid);
             break;
         }
         case PacketType::MotionState: {
@@ -271,9 +240,7 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
                 s16 yaw;
             } state;
             std::memcpy(&state, data, sizeof(state));
-            HandleMotionState(*request_packet, state.x, state.y, state.z, state.roll, state.pitch,
-                              state.yaw);
-            success = true;
+            HandleMotionState(state.x, state.y, state.z, state.roll, state.pitch, state.yaw);
             break;
         }
         case PacketType::CircleState: {
@@ -283,25 +250,19 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
                 s16 y;
             } state;
             std::memcpy(&state, data, sizeof(state));
-            HandleCircleState(*request_packet, state.x, state.y);
-            success = true;
+            HandleCircleState(state.x, state.y);
             break;
         }
         case PacketType::SetResolution: {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
             u16 resolution;
             std::memcpy(&resolution, data, sizeof(u16));
-            HandleSetResolution(*request_packet, resolution);
-            success = true;
+            HandleSetResolution(resolution);
             break;
         }
         case PacketType::SetProgram: {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
-            std::string path;
-            path.resize(request_packet->GetPacketDataSize() - (sizeof(u32) * 2));
-            std::memcpy(&path[0], data, request_packet->GetPacketDataSize() - (sizeof(u32) * 2));
-            HandleSetProgram(*request_packet, path);
-            success = true;
+            HandleSetProgram(std::string{reinterpret_cast<const char*>(data)});
             break;
         }
         case PacketType::SetOverrideControls: {
@@ -313,29 +274,23 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
                 bool circle;
             } state;
             std::memcpy(&state, data, sizeof(state));
-            HandleSetOverrideControls(*request_packet, state.pad, state.touch, state.motion,
-                                      state.circle);
-            success = true;
+            HandleSetOverrideControls(state.pad, state.touch, state.motion, state.circle);
             break;
         }
         case PacketType::Pause:
-            HandlePause(*request_packet);
-            success = true;
+            HandlePause();
             break;
         case PacketType::Resume:
-            HandleResume(*request_packet);
-            success = true;
+            HandleResume();
             break;
         case PacketType::Restart:
-            HandleRestart(*request_packet);
-            success = true;
+            HandleRestart();
             break;
         case PacketType::SetSpeedLimit: {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
             u16 speed_limit;
             std::memcpy(&speed_limit, data, sizeof(speed_limit));
-            HandleSetSpeedLimit(*request_packet, speed_limit);
-            success = true;
+            HandleSetSpeedLimit(speed_limit);
             break;
         }
         case PacketType::SetBackgroundColor: {
@@ -346,16 +301,14 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
                 float b;
             } color;
             std::memcpy(&color, data, sizeof(color));
-            HandleSetBackgroundColor(*request_packet, color.r, color.g, color.b);
-            success = true;
+            HandleSetBackgroundColor(color.r, color.g, color.b);
             break;
         }
         case PacketType::SetScreenRefreshRate: {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
             float rate;
             std::memcpy(&rate, data, sizeof(rate));
-            HandleSetScreenRefreshRate(*request_packet, rate);
-            success = true;
+            HandleSetScreenRefreshRate(rate);
             break;
         }
         case PacketType::AreButtonsPressed: {
@@ -363,33 +316,24 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
             u32 buttons;
             std::memcpy(&buttons, data, sizeof(buttons));
             HandleAreButtonsPressed(*request_packet, buttons);
-            success = true;
             break;
         }
         case PacketType::SetFrameAdvancing: {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
             bool enabled;
             std::memcpy(&enabled, data, sizeof(enabled));
-            HandleSetFrameAdvancing(*request_packet, enabled);
-            success = true;
+            HandleSetFrameAdvancing(enabled);
             break;
         }
         case PacketType::AdvanceFrame:
-            HandleAdvanceFrame(*request_packet);
-            success = true;
+            HandleAdvanceFrame();
             break;
         case PacketType::GetCurrentFrame:
             HandleGetCurrentFrame(*request_packet);
-            success = true;
             break;
         default:
             break;
         }
-    }
-    if (!success) {
-        // Send an empty reply, so as not to hang the client
-        request_packet->SetPacketDataSize(0);
-        request_packet->SendReply();
     }
 }
 
@@ -409,14 +353,18 @@ void RPCServer::QueueRequest(std::unique_ptr<RPC::Packet> request) {
 }
 
 void RPCServer::Start() {
-    const auto threadFunction{[this]() { HandleRequestsLoop(); }};
-    request_handler_thread = std::thread(threadFunction);
+    const auto f{[this]() { HandleRequestsLoop(); }};
+    request_handler_thread = std::thread(f);
     server.Start();
 }
 
 void RPCServer::Stop() {
     server.Stop();
     request_handler_thread.join();
+}
+
+void RPCServer::Notify() {
+    cv.notify_one();
 }
 
 } // namespace RPC

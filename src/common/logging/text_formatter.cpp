@@ -102,5 +102,7 @@ void PrintColoredMessage(const Entry& entry) {
     fputs(ESC "[0m", stderr);
 #undef ESC
 #endif
+    fflush(stderr);
 }
+
 } // namespace Log

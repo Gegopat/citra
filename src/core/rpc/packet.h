@@ -35,25 +35,21 @@ enum class PacketType {
 
 struct PacketHeader {
     u32 version;
-    u32 id;
     PacketType packet_type;
     u32 packet_size;
 };
 
-constexpr u32 CURRENT_VERSION{1};
+constexpr u32 CURRENT_VERSION{2};
 constexpr u32 MIN_PACKET_SIZE{sizeof(PacketHeader)};
-constexpr u32 MAX_READ_WRITE_SIZE{32};
+constexpr u32 MAX_MEMORY_REQUEST_DATA_SIZE{32};
 
 class Packet {
 public:
-    Packet(const PacketHeader& header, u8* data, std::function<void(Packet&)> send_reply_callback);
+    explicit Packet(const PacketHeader& header, u8* data,
+                    std::function<void(Packet&)> send_reply_callback);
 
     u32 GetVersion() const {
         return header.version;
-    }
-
-    u32 GetID() const {
-        return header.id;
     }
 
     PacketType GetPacketType() const {
@@ -81,7 +77,7 @@ public:
     }
 
 private:
-    struct PacketHeader header;
+    PacketHeader header;
     std::vector<u8> packet_data;
 
     std::function<void(Packet&)> send_reply_callback;

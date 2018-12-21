@@ -136,7 +136,7 @@ struct MIC_U::Impl {
         auto rb{rp.MakeBuilder(1, 2)};
         rb.Push(RESULT_SUCCESS);
         rb.PushMappedBuffer(buffer);
-        LOG_DEBUG(Service_MIC, "size=0x{:X}, buffer=0x{:08X}", size, buffer.GetID());
+        LOG_DEBUG(Service_MIC, "size=0x{:X}, buffer=0x{:08X}", size, buffer.GetId());
     }
 
     void SetClamp(Kernel::HLERequestContext& ctx) {

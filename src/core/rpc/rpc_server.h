@@ -4,8 +4,10 @@
 
 #pragma once
 
+#include <condition_variable>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <thread>
 #include "common/threadsafe_queue.h"
 #include "core/rpc/server.h"
@@ -25,27 +27,29 @@ public:
 
     void QueueRequest(std::unique_ptr<RPC::Packet> request);
 
+    void Notify();
+
 private:
     void Start();
     void Stop();
     void HandleReadMemory(Packet& packet, u32 address, u32 data_size);
-    void HandleWriteMemory(Packet& packet, u32 address, const u8* data, u32 data_size);
-    void HandlePadState(Packet& packet, u32 raw);
-    void HandleTouchState(Packet& packet, s16 x, s16 y, bool valid);
-    void HandleMotionState(Packet& packet, s16 x, s16 y, s16 z, s16 roll, s16 pitch, s16 yaw);
-    void HandleCircleState(Packet& packet, s16 x, s16 y);
-    void HandleSetResolution(Packet& packet, u16 resolution);
-    void HandleSetProgram(Packet& packet, const std::string& path);
-    void HandleSetOverrideControls(Packet& packet, bool pad, bool touch, bool motion, bool circle);
-    void HandlePause(Packet& packet);
-    void HandleResume(Packet& packet);
-    void HandleRestart(Packet& packet);
-    void HandleSetSpeedLimit(Packet& packet, u16 speed_limit);
-    void HandleSetBackgroundColor(Packet& packet, float r, float g, float b);
-    void HandleSetScreenRefreshRate(Packet& packet, float rate);
+    void HandleWriteMemory(u32 address, const u8* data, u32 data_size);
+    void HandlePadState(u32 raw);
+    void HandleTouchState(s16 x, s16 y, bool valid);
+    void HandleMotionState(s16 x, s16 y, s16 z, s16 roll, s16 pitch, s16 yaw);
+    void HandleCircleState(s16 x, s16 y);
+    void HandleSetResolution(u16 resolution);
+    void HandleSetProgram(const std::string& path);
+    void HandleSetOverrideControls(bool pad, bool touch, bool motion, bool circle);
+    void HandlePause();
+    void HandleResume();
+    void HandleRestart();
+    void HandleSetSpeedLimit(u16 speed_limit);
+    void HandleSetBackgroundColor(float r, float g, float b);
+    void HandleSetScreenRefreshRate(float rate);
     void HandleAreButtonsPressed(Packet& packet, u32 buttons);
-    void HandleSetFrameAdvancing(Packet& packet, bool enable);
-    void HandleAdvanceFrame(Packet& packet);
+    void HandleSetFrameAdvancing(bool enabled);
+    void HandleAdvanceFrame();
     void HandleGetCurrentFrame(Packet& packet);
     bool ValidatePacket(const PacketHeader& packet_header);
     void HandleSingleRequest(std::unique_ptr<Packet> request);
@@ -56,6 +60,9 @@ private:
     std::thread request_handler_thread;
 
     Core::System& system;
+
+    std::mutex mutex;
+    std::condition_variable cv;
 };
 
 } // namespace RPC

@@ -45,6 +45,9 @@ void System::InitNetworkAndMovie() {
     room = std::make_unique<Network::Room>();
     room_member = std::make_unique<Network::RoomMember>();
     movie = std::make_unique<Movie>(*this);
+#ifdef ENABLE_SCRIPTING
+    rpc_server = std::make_unique<RPC::RPCServer>(*this);
+#endif
 }
 
 System::~System() {
@@ -60,6 +63,9 @@ System::~System() {
     }
     enet_deinitialize();
     movie.reset();
+#ifdef ENABLE_SCRIPTING
+    rpc_server.reset();
+#endif
 }
 
 System::ResultStatus System::Run() {
@@ -101,8 +107,7 @@ System::ResultStatus System::Load(Frontend& frontend, const std::string& filepat
         LOG_ERROR(Core, "Failed to obtain loader for {}!", filepath);
         return ResultStatus::ErrorGetLoader;
     }
-    std::pair<std::optional<u32>, Loader::ResultStatus> system_mode{
-        program_loader->LoadKernelSystemMode()};
+    auto system_mode{program_loader->LoadKernelSystemMode()};
     if (system_mode.second != Loader::ResultStatus::Success) {
         LOG_ERROR(Core, "Failed to determine system mode (Error {})!",
                   static_cast<int>(system_mode.second));
@@ -142,6 +147,9 @@ System::ResultStatus System::Load(Frontend& frontend, const std::string& filepat
     status = ResultStatus::Success;
     m_filepath = filepath;
     Settings::Apply(*this);
+#ifdef ENABLE_SCRIPTING
+    rpc_server->Notify();
+#endif
     return status;
 }
 
@@ -179,9 +187,6 @@ System::ResultStatus System::Init(Frontend& frontend, u32 system_mode) {
     else
         dsp_core = std::make_unique<AudioCore::DspHle>(*this);
     dsp_core->EnableStretching(Settings::values.enable_audio_stretching);
-#ifdef ENABLE_SCRIPTING
-    rpc_server = std::make_unique<RPC::RPCServer>(*this);
-#endif
     shutdown_requested = false;
     sleep_mode_enabled = false;
     HW::Init();
@@ -283,15 +288,15 @@ void System::Shutdown() {
     VideoCore::Shutdown();
     kernel.reset();
     HW::Shutdown();
-#ifdef ENABLE_SCRIPTING
-    rpc_server.reset();
-#endif
     service_manager.reset();
     dsp_core.reset();
     timing.reset();
     program_loader.reset();
     memory.reset();
     room_member->SetProgram(std::string{});
+#ifdef ENABLE_SCRIPTING
+    rpc_server->Notify();
+#endif
     LOG_DEBUG(Core, "Shutdown OK");
 }
 

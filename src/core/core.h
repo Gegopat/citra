@@ -128,7 +128,7 @@ public:
      * @returns True if the emulated system is powered on, otherwise false.
      */
     bool IsPoweredOn() const {
-        return cpu_core != nullptr;
+        return service_manager != nullptr;
     }
 
     /// Prepare the core emulation for a reschedule.
