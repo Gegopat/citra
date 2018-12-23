@@ -17,10 +17,6 @@
 ConfigurationGeneral::ConfigurationGeneral(QWidget* parent)
     : QWidget{parent}, ui{std::make_unique<Ui::ConfigurationGeneral>()} {
     ui->setupUi(this);
-#ifndef _WIN32
-    ui->toggle_console->setText("Enable logging to console");
-    ui->toggle_console->setToolTip(QString());
-#endif
     connect(ui->restore_defaults, &QPushButton::released, this, [this] {
         auto answer{QMessageBox::question(
             this, "Citra",
