@@ -346,10 +346,10 @@ void GSP_GPU::SignalInterruptForThread(InterruptID interrupt_id, u32 thread_id) 
     interrupt_relay_queue->slot[next] = interrupt_id;
     interrupt_relay_queue->error_code = 0x0; // No error
     // Update framebuffer information if requested
-    // TODO: Confirm where this code should be called. It is definitely updated without
+    // TODO: Confirm where this code should be called. It's definitely updated without
     //               executing any GSP commands, only waiting on the event.
     // TODO: The real GSP module triggers PDC0 after updating both the top and bottom
-    // screen, it is currently unknown what PDC1 does.
+    // screen, it's currently unknown what PDC1 does.
     int screen_id{
         (interrupt_id == InterruptID::PDC0) ? 0 : (interrupt_id == InterruptID::PDC1) ? 1 : -1};
     if (screen_id != -1) {

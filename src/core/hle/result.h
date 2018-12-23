@@ -253,7 +253,7 @@ constexpr ResultCode UnimplementedFunction(ErrorModule module) {
  * This is an optional value type. It holds a `ResultCode` and, if that code is a success code,
  * also holds a result of type `T`. If the code is an error code then trying to access the inner
  * value fails, thus ensuring that the ResultCode of functions is always checked properly before
- * their return value is used.  It is similar in concept to the `std::optional` type
+ * their return value is used. It's similar in concept to the `std::optional` type
  * (http://en.cppreference.com/w/cpp/experimental/optional) originally proposed for inclusion in
  * C++14, or the `Result` type in Rust (http://doc.rust-lang.org/std/result/index.html).
  *
@@ -381,7 +381,7 @@ public:
         return &object;
     }
 
-    /// Returns the value contained in this `ResultVal`, or the supplied default if it is missing.
+    /// Returns the value contained in this `ResultVal`, or the supplied default if it's missing.
     template <typename U>
     T ValueOr(U&& value) const {
         return !empty() ? object : std::move(value);

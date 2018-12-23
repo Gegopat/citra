@@ -168,7 +168,7 @@ public:
     void UpdatePriority();
 
     /**
-     * Temporarily boosts the thread's priority until the next time it is scheduled
+     * Temporarily boosts the thread's priority until the next time it's scheduled
      * @param priority The new priority
      */
     void BoostPriority(u32 priority);
@@ -208,7 +208,7 @@ public:
     /**
      * Retrieves the index that this particular object occupies in the list of objects
      * that the thread passed to WaitSynchronizationN, starting the search from the last
-     * element. It is used to set the output value of WaitSynchronizationN when the thread is
+     * element. It's used to set the output value of WaitSynchronizationN when the thread is
      * awakened. When a thread wakes up due to an object signal, the kernel will use the index
      * of the last matching object in the wait objects list in case of having multiple instances
      * of the same object in the list.

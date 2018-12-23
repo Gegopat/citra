@@ -15,7 +15,7 @@ namespace Service::IR {
 enum class RequestID : u8 {
     /**
      * ConfigureHIDPolling request
-     * Starts HID input polling, or changes the polling interval if it is already started.
+     * Starts HID input polling, or changes the polling interval if it's already started.
      *  Inputs:
      *     byte 0: request ID
      *     byte 1: polling interval in ms

@@ -224,7 +224,7 @@ static std::tuple<std::size_t, std::size_t, bool> GetFreeThreadLocalSlot(
     for (std::size_t page{}; page < tls_slots.size(); ++page) {
         const auto& page_tls_slots{tls_slots[page]};
         if (!page_tls_slots.all())
-            // We found a page with at least one free slot, find which slot it is
+            // We found a page with at least one free slot, find which slot it's
             for (std::size_t slot{}; slot < page_tls_slots.size(); ++slot)
                 if (!page_tls_slots.test(slot))
                     return std::make_tuple(page, slot, false);

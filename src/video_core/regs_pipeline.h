@@ -212,8 +212,8 @@ struct PipelineRegs {
 
     // The shader unit 3, which can be used for both vertex and geometry shader, gets its
     // configuration depending on this register. If this isn't set, unit 3 will share some
-    // configuration with other units. It is known that program code and swizzle pattern uploaded
-    // via regs.vs will be also uploaded to unit 3 if this isn't set. Although very likely, it is
+    // configuration with other units. It's known that program code and swizzle pattern uploaded
+    // via regs.vs will be also uploaded to unit 3 if this isn't set. Although very likely, it's
     // still unclear whether uniforms and other configuration can be also shared.
     BitField<0, 1, u32> gs_unit_exclusive_configuration;
 

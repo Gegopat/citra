@@ -114,7 +114,7 @@ PicaFSConfig PicaFSConfig::BuildFromRegs(const Pica::Regs& regs) {
     state.texture0_type = regs.texturing.texture0.type;
     state.texture2_use_coord1 = regs.texturing.main_config.texture2_use_coord1 != 0;
     // Copy relevant tev stages fields.
-    // We don't sync const_color here because of the high variance, it is a
+    // We don't sync const_color here because of the high variance, it's a
     // shader uniform instead.
     const auto& tev_stages{regs.texturing.GetTevStages()};
     DEBUG_ASSERT(state.tev_stages.size() == tev_stages.size());

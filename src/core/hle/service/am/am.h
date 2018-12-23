@@ -81,7 +81,7 @@ public:
     void Flush() const override;
 
 private:
-    // Whether it's installing an update, and what step of installation it is at
+    // Whether it's installing an update, and what step of installation it's at
     bool is_update{};
     CIAInstallState install_state{CIAInstallState::InstallStarted};
 

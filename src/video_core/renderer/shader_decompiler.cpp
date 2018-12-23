@@ -376,7 +376,7 @@ private:
     /**
      * Compiles a single instruction from PICA to GLSL.
      * @param offset the offset of the PICA shader instruction.
-     * @return the offset of the next instruction to execute. Usually it is the current offset + 1.
+     * @return the offset of the next instruction to execute. Usually it's the current offset + 1.
      * If the current instruction is IF or LOOP, the next instruction is after the IF or LOOP block.
      * If the current instruction always terminates the program, returns PROGRAM_END.
      */

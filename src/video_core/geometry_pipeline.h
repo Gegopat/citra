@@ -23,7 +23,7 @@ public:
     void SetVertexHandler(Shader::VertexHandler vertex_handler);
 
     /**
-     * Setup the geometry shader unit if it is in use
+     * Setup the geometry shader unit if it's in use
      * @param shader_engine the shader engine for the geometry shader to run
      */
     void Setup(Shader::ShaderEngine* shader_engine);

@@ -126,7 +126,7 @@ using MotionDevice = InputDevice<std::tuple<Math::Vec3<float>, Math::Vec3<float>
 
 /**
  * A touch device is an input device that returns a tuple of two floats and a bool. The floats are
- * x and y coordinates in the range 0.0 - 1.0, and the bool indicates whether it is pressed.
+ * x and y coordinates in the range 0.0 - 1.0, and the bool indicates whether it's pressed.
  */
 using TouchDevice = InputDevice<std::tuple<float, float, bool>>;
 

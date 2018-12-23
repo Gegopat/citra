@@ -71,7 +71,7 @@ struct PageTable {
     std::vector<SpecialRegion> special_regions;
 
     /**
-     * Array of fine grained page attributes. If it is set to any value other than `Memory`, then
+     * Array of fine grained page attributes. If it's set to any value other than `Memory`, then
      * the corresponding entry in `pointers` MUST be set to null.
      */
     std::array<PageType, PAGE_TABLE_NUM_ENTRIES> attributes;

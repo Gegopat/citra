@@ -42,7 +42,7 @@ private:
                  /// archive
 
     /**
-     * This holds the full directory path for this archive, it is only set after a successful call
+     * This holds the full directory path for this archive, it's only set after a successful call
      * to Open, this is formed as `<base extsavedatapath>/<type>/<high>/<low>`.
      * See GetExtSaveDataPath for the code that extracts this data from an archive path.
      */

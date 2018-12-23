@@ -84,7 +84,7 @@ std::vector<u8> GenerateBasicTaggedParameters() {
 
 /**
  * Generates a buffer with the Dummy Nintendo tag.
- * It is currently unknown what this tag does.
+ * It's currently unknown what this tag does.
  * TODO: Figure out if this is needed and what it does.
  * @returns A buffer with the Nintendo tagged parameters of the beacon frame.
  */

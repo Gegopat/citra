@@ -203,7 +203,7 @@ struct LightingRegs {
 
         BitField<16, 1, u32> disable_lut_d0;
         BitField<17, 1, u32> disable_lut_d1;
-        // Note: by intuition, BitField<18, 1, u32> should be disable_lut_sp, but it is actually a
+        // Note: by intuition, BitField<18, 1, u32> should be disable_lut_sp, but it's actually a
         // dummy bit which is always set as 1.
         BitField<19, 1, u32> disable_lut_fr;
         BitField<20, 1, u32> disable_lut_rr;

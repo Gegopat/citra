@@ -130,7 +130,7 @@ private:
         for (std::size_t k{}; k < mod_abi.in.size(); ++k) {
             if (k < armabi_reg.size() && armabi_reg[k].used &&
                 !param_is_output[armabi_reg[k].param_index])
-                // If this is within the ARM ABI register range and it is a used input param, use
+                // If this is within the ARM ABI register range and it's a used input param, use
                 // the same register position
                 mod_abi.in[k] = armabi_reg[k];
             else {
@@ -167,7 +167,7 @@ private:
 
     // Gets the value for the param_index-th param of word_size in a function with signature
     // R(Context::)(Ts...)
-    // T is the param type, which must be a non-pointer as it is an input param.
+    // T is the param type, which must be a non-pointer as it's an input param.
     // Must hold: Ts[param_index] == T
     template <std::size_t param_index, typename T, typename R, typename... Ts>
     static void GetParam(Context& context, T& value) {

@@ -168,7 +168,7 @@ struct Room::RoomImpl {
 
     /**
      * Notifies the member that its connection attempt was successful,
-     * and it is now part of the room.
+     * and it's now part of the room.
      */
     void SendJoinSuccess(ENetPeer* client, MacAddress mac_address);
 

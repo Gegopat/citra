@@ -245,7 +245,7 @@ private:
     ArchiveBackend* GetArchive(ArchiveHandle handle);
 
     /**
-     * Map of registered archives, identified by id code. Once an archive is registered here, it is
+     * Map of registered archives, identified by ID code. Once an archive is registered here, it's
      * never removed until UnregisterArchiveTypes is called.
      */
     boost::container::flat_map<ArchiveIDCode, std::unique_ptr<ArchiveFactory>> id_code_map;

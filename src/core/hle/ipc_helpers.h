@@ -270,7 +270,7 @@ public:
      * @return The buffer that was copied from the IPC request originator.
      *
      * In real services, static buffers must be set up before any IPC request using those is sent.
-     * It is the duty of the process (usually services) to allocate and set up the receiving static
+     * It's the duty of the process (usually services) to allocate and set up the receiving static
      * buffer information. Our HLE services don't need to set up the buffers beforehand.
      */
     const std::vector<u8>& PopStaticBuffer();

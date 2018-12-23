@@ -44,7 +44,7 @@ SharedPtr<Thread> WaitObject::GetHighestPriorityReadyThread() {
         if (ShouldWait(thread.get()))
             continue;
         // A thread is ready to run if it's either in ThreadStatus::WaitSynchAny or
-        // in ThreadStatus::WaitSynchAll and the rest of the objects it is waiting on are ready.
+        // in ThreadStatus::WaitSynchAll and the rest of the objects it's waiting on are ready.
         bool ready_to_run{true};
         if (thread->status == ThreadStatus::WaitSynchAll)
             ready_to_run = std::none_of(thread->wait_objects.begin(), thread->wait_objects.end(),

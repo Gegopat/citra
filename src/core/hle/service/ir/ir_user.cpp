@@ -15,9 +15,9 @@
 
 namespace Service::IR {
 
-// This is a header that will present in the ir:USER shared memory if it is initialized with
+// This is a header that will present in the ir:USER shared memory if it's initialized with
 // InitializeIrNopShared service function. Otherwise the shared memory doesn't have this header if
-// it is initialized with InitializeIrNop service function.
+// it's initialized with InitializeIrNop service function.
 struct SharedMemoryHeader {
     u32_le latest_receive_error_result;
     u32_le latest_send_error_result;
@@ -32,7 +32,7 @@ struct SharedMemoryHeader {
     u8 initialized;
     u8 unknown;
 
-    // This isn't the end of the shared memory. It is followed by a receive buffer and a send
+    // This isn't the end of the shared memory. It's followed by a receive buffer and a send
     // buffer. We handle receive buffer in the BufferManager class. For the send buffer, because
     // games usually don't access it, we don't emulate it.
 };

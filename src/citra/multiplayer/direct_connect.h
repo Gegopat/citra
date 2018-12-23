@@ -26,7 +26,7 @@ public:
 
 signals:
     /**
-     * Signalled by this widget when it is closing itself and destroying any state such as
+     * Signalled by this widget when it's closing itself and destroying any state such as
      * connections that it might have.
      */
     void Closed();

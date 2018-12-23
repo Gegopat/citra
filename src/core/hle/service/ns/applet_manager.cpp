@@ -252,8 +252,8 @@ ResultVal<AppletManager::InitializeResult> AppletManager::Initialize(AppletID pr
         next_parameter->sender_id = AppletID::None;
         next_parameter->destination_id = program_id;
         // Not signaling the parameter event will cause the program (or Home Menu) to hang
-        // during startup. In the real console, it is usually the Kernel and Home Menu who cause NS
-        // to signal the HomeMenu and Program parameter events, respectively.
+        // during startup. In the real console, it's usually the kernel and HOME Menu who cause NS
+        // to signal the HOME Menu and program parameter events, respectively.
         slot_data->parameter_event->Signal();
     }
     return MakeResult<InitializeResult>(

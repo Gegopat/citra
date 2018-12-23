@@ -48,7 +48,7 @@ FileType IdentifyFile(FileUtil::IOFile& file);
 /**
  * Identifies the type of a bootable file based on the magic value in its header.
  * @param file_name path to file
- * @return FileType of file. Note: this will return FileType::Unknown if it is unable to determine
+ * @return FileType of file. Note: this will return FileType::Unknown if it's unable to determine
  * a filetype, and will never return FileType::Error.
  */
 FileType IdentifyFile(const std::string& file_name);
@@ -56,7 +56,7 @@ FileType IdentifyFile(const std::string& file_name);
 /**
  * Guess the type of a bootable file from its extension
  * @param extension String extension of bootable file
- * @return FileType of file. Note: this will return FileType::Unknown if it is unable to determine
+ * @return FileType of file. Note: this will return FileType::Unknown if it's unable to determine
  * a filetype, and will never return FileType::Error.
  */
 FileType GuessFromExtension(const std::string& extension);

@@ -88,8 +88,8 @@ private:
 
     void MotionEmuThread() {
         auto update_time{std::chrono::steady_clock::now()};
-        Math::Quaternion<float> q{MakeQuaternion(Math::Vec3<float>(), 0)};
-        Math::Quaternion<float> old_q{};
+        auto q{MakeQuaternion(Math::Vec3<float>(), 0)};
+        Math::Quaternion<float> old_q;
         while (!shutdown_event.WaitUntil(update_time)) {
             update_time += update_duration;
             old_q = q;
@@ -119,7 +119,7 @@ private:
 
 // Interface wrapper held by input receiver as a unique_ptr. It holds the implementation class as
 // a shared_ptr, which is also observed by the factory class as a weak_ptr. In this way the factory
-// can forward all the inputs to the implementation only when it is valid.
+// can forward all the inputs to the implementation only when it's valid.
 class MotionEmuDeviceWrapper : public Input::MotionDevice {
 public:
     MotionEmuDeviceWrapper(int update_millisecond, float sensitivity, float tilt_clamp) {
