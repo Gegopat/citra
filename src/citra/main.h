@@ -28,6 +28,8 @@ class MultiplayerState;
 template <typename>
 class QFutureWatcher;
 class QProgressBar;
+class LoggingWindow;
+class QtBackend;
 
 class GMainWindow : public QMainWindow {
     Q_OBJECT
@@ -196,7 +198,9 @@ private:
     Core::System& system;
 
     MultiplayerState* multiplayer_state;
+    LoggingWindow* logging_window;
 
+    std::unique_ptr<QtBackend> qt_backend;
     std::unique_ptr<EmuThread> emu_thread;
 
     // The short title of the program currently running

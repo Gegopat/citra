@@ -9,6 +9,9 @@ endif()
 add_executable(citra
     Info.plist
     issues_map.h
+	qt_backend.h
+	logging_window.cpp
+	logging_window.h
     aboutdialog.cpp
     aboutdialog.h
     applets/swkbd.cpp
@@ -95,6 +98,7 @@ add_executable(citra
 )
 
 set(UIS
+	logging_window.ui
     applets/swkbd.ui
     applets/mii_selector.ui
     control_panel.ui

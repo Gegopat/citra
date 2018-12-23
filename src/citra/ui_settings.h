@@ -84,7 +84,7 @@ struct Values {
     std::vector<std::string> ban_list;
 
     // Logging
-    bool show_console;
+    bool show_logging_window;
 };
 
 extern Values values;

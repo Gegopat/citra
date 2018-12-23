@@ -4,17 +4,13 @@
 
 #pragma once
 
-#include <cstddef>
 #include <string>
 
 namespace Log {
 
 struct Entry;
 
-/// Formats a log entry into the provided text buffer.
+/// Formats a log entry.
 std::string FormatLogMessage(const Entry& entry);
-/// Formats and prints a log entry to stderr.
-void PrintMessage(const Entry& entry);
-/// Prints the same message as `PrintMessage`, but colored acoording to the severity level.
-void PrintColoredMessage(const Entry& entry);
+
 } // namespace Log

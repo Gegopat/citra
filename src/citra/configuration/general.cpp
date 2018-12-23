@@ -36,9 +36,8 @@ ConfigurationGeneral::ConfigurationGeneral(QWidget* parent)
 ConfigurationGeneral::~ConfigurationGeneral() = default;
 
 void ConfigurationGeneral::LoadConfiguration(Core::System& system) {
-    ui->toggle_console->setEnabled(!system.IsPoweredOn());
     ui->combobox_keyboard_mode->setCurrentIndex(static_cast<int>(Settings::values.keyboard_mode));
-    ui->toggle_console->setChecked(UISettings::values.show_console);
+    ui->show_logging_window->setChecked(UISettings::values.show_logging_window);
     ui->log_filter_edit->setText(QString::fromStdString(Settings::values.log_filter));
     ui->confirm_close->setChecked(UISettings::values.confirm_close);
 }
@@ -46,10 +45,9 @@ void ConfigurationGeneral::LoadConfiguration(Core::System& system) {
 void ConfigurationGeneral::ApplyConfiguration() {
     Settings::values.keyboard_mode =
         static_cast<Settings::KeyboardMode>(ui->combobox_keyboard_mode->currentIndex());
-    UISettings::values.show_console = ui->toggle_console->isChecked();
+    UISettings::values.show_logging_window = ui->show_logging_window->isChecked();
     Settings::values.log_filter = ui->log_filter_edit->text().toStdString();
     UISettings::values.confirm_close = ui->confirm_close->isChecked();
-    ToggleConsole();
     Log::Filter filter;
     filter.ParseFilterString(Settings::values.log_filter);
     Log::SetGlobalFilter(filter);

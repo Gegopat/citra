@@ -14,8 +14,7 @@
 
 namespace Common {
 
-// a simple lockless thread-safe,
-// single reader, single writer queue
+// A simple lockless thread-safe single reader, single writer queue
 template <typename T, bool NeedSize = true>
 class SPSCQueue {
 public:
@@ -43,10 +42,9 @@ public:
 
     template <typename Arg>
     void Push(Arg&& t) {
-        // add the element to the queue
+        // Add the element to the queue
         write_ptr->current = std::move(t);
-        // set the next pointer to a new element ptr
-        // then advance the write pointer
+        // Set the next pointer to a new element pointer then advance the write pointer
         ElementPtr* new_ptr{new ElementPtr()};
         write_ptr->next.store(new_ptr, std::memory_order_release);
         write_ptr = new_ptr;
@@ -58,10 +56,10 @@ public:
     void Pop() {
         if (NeedSize)
             size--;
-        ElementPtr* tmpptr{read_ptr};
-        // advance the read pointer
+        auto tmpptr{read_ptr};
+        // Advance the read pointer
         read_ptr = tmpptr->next.load();
-        // set the next element to nullptr to stop the recursive deletion
+        // Set the next element to nullptr to stop the recursive deletion
         tmpptr->next.store(nullptr);
         delete tmpptr; // this also deletes the element
     }
@@ -69,11 +67,9 @@ public:
     bool Pop(T& t) {
         if (Empty())
             return false;
-
         if (NeedSize)
             size--;
-
-        ElementPtr* tmpptr{read_ptr};
+        auto tmpptr{read_ptr};
         read_ptr = tmpptr->next.load(std::memory_order_acquire);
         t = std::move(*tmpptr->current);
         tmpptr->next.store(nullptr);
@@ -91,7 +87,7 @@ public:
         return t;
     }
 
-    // not thread-safe
+    // Not thread-safe
     void Clear() {
         size.store(0);
         delete read_ptr;
@@ -103,11 +99,8 @@ private:
     // and a pointer to the next ElementPtr
     class ElementPtr {
     public:
-        //        ElementPtr() {}
-
         ~ElementPtr() {
-            ElementPtr* next_ptr{next.load()};
-
+            auto next_ptr{next.load()};
             if (next_ptr)
                 delete next_ptr;
         }
@@ -123,8 +116,7 @@ private:
     std::condition_variable cv;
 };
 
-// a simple thread-safe,
-// single reader, multiple writer queue
+// A simple thread-safe, single reader, multiple writer queue
 template <typename T, bool NeedSize = true>
 class MPSCQueue {
 public:
@@ -162,7 +154,7 @@ public:
         return spsc_queue.PopWait();
     }
 
-    // not thread-safe
+    // Not thread-safe
     void Clear() {
         spsc_queue.Clear();
     }

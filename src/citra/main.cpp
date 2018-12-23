@@ -29,9 +29,11 @@
 #include "citra/configuration/dialog.h"
 #include "citra/control_panel.h"
 #include "citra/hotkeys.h"
+#include "citra/logging_window.h"
 #include "citra/main.h"
 #include "citra/multiplayer/state.h"
 #include "citra/program_list.h"
+#include "citra/qt_backend.h"
 #include "citra/ui_settings.h"
 #include "citra/util/clickable_label.h"
 #include "citra/util/util.h"
@@ -72,6 +74,7 @@ __declspec(dllexport) unsigned long NvOptimusEnablement{0x00000001};
 #endif
 
 #ifdef ENABLE_DISCORD_RPC
+
 static void HandleDiscordDisconnected(int error_code, const char* message) {
     LOG_ERROR(Frontend, "Discord RPC disconnected ({} {})", error_code, message);
 }
@@ -79,9 +82,16 @@ static void HandleDiscordDisconnected(int error_code, const char* message) {
 static void HandleDiscordError(int error_code, const char* message) {
     LOG_ERROR(Frontend, "Discord RPC error ({} {})", error_code, message);
 }
+
 #endif
 
-GMainWindow::GMainWindow(Config& config, Core::System& system) : config{config}, system{system} {
+GMainWindow::GMainWindow(Config& config, Core::System& system)
+    : config{config}, system{system}, qt_backend{std::make_unique<QtBackend>()} {
+    logging_window = new LoggingWindow(this);
+    logging_window->setVisible(UISettings::values.show_logging_window);
+    connect(qt_backend.get(), &QtBackend::LineReady, this,
+            [this](const QString& line) { logging_window->Append(line); });
+    Log::AddBackend(std::move(qt_backend));
     setAcceptDrops(true);
     ui.setupUi(this);
     statusBar()->hide();
@@ -1027,6 +1037,7 @@ void GMainWindow::OnOpenConfiguration() {
     auto old_profiles{Settings::values.profiles};
     auto old_disable_mh_2xmsaa{Settings::values.disable_mh_2xmsaa};
     auto old_enable_discord_rpc{UISettings::values.enable_discord_rpc};
+    auto old_show_logging_window{UISettings::values.show_logging_window};
     auto result{configuration_dialog.exec()};
     if (result == QDialog::Accepted) {
         if (configuration_dialog.restore_defaults_requested) {
@@ -1048,6 +1059,11 @@ void GMainWindow::OnOpenConfiguration() {
             program_list->Refresh();
             config.Save();
             UISettings::values.configuration_geometry = configuration_dialog.saveGeometry();
+        }
+        if (UISettings::values.show_logging_window != old_show_logging_window) {
+            if (!UISettings::values.show_logging_window)
+                logging_window->Clear();
+            logging_window->setVisible(UISettings::values.show_logging_window);
         }
 #ifdef ENABLE_DISCORD_RPC
         if (old_enable_discord_rpc != UISettings::values.enable_discord_rpc)
@@ -1617,7 +1633,6 @@ int main(int argc, char* argv[]) {
 #ifdef _WIN32
     Log::AddBackend(std::make_unique<Log::DebuggerBackend>());
 #endif
-    ToggleConsole();
     config.LogErrors();
     Settings::LogSettings();
     // Initialize network and movie system

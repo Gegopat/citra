@@ -383,7 +383,7 @@ void Config::Load() {
     UISettings::values.fullscreen = ReadSetting("fullscreen", false).toBool();
     UISettings::values.show_filter_bar = ReadSetting("showFilterBar", true).toBool();
     UISettings::values.show_status_bar = ReadSetting("showStatusBar", true).toBool();
-    UISettings::values.show_console = ReadSetting("showConsole", false).toBool();
+    UISettings::values.show_logging_window = ReadSetting("showLoggingWindow", false).toBool();
     settings->beginGroup("Multiplayer");
     UISettings::values.direct_connect_nickname =
         ReadSetting("direct_connect_nickname", "").toString();
@@ -585,7 +585,7 @@ void Config::Save() {
     WriteSetting("fullscreen", UISettings::values.fullscreen, false);
     WriteSetting("showFilterBar", UISettings::values.show_filter_bar, true);
     WriteSetting("showStatusBar", UISettings::values.show_status_bar, true);
-    WriteSetting("showConsole", UISettings::values.show_console, false);
+    WriteSetting("showLoggingWindow", UISettings::values.show_logging_window, false);
     settings->beginGroup("Multiplayer");
     WriteSetting("direct_connect_nickname", UISettings::values.direct_connect_nickname, "");
     WriteSetting("lobby_nickname", UISettings::values.lobby_nickname, "");

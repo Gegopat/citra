@@ -56,18 +56,6 @@ private:
     Filter filter;
 };
 
-/// Backend that writes to stderr and with color
-class ColorConsoleBackend : public Backend {
-public:
-    const char* GetName() const override {
-        return Name;
-    }
-
-    static constexpr const char* Name{"color_console"};
-
-    void Write(const Entry& entry) override;
-};
-
 /// Backend that writes to a file passed into the constructor
 class FileBackend : public Backend {
 public:
@@ -90,12 +78,10 @@ private:
 class DebuggerBackend : public Backend {
 public:
     const char* GetName() const override {
-        return Name;
+        return "debugger";
     }
 
     void Write(const Entry& entry) override;
-
-    static constexpr const char* Name{"debugger"};
 };
 
 void AddBackend(std::unique_ptr<Backend> backend);
