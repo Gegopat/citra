@@ -81,34 +81,28 @@ public:
         return "SelfNCCHArchive";
     }
 
-    ResultVal<std::unique_ptr<FileBackend>> OpenFile(const Path& path, const Mode&) const override {
+    ResultVal<std::unique_ptr<FileBackend>> _OpenFile(const Path& path,
+                                                      const Mode&) const override {
         // Note: SelfNCCHArchive doesn't check the open mode.
-
         if (path.GetType() != LowPathType::Binary) {
             LOG_ERROR(Service_FS, "Path need to be Binary");
             return ERROR_INVALID_PATH;
         }
-
         std::vector<u8> binary{path.AsBinary()};
         if (binary.size() != sizeof(SelfNCCHFilePath)) {
             LOG_ERROR(Service_FS, "Wrong path size {}", binary.size());
             return ERROR_INVALID_PATH;
         }
-
         SelfNCCHFilePath file_path;
         std::memcpy(&file_path, binary.data(), sizeof(SelfNCCHFilePath));
-
         switch (file_path.type) {
         case SelfNCCHFilePathType::UpdateRomFS:
             return OpenUpdateRomFS();
-
         case SelfNCCHFilePathType::RomFS:
             return OpenRomFS();
-
         case SelfNCCHFilePathType::Code:
             LOG_ERROR(Service_FS, "Reading the code section isn't supported!");
             return ERROR_COMMAND_NOT_ALLOWED;
-
         case SelfNCCHFilePathType::ExeFS: {
             const auto& raw{file_path.exefs_filename};
             auto end{std::find(raw.begin(), raw.end(), '\0')};
@@ -121,42 +115,42 @@ public:
         }
     }
 
-    ResultCode DeleteFile(const Path& path) const override {
+    ResultCode _DeleteFile(const Path& path) const override {
         LOG_ERROR(Service_FS, "Unsupported");
         return ERROR_UNSUPPORTED_OPEN_FLAGS;
     }
 
-    ResultCode RenameFile(const Path& src_path, const Path& dest_path) const override {
+    ResultCode _RenameFile(const Path& src_path, const Path& dest_path) const override {
         LOG_ERROR(Service_FS, "Unsupported");
         return ERROR_UNSUPPORTED_OPEN_FLAGS;
     }
 
-    ResultCode DeleteDirectory(const Path& path) const override {
+    ResultCode _DeleteDirectory(const Path& path) const override {
         LOG_ERROR(Service_FS, "Unsupported");
         return ERROR_UNSUPPORTED_OPEN_FLAGS;
     }
 
-    ResultCode DeleteDirectoryRecursively(const Path& path) const override {
+    ResultCode _DeleteDirectoryRecursively(const Path& path) const override {
         LOG_ERROR(Service_FS, "Unsupported");
         return ERROR_UNSUPPORTED_OPEN_FLAGS;
     }
 
-    ResultCode CreateFile(const Path& path, u64 size) const override {
+    ResultCode _CreateFile(const Path& path, u64 size) const override {
         LOG_ERROR(Service_FS, "Unsupported");
         return ERROR_UNSUPPORTED_OPEN_FLAGS;
     }
 
-    ResultCode CreateDirectory(const Path& path) const override {
+    ResultCode _CreateDirectory(const Path& path) const override {
         LOG_ERROR(Service_FS, "Unsupported");
         return ERROR_UNSUPPORTED_OPEN_FLAGS;
     }
 
-    ResultCode RenameDirectory(const Path& src_path, const Path& dest_path) const override {
+    ResultCode _RenameDirectory(const Path& src_path, const Path& dest_path) const override {
         LOG_ERROR(Service_FS, "Unsupported");
         return ERROR_UNSUPPORTED_OPEN_FLAGS;
     }
 
-    ResultVal<std::unique_ptr<DirectoryBackend>> OpenDirectory(const Path& path) const override {
+    ResultVal<std::unique_ptr<DirectoryBackend>> _OpenDirectory(const Path& path) const override {
         LOG_ERROR(Service_FS, "Unsupported");
         return ERROR_UNSUPPORTED_OPEN_FLAGS;
     }
@@ -231,7 +225,7 @@ void ArchiveFactory_SelfNCCH::Register(Loader::ProgramLoader& program_loader) {
         LOG_WARNING(Service_FS,
                     "Registering program {:016X} with SelfNCCH will override existing mapping",
                     program_id);
-    NCCHData& data{ncch_data[program_id]};
+    auto& data{ncch_data[program_id]};
     std::shared_ptr<RomFSReader> romfs_file;
     if (program_loader.ReadRomFS(romfs_file) == Loader::ResultStatus::Success)
         data.romfs_file = std::move(romfs_file);
