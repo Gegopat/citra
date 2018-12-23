@@ -20,16 +20,69 @@
 
 namespace Memory {
 
-MemorySystem::MemorySystem(Core::System& system) : system{system} {}
+class RasterizerCacheMarker {
+public:
+    void Mark(VAddr addr, bool cached) {
+        auto p{At(addr)};
+        if (p)
+            *p = cached;
+    }
+
+    bool IsCached(VAddr addr) {
+        auto p{At(addr)};
+        if (p)
+            return *p;
+        return false;
+    }
+
+private:
+    bool* At(VAddr addr) {
+        if (addr >= VRAM_VADDR && addr < VRAM_VADDR_END)
+            return &vram[(addr - VRAM_VADDR) / PAGE_SIZE];
+        else if (addr >= LINEAR_HEAP_VADDR && addr < LINEAR_HEAP_VADDR_END)
+            return &linear_heap[(addr - LINEAR_HEAP_VADDR) / PAGE_SIZE];
+        else if (addr >= NEW_LINEAR_HEAP_VADDR && addr < NEW_LINEAR_HEAP_VADDR_END)
+            return &new_linear_heap[(addr - NEW_LINEAR_HEAP_VADDR) / PAGE_SIZE];
+        return nullptr;
+    }
+
+    std::array<bool, VRAM_N3DS_SIZE / PAGE_SIZE> vram{};
+    std::array<bool, LINEAR_HEAP_SIZE / PAGE_SIZE> linear_heap{};
+    std::array<bool, NEW_LINEAR_HEAP_SIZE / PAGE_SIZE> new_linear_heap{};
+};
+
+struct MemorySystem::Impl {
+    explicit Impl(Core::System& system) : system{system} {
+        std::fill(fcram.get(), fcram.get() + Memory::FCRAM_N3DS_SIZE, 0);
+        std::fill(vram.get(), vram.get() + Memory::VRAM_N3DS_SIZE, 0);
+        std::fill(n3ds_extra_ram.get(), n3ds_extra_ram.get() + Memory::N3DS_EXTRA_RAM_SIZE, 0);
+        std::fill(l2cache.get(), l2cache.get() + Memory::L2C_SIZE, 0);
+    }
+
+    // Visual Studio would try to allocate these on compile time if they are std::array, which would
+    // exceed the memory limit.
+    std::unique_ptr<u8[]> fcram{std::make_unique<u8[]>(Memory::FCRAM_N3DS_SIZE)};
+    std::unique_ptr<u8[]> vram{std::make_unique<u8[]>(Memory::VRAM_N3DS_SIZE)};
+    std::unique_ptr<u8[]> n3ds_extra_ram{std::make_unique<u8[]>(Memory::N3DS_EXTRA_RAM_SIZE)};
+    std::unique_ptr<u8[]> l2cache{std::make_unique<u8[]>(Memory::L2C_SIZE)};
+
+    PageTable* current_page_table{};
+    RasterizerCacheMarker cache_marker;
+    std::vector<PageTable*> page_table_list;
+    Core::System& system;
+};
+
+MemorySystem::MemorySystem(Core::System& system) : impl{std::make_unique<Impl>(system)} {}
+MemorySystem::~MemorySystem() = default;
 
 void MemorySystem::SetCurrentPageTable(PageTable* page_table) {
-    current_page_table = page_table;
-    if (system.IsPoweredOn())
-        system.CPU().PageTableChanged();
+    impl->current_page_table = page_table;
+    if (impl->system.IsPoweredOn())
+        impl->system.CPU().PageTableChanged();
 }
 
 PageTable* MemorySystem::GetCurrentPageTable() {
-    return current_page_table;
+    return impl->current_page_table;
 }
 
 void MemorySystem::MapPages(PageTable& page_table, u32 base, u32 size, u8* memory, PageType type) {
@@ -44,7 +97,7 @@ void MemorySystem::MapPages(PageTable& page_table, u32 base, u32 size, u8* memor
         page_table.pointers[base] = memory;
         base += 1;
         // If the memory to map is already rasterizer-cached, mark the page
-        if (type == PageType::Memory && cache_marker.IsCached(base * PAGE_SIZE)) {
+        if (type == PageType::Memory && impl->cache_marker.IsCached(base * PAGE_SIZE)) {
             page_table.attributes[base] = PageType::RasterizerCachedMemory;
             page_table.pointers[base] = nullptr;
         }
@@ -81,20 +134,21 @@ void MemorySystem::UnmapRegion(PageTable& page_table, VAddr base, u32 size) {
  */
 u8* MemorySystem::GetPointerForRasterizerCache(VAddr addr) {
     if (addr >= LINEAR_HEAP_VADDR && addr < LINEAR_HEAP_VADDR_END)
-        return fcram.data() + (addr - LINEAR_HEAP_VADDR);
+        return impl->fcram.get() + (addr - LINEAR_HEAP_VADDR);
     else if (addr >= NEW_LINEAR_HEAP_VADDR && addr < NEW_LINEAR_HEAP_VADDR_END)
-        return fcram.data() + (addr - NEW_LINEAR_HEAP_VADDR);
+        return impl->fcram.get() + (addr - NEW_LINEAR_HEAP_VADDR);
     else if (addr >= VRAM_VADDR && addr < VRAM_N3DS_VADDR_END)
-        return vram.data() + (addr - VRAM_VADDR);
+        return impl->vram.get() + (addr - VRAM_VADDR);
     UNREACHABLE();
 }
 
 void MemorySystem::RegisterPageTable(PageTable* page_table) {
-    page_table_list.push_back(page_table);
+    impl->page_table_list.push_back(page_table);
 }
 
 void MemorySystem::UnregisterPageTable(PageTable* page_table) {
-    page_table_list.erase(std::find(page_table_list.begin(), page_table_list.end(), page_table));
+    impl->page_table_list.erase(
+        std::find(impl->page_table_list.begin(), impl->page_table_list.end(), page_table));
 }
 
 /// This function should only be called for virtual addreses with attribute `PageType::Special`.
@@ -198,10 +252,11 @@ bool MemorySystem::IsValidPhysicalAddress(const PAddr paddr) {
 }
 
 u8* MemorySystem::GetPointer(const VAddr vaddr) {
-    u8* page_pointer{current_page_table->pointers[vaddr >> PAGE_BITS]};
+    u8* page_pointer{impl->current_page_table->pointers[vaddr >> PAGE_BITS]};
     if (page_pointer)
         return page_pointer + (vaddr & PAGE_MASK);
-    if (current_page_table->attributes[vaddr >> PAGE_BITS] == PageType::RasterizerCachedMemory)
+    if (impl->current_page_table->attributes[vaddr >> PAGE_BITS] ==
+        PageType::RasterizerCachedMemory)
         return GetPointerForRasterizerCache(vaddr);
     LOG_ERROR(HW_Memory, "unknown GetPointer @ 0x{:08x}", vaddr);
     return nullptr;
@@ -245,19 +300,19 @@ u8* MemorySystem::GetPhysicalPointer(PAddr address) {
     u8* target_pointer;
     switch (area->paddr_base) {
     case VRAM_PADDR:
-        target_pointer = vram.data() + offset_into_region;
+        target_pointer = impl->vram.get() + offset_into_region;
         break;
     case DSP_RAM_PADDR:
-        target_pointer = system.DSP().GetDspMemory().data() + offset_into_region;
+        target_pointer = impl->system.DSP().GetDspMemory().data() + offset_into_region;
         break;
     case FCRAM_PADDR:
-        target_pointer = fcram.data() + offset_into_region;
+        target_pointer = impl->fcram.get() + offset_into_region;
         break;
     case N3DS_EXTRA_RAM_PADDR:
-        target_pointer = n3ds_extra_ram.data() + offset_into_region;
+        target_pointer = impl->n3ds_extra_ram.get() + offset_into_region;
         break;
     case L2C_PADDR:
-        target_pointer = l2cache.data() + offset_into_region;
+        target_pointer = impl->l2cache.get() + offset_into_region;
         break;
     default:
         UNREACHABLE();
@@ -288,8 +343,8 @@ void MemorySystem::RasterizerMarkRegionCached(PAddr start, u32 size, bool cached
     auto paddr{start};
     for (unsigned i{}; i < num_pages; ++i, paddr += PAGE_SIZE) {
         for (const auto& vaddr : PhysicalToVirtualAddressForRasterizer(paddr)) {
-            cache_marker.Mark(vaddr, cached);
-            for (auto page_table : page_table_list) {
+            impl->cache_marker.Mark(vaddr, cached);
+            for (auto page_table : impl->page_table_list) {
                 auto& page_type{page_table->attributes[vaddr >> PAGE_BITS]};
                 if (cached)
                     // Switch page type to cached if now cached

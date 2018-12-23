@@ -204,37 +204,6 @@ enum class FlushMode {
 /// Determines if the given VAddr is valid for the specified process.
 bool IsValidVirtualAddress(const Kernel::Process& process, VAddr vaddr);
 
-class RasterizerCacheMarker {
-public:
-    void Mark(VAddr addr, bool cached) {
-        auto p{At(addr)};
-        if (p)
-            *p = cached;
-    }
-
-    bool IsCached(VAddr addr) {
-        auto p{At(addr)};
-        if (p)
-            return *p;
-        return false;
-    }
-
-private:
-    bool* At(VAddr addr) {
-        if (addr >= VRAM_VADDR && addr < VRAM_VADDR_END)
-            return &vram[(addr - VRAM_VADDR) / PAGE_SIZE];
-        else if (addr >= LINEAR_HEAP_VADDR && addr < LINEAR_HEAP_VADDR_END)
-            return &linear_heap[(addr - LINEAR_HEAP_VADDR) / PAGE_SIZE];
-        else if (addr >= NEW_LINEAR_HEAP_VADDR && addr < NEW_LINEAR_HEAP_VADDR_END)
-            return &new_linear_heap[(addr - NEW_LINEAR_HEAP_VADDR) / PAGE_SIZE];
-        return nullptr;
-    }
-
-    std::array<bool, VRAM_SIZE / PAGE_SIZE> vram{};
-    std::array<bool, LINEAR_HEAP_SIZE / PAGE_SIZE> linear_heap{};
-    std::array<bool, NEW_LINEAR_HEAP_SIZE / PAGE_SIZE> new_linear_heap{};
-};
-
 class MemorySystem {
 public:
     explicit MemorySystem(Core::System& system);
@@ -343,13 +312,8 @@ private:
 
     void MapPages(PageTable& page_table, u32 base, u32 size, u8* memory, PageType type);
 
-    std::array<u8, VRAM_SIZE> vram{};
-    std::array<u8, N3DS_EXTRA_RAM_SIZE> n3ds_extra_ram{};
-    std::array<u8, L2C_SIZE> l2cache{};
-    PageTable* current_page_table{};
-    RasterizerCacheMarker cache_marker;
-    std::vector<PageTable*> page_table_list;
-    Core::System& system;
+    struct Impl;
+    std::unique_ptr<Impl> impl;
 };
 
 } // namespace Memory
