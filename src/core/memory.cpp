@@ -53,18 +53,18 @@ private:
 
 struct MemorySystem::Impl {
     explicit Impl(Core::System& system) : system{system} {
-        std::fill(fcram.get(), fcram.get() + Memory::FCRAM_N3DS_SIZE, 0);
-        std::fill(vram.get(), vram.get() + Memory::VRAM_N3DS_SIZE, 0);
-        std::fill(n3ds_extra_ram.get(), n3ds_extra_ram.get() + Memory::N3DS_EXTRA_RAM_SIZE, 0);
-        std::fill(l2cache.get(), l2cache.get() + Memory::L2C_SIZE, 0);
+        std::fill(fcram.get(), fcram.get() + FCRAM_N3DS_SIZE, 0);
+        std::fill(vram.get(), vram.get() + VRAM_N3DS_SIZE, 0);
+        std::fill(n3ds_extra_ram.get(), n3ds_extra_ram.get() + N3DS_EXTRA_RAM_SIZE, 0);
+        std::fill(l2cache.get(), l2cache.get() + L2C_SIZE, 0);
     }
 
     // Visual Studio would try to allocate these on compile time if they are std::array, which would
     // exceed the memory limit.
-    std::unique_ptr<u8[]> fcram{std::make_unique<u8[]>(Memory::FCRAM_N3DS_SIZE)};
-    std::unique_ptr<u8[]> vram{std::make_unique<u8[]>(Memory::VRAM_N3DS_SIZE)};
-    std::unique_ptr<u8[]> n3ds_extra_ram{std::make_unique<u8[]>(Memory::N3DS_EXTRA_RAM_SIZE)};
-    std::unique_ptr<u8[]> l2cache{std::make_unique<u8[]>(Memory::L2C_SIZE)};
+    std::unique_ptr<u8[]> fcram{std::make_unique<u8[]>(FCRAM_N3DS_SIZE)};
+    std::unique_ptr<u8[]> vram{std::make_unique<u8[]>(VRAM_N3DS_SIZE)};
+    std::unique_ptr<u8[]> n3ds_extra_ram{std::make_unique<u8[]>(N3DS_EXTRA_RAM_SIZE)};
+    std::unique_ptr<u8[]> l2cache{std::make_unique<u8[]>(L2C_SIZE)};
 
     PageTable* current_page_table{};
     RasterizerCacheMarker cache_marker;
@@ -165,7 +165,7 @@ T ReadMMIO(MMIORegionPointer mmio_handler, VAddr addr);
 
 template <typename T>
 T MemorySystem::Read(const VAddr vaddr) {
-    const u8* page_pointer{current_page_table->pointers[vaddr >> PAGE_BITS]};
+    const u8* page_pointer{impl->current_page_table->pointers[vaddr >> PAGE_BITS]};
     if (page_pointer) {
         // NOTE: Avoid adding any extra logic to this fast-path block
         T value;
@@ -175,7 +175,7 @@ T MemorySystem::Read(const VAddr vaddr) {
     // The memory access might do an MMIO or cached access, so we have to lock the HLE kernel
     // state
     std::lock_guard lock{HLE::g_hle_lock};
-    auto type{current_page_table->attributes[vaddr >> PAGE_BITS]};
+    auto type{impl->current_page_table->attributes[vaddr >> PAGE_BITS]};
     switch (type) {
     case PageType::Unmapped:
         LOG_ERROR(HW_Memory, "unmapped Read{} @ 0x{:08X}", sizeof(T) * 8, vaddr);
@@ -190,7 +190,7 @@ T MemorySystem::Read(const VAddr vaddr) {
         return value;
     }
     case PageType::Special:
-        return ReadMMIO<T>(GetMMIOHandler(*current_page_table, vaddr), vaddr);
+        return ReadMMIO<T>(GetMMIOHandler(*impl->current_page_table, vaddr), vaddr);
     default:
         UNREACHABLE();
     }
@@ -201,7 +201,7 @@ void WriteMMIO(MMIORegionPointer mmio_handler, VAddr addr, const T data);
 
 template <typename T>
 void MemorySystem::Write(const VAddr vaddr, const T data) {
-    u8* page_pointer{current_page_table->pointers[vaddr >> PAGE_BITS]};
+    u8* page_pointer{impl->current_page_table->pointers[vaddr >> PAGE_BITS]};
     if (page_pointer) {
         // NOTE: Avoid adding any extra logic to this fast-path block
         std::memcpy(&page_pointer[vaddr & PAGE_MASK], &data, sizeof(T));
@@ -210,7 +210,7 @@ void MemorySystem::Write(const VAddr vaddr, const T data) {
     // The memory access might do an MMIO or cached access, so we have to lock the HLE kernel
     // state
     std::lock_guard lock{HLE::g_hle_lock};
-    PageType type{current_page_table->attributes[vaddr >> PAGE_BITS]};
+    PageType type{impl->current_page_table->attributes[vaddr >> PAGE_BITS]};
     switch (type) {
     case PageType::Unmapped:
         LOG_ERROR(HW_Memory, "unmapped Write{} 0x{:08X} @ 0x{:08X}", sizeof(data) * 8, (u32)data,
@@ -225,7 +225,7 @@ void MemorySystem::Write(const VAddr vaddr, const T data) {
         break;
     }
     case PageType::Special:
-        WriteMMIO<T>(GetMMIOHandler(*current_page_table, vaddr), vaddr, data);
+        WriteMMIO<T>(GetMMIOHandler(*impl->current_page_table, vaddr), vaddr, data);
         break;
     default:
         UNREACHABLE();
@@ -723,13 +723,13 @@ void WriteMMIO<u64>(MMIORegionPointer mmio_handler, VAddr addr, const u64 data) 
 }
 
 u32 MemorySystem::GetFCRAMOffset(u8* pointer) {
-    ASSERT(pointer >= fcram.data() && pointer < fcram.data() + fcram.size());
-    return pointer - fcram.data();
+    ASSERT(pointer >= impl->fcram.get() && pointer < impl->fcram.get() + FCRAM_N3DS_SIZE);
+    return pointer - impl->fcram.get();
 }
 
 u8* MemorySystem::GetFCRAMPointer(u32 offset) {
-    ASSERT(offset <= Memory::FCRAM_N3DS_SIZE);
-    return fcram.data() + offset;
+    ASSERT(offset <= FCRAM_N3DS_SIZE);
+    return impl->fcram.get() + offset;
 }
 
 } // namespace Memory

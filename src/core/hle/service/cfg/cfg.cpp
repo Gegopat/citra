@@ -454,7 +454,7 @@ ResultCode Module::CreateConfigInfoBlk(u32 block_id, u16 size, u16 flags, const 
 
 ResultCode Module::DeleteConfigNANDSaveFile() {
     FileSys::Path path{"/config"};
-    return cfg_system_save_data_archive->DeleteFile(path);
+    return cfg_system_save_data_archive->_DeleteFile(path);
 }
 
 ResultCode Module::UpdateConfigNANDSavegame() {
@@ -462,7 +462,7 @@ ResultCode Module::UpdateConfigNANDSavegame() {
     mode.write_flag.Assign(1);
     mode.create_flag.Assign(1);
     FileSys::Path path{"/config"};
-    auto config_result{cfg_system_save_data_archive->OpenFile(path, mode)};
+    auto config_result{cfg_system_save_data_archive->_OpenFile(path, mode)};
     ASSERT_MSG(config_result.Succeeded(), "couldn't open file");
     auto config{std::move(config_result).Unwrap()};
     config->Write(0, CONFIG_SAVEFILE_SIZE, 1, cfg_config_file_buffer.data());
@@ -593,7 +593,7 @@ ResultCode Module::LoadConfigNANDSaveFile() {
     FileSys::Path config_path{"/config"};
     FileSys::Mode open_mode{};
     open_mode.read_flag.Assign(1);
-    auto config_result{cfg_system_save_data_archive->OpenFile(config_path, open_mode)};
+    auto config_result{cfg_system_save_data_archive->_OpenFile(config_path, open_mode)};
     // Read the file if it already exists
     if (config_result.Succeeded()) {
         auto config{std::move(config_result).Unwrap()};
@@ -605,7 +605,7 @@ ResultCode Module::LoadConfigNANDSaveFile() {
 
 Module::Module() {
     LoadConfigNANDSaveFile();
-    SystemModel model{GetSystemModel()};
+    auto model{GetSystemModel()};
     new_model =
         model == NEW_NINTENDO_2DS_XL || model == NEW_NINTENDO_3DS || model == NEW_NINTENDO_3DS_XL;
 }

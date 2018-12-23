@@ -24,10 +24,10 @@ public:
         return "SDMCWriteOnlyArchive: " + mount_point;
     }
 
-    ResultVal<std::unique_ptr<FileBackend>> OpenFile(const Path& path,
-                                                     const Mode& mode) const override;
+    ResultVal<std::unique_ptr<FileBackend>> _OpenFile(const Path& path,
+                                                      const Mode& mode) const override;
 
-    ResultVal<std::unique_ptr<DirectoryBackend>> OpenDirectory(const Path& path) const override;
+    ResultVal<std::unique_ptr<DirectoryBackend>> _OpenDirectory(const Path& path) const override;
 };
 
 /// File system interface to the SDMC write-only archive

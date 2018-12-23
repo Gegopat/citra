@@ -34,17 +34,17 @@ public:
     }
 };
 
-ResultVal<std::unique_ptr<FileBackend>> SDMCArchive::OpenFile(const Path& path,
-                                                              const Mode& mode) const {
+ResultVal<std::unique_ptr<FileBackend>> SDMCArchive::_OpenFile(const Path& path,
+                                                               const Mode& mode) const {
     Mode modified_mode{};
     modified_mode.hex = mode.hex;
     // SDMC archive always opens a file with at least read permission
     modified_mode.read_flag.Assign(1);
-    return OpenFileBase(path, modified_mode);
+    return _OpenFileBase(path, modified_mode);
 }
 
-ResultVal<std::unique_ptr<FileBackend>> SDMCArchive::OpenFileBase(const Path& path,
-                                                                  const Mode& mode) const {
+ResultVal<std::unique_ptr<FileBackend>> SDMCArchive::_OpenFileBase(const Path& path,
+                                                                   const Mode& mode) const {
     LOG_DEBUG(Service_FS, "path={}, mode={:01X}", path.DebugStr(), mode.hex);
     const PathParser path_parser{path};
     if (!path_parser.IsValid()) {
@@ -93,7 +93,7 @@ ResultVal<std::unique_ptr<FileBackend>> SDMCArchive::OpenFileBase(const Path& pa
     return MakeResult<std::unique_ptr<FileBackend>>(std::move(disk_file));
 }
 
-ResultCode SDMCArchive::DeleteFile(const Path& path) const {
+ResultCode SDMCArchive::_DeleteFile(const Path& path) const {
     const PathParser path_parser{path};
     if (!path_parser.IsValid()) {
         LOG_ERROR(Service_FS, "Invalid path {}", path.DebugStr());
@@ -121,7 +121,7 @@ ResultCode SDMCArchive::DeleteFile(const Path& path) const {
     return ERROR_NOT_FOUND;
 }
 
-ResultCode SDMCArchive::RenameFile(const Path& src_path, const Path& dest_path) const {
+ResultCode SDMCArchive::_RenameFile(const Path& src_path, const Path& dest_path) const {
     const PathParser path_parser_src{src_path};
     // TODO: Verify these return codes with HW
     if (!path_parser_src.IsValid()) {
@@ -144,8 +144,8 @@ ResultCode SDMCArchive::RenameFile(const Path& src_path, const Path& dest_path) 
 }
 
 template <typename T>
-static ResultCode DeleteDirectoryHelper(const Path& path, const std::string& mount_point,
-                                        T deleter) {
+static ResultCode _DeleteDirectoryHelper(const Path& path, const std::string& mount_point,
+                                         T deleter) {
     const PathParser path_parser{path};
     if (!path_parser.IsValid()) {
         LOG_ERROR(Service_FS, "Invalid path {}", path.DebugStr());
@@ -175,16 +175,16 @@ static ResultCode DeleteDirectoryHelper(const Path& path, const std::string& mou
     return ERROR_UNEXPECTED_FILE_OR_DIRECTORY_SDMC;
 }
 
-ResultCode SDMCArchive::DeleteDirectory(const Path& path) const {
-    return DeleteDirectoryHelper(path, mount_point, FileUtil::DeleteDir);
+ResultCode SDMCArchive::_DeleteDirectory(const Path& path) const {
+    return _DeleteDirectoryHelper(path, mount_point, FileUtil::DeleteDir);
 }
 
-ResultCode SDMCArchive::DeleteDirectoryRecursively(const Path& path) const {
-    return DeleteDirectoryHelper(
+ResultCode SDMCArchive::_DeleteDirectoryRecursively(const Path& path) const {
+    return _DeleteDirectoryHelper(
         path, mount_point, [](const std::string& p) { return FileUtil::DeleteDirRecursively(p); });
 }
 
-ResultCode SDMCArchive::CreateFile(const FileSys::Path& path, u64 size) const {
+ResultCode SDMCArchive::_CreateFile(const FileSys::Path& path, u64 size) const {
     const PathParser path_parser{path};
     if (!path_parser.IsValid()) {
         LOG_ERROR(Service_FS, "Invalid path {}", path.DebugStr());
@@ -222,7 +222,7 @@ ResultCode SDMCArchive::CreateFile(const FileSys::Path& path, u64 size) const {
                       ErrorLevel::Info);
 }
 
-ResultCode SDMCArchive::CreateDirectory(const Path& path) const {
+ResultCode SDMCArchive::_CreateDirectory(const Path& path) const {
     const PathParser path_parser{path};
     if (!path_parser.IsValid()) {
         LOG_ERROR(Service_FS, "Invalid path {}", path.DebugStr());
@@ -251,7 +251,7 @@ ResultCode SDMCArchive::CreateDirectory(const Path& path) const {
                       ErrorLevel::Status);
 }
 
-ResultCode SDMCArchive::RenameDirectory(const Path& src_path, const Path& dest_path) const {
+ResultCode SDMCArchive::_RenameDirectory(const Path& src_path, const Path& dest_path) const {
     const PathParser path_parser_src{src_path};
     // TODO: Verify these return codes with HW
     if (!path_parser_src.IsValid()) {
@@ -273,7 +273,7 @@ ResultCode SDMCArchive::RenameDirectory(const Path& src_path, const Path& dest_p
                       ErrorSummary::NothingHappened, ErrorLevel::Status);
 }
 
-ResultVal<std::unique_ptr<DirectoryBackend>> SDMCArchive::OpenDirectory(const Path& path) const {
+ResultVal<std::unique_ptr<DirectoryBackend>> SDMCArchive::_OpenDirectory(const Path& path) const {
     const PathParser path_parser{path};
     if (!path_parser.IsValid()) {
         LOG_ERROR(Service_FS, "Invalid path {}", path.DebugStr());

@@ -32,13 +32,12 @@ MiiSelectorDialog::MiiSelectorDialog(QWidget* parent, const HLE::Applets::MiiCon
     FileSys::Path file_path{"/CFL_DB.dat"};
     FileSys::Mode mode{};
     mode.read_flag.Assign(1);
-    auto file_result{archive->OpenFile(file_path, mode)};
+    auto file_result{archive->_OpenFile(file_path, mode)};
     if (!file_result.Succeeded()) {
         ShowNoSelectableMiiCharacters(result);
         return;
     }
     auto file{std::move(file_result).Unwrap()};
-    u32 id;
     u32 offset{0x8};
     HLE::Applets::MiiData mii;
     for (int i{}; i < 100; ++i) {

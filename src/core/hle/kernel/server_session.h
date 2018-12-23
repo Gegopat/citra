@@ -19,7 +19,7 @@ namespace Kernel {
 class ClientSession;
 class ClientPort;
 class ServerSession;
-class Session;
+struct Session;
 class SessionRequestHandler;
 class Thread;
 

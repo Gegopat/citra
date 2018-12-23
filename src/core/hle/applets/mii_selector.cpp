@@ -49,18 +49,14 @@ ResultCode MiiSelector::ReceiveParameter(const Service::APT::MessageParameter& p
 ResultCode MiiSelector::StartImpl(const Service::APT::AppletStartupParameter& parameter) {
     is_running = true;
     std::memcpy(&config, parameter.buffer.data(), parameter.buffer.size());
-    MiiResult result{};
-    if (config.magic_value != MiiSelectorMagic)
-        result.return_code = 1;
-    else {
-        manager.System().GetFrontend().LaunchMiiSelector(config, result, is_running);
-        std::mutex m;
-        std::unique_lock lock{m};
-        std::condition_variable cv;
-        cv.wait(lock, [this]() -> bool { return !is_running; });
-        result.mii_data_checksum = boost::crc<16, 0x1021, 0, 0, false, false>(
-            &result.selected_mii_data, sizeof(result.selected_mii_data) + sizeof(result.pad96));
-    }
+    MiiResult result;
+    manager.System().GetFrontend().LaunchMiiSelector(config, result, is_running);
+    std::mutex m;
+    std::unique_lock lock{m};
+    std::condition_variable cv;
+    cv.wait(lock, [this]() -> bool { return !is_running; });
+    result.mii_data_checksum = boost::crc<16, 0x1021, 0, 0, false, false>(
+        &result.selected_mii_data, sizeof(result.selected_mii_data) + sizeof(result.pad94));
     // Let the program know that we're closing
     Service::APT::MessageParameter message;
     message.buffer.resize(sizeof(MiiResult));

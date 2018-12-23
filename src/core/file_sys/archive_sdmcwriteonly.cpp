@@ -32,16 +32,16 @@ public:
     }
 };
 
-ResultVal<std::unique_ptr<FileBackend>> SDMCWriteOnlyArchive::OpenFile(const Path& path,
-                                                                       const Mode& mode) const {
+ResultVal<std::unique_ptr<FileBackend>> SDMCWriteOnlyArchive::_OpenFile(const Path& path,
+                                                                        const Mode& mode) const {
     if (mode.read_flag) {
         LOG_ERROR(Service_FS, "Read flag isn't supported");
         return ERROR_INVALID_READ_FLAG;
     }
-    return SDMCArchive::OpenFileBase(path, mode);
+    return SDMCArchive::_OpenFileBase(path, mode);
 }
 
-ResultVal<std::unique_ptr<DirectoryBackend>> SDMCWriteOnlyArchive::OpenDirectory(
+ResultVal<std::unique_ptr<DirectoryBackend>> SDMCWriteOnlyArchive::_OpenDirectory(
     const Path& path) const {
     LOG_ERROR(Service_FS, "Not supported");
     return ERROR_UNSUPPORTED_OPEN_FLAGS;

@@ -63,8 +63,8 @@ Path MakeNCCHFilePath(NCCHFileOpenType open_type, u32 content_index, NCCHFilePat
     return FileSys::Path(file);
 }
 
-ResultVal<std::unique_ptr<FileBackend>> NCCHArchive::OpenFile(const Path& path,
-                                                              const Mode& mode) const {
+ResultVal<std::unique_ptr<FileBackend>> NCCHArchive::_OpenFile(const Path& path,
+                                                               const Mode& mode) const {
     if (path.GetType() != LowPathType::Binary) {
         LOG_ERROR(Service_FS, "Path need to be Binary");
         return ERROR_INVALID_PATH;
@@ -154,51 +154,51 @@ ResultVal<std::unique_ptr<FileBackend>> NCCHArchive::OpenFile(const Path& path,
     return MakeResult<std::unique_ptr<FileBackend>>(std::move(file));
 }
 
-ResultCode NCCHArchive::DeleteFile(const Path& path) const {
+ResultCode NCCHArchive::_DeleteFile(const Path& path) const {
     LOG_ERROR(Service_FS, "Attempted to delete a file from an NCCH archive ({}).", GetName());
     // TODO: Verify error code
     return ResultCode(ErrorDescription::NoData, ErrorModule::FS, ErrorSummary::Canceled,
                       ErrorLevel::Status);
 }
 
-ResultCode NCCHArchive::RenameFile(const Path& src_path, const Path& dest_path) const {
+ResultCode NCCHArchive::_RenameFile(const Path& src_path, const Path& dest_path) const {
     LOG_ERROR(Service_FS, "Attempted to rename a file within an NCCH archive ({}).", GetName());
     // TODO: Use correct error code
     return ResultCode(-1);
 }
 
-ResultCode NCCHArchive::DeleteDirectory(const Path& path) const {
+ResultCode NCCHArchive::_DeleteDirectory(const Path& path) const {
     LOG_ERROR(Service_FS, "Attempted to delete a directory from an NCCH archive ({}).", GetName());
     // TODO: Use correct error code
     return ResultCode(-1);
 }
 
-ResultCode NCCHArchive::DeleteDirectoryRecursively(const Path& path) const {
+ResultCode NCCHArchive::_DeleteDirectoryRecursively(const Path& path) const {
     LOG_ERROR(Service_FS, "Attempted to delete a directory from an NCCH archive ({}).", GetName());
     // TODO: Use correct error code
     return ResultCode(-1);
 }
 
-ResultCode NCCHArchive::CreateFile(const Path& path, u64 size) const {
+ResultCode NCCHArchive::_CreateFile(const Path& path, u64 size) const {
     LOG_ERROR(Service_FS, "Attempted to create a file in an NCCH archive ({}).", GetName());
     // TODO: Verify error code
     return ResultCode(ErrorDescription::NotAuthorized, ErrorModule::FS, ErrorSummary::NotSupported,
                       ErrorLevel::Permanent);
 }
 
-ResultCode NCCHArchive::CreateDirectory(const Path& path) const {
+ResultCode NCCHArchive::_CreateDirectory(const Path& path) const {
     LOG_ERROR(Service_FS, "Attempted to create a directory in an NCCH archive ({}).", GetName());
     // TODO: Use correct error code
     return ResultCode(-1);
 }
 
-ResultCode NCCHArchive::RenameDirectory(const Path& src_path, const Path& dest_path) const {
+ResultCode NCCHArchive::_RenameDirectory(const Path& src_path, const Path& dest_path) const {
     LOG_ERROR(Service_FS, "Attempted to rename a file within an NCCH archive ({}).", GetName());
     // TODO: Use correct error code
     return ResultCode(-1);
 }
 
-ResultVal<std::unique_ptr<DirectoryBackend>> NCCHArchive::OpenDirectory(const Path& path) const {
+ResultVal<std::unique_ptr<DirectoryBackend>> NCCHArchive::_OpenDirectory(const Path& path) const {
     LOG_ERROR(Service_FS, "Attempted to open a directory within an NCCH archive ({}).",
               GetName().c_str());
     // TODO: Use correct error code

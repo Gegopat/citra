@@ -1346,7 +1346,7 @@ void GMainWindow::OnDumpRAM() {
     UISettings::values.ram_dumps_dir = QFileInfo(path).path();
     FileUtil::IOFile file{path.toStdString(), "wb"};
     auto& memory{system.Memory()};
-    file.WriteBytes(memory.fcram.data(), memory.fcram.size());
+    file.WriteBytes(system.Memory().GetFCRAMPointer(0), Memory::FCRAM_N3DS_SIZE);
     OnStartProgram();
     LOG_INFO(Frontend, "Memory dump finished.");
 }

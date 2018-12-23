@@ -73,11 +73,11 @@ ResultCode ArchiveManager::RegisterArchiveType(std::unique_ptr<FileSys::ArchiveF
 std::tuple<ResultVal<std::shared_ptr<File>>, std::chrono::nanoseconds>
 ArchiveManager::OpenFileFromArchive(ArchiveHandle archive_handle, const FileSys::Path& path,
                                     const FileSys::Mode mode) {
-    ArchiveBackend* archive{GetArchive(archive_handle)};
+    auto archive{GetArchive(archive_handle)};
     if (!archive)
         return std::make_tuple(FileSys::ERR_INVALID_ARCHIVE_HANDLE, std::chrono::nanoseconds{0});
     std::chrono::nanoseconds open_timeout_ns{archive->GetOpenDelayNs()};
-    auto backend{archive->OpenFile(path, mode)};
+    auto backend{archive->_OpenFile(path, mode)};
     if (backend.Failed())
         return std::make_tuple(backend.Code(), open_timeout_ns);
     auto file{std::shared_ptr<File>(new File(system, std::move(backend).Unwrap(), path))};
@@ -86,22 +86,22 @@ ArchiveManager::OpenFileFromArchive(ArchiveHandle archive_handle, const FileSys:
 
 ResultCode ArchiveManager::DeleteFileFromArchive(ArchiveHandle archive_handle,
                                                  const FileSys::Path& path) {
-    ArchiveBackend* archive{GetArchive(archive_handle)};
+    auto archive{GetArchive(archive_handle)};
     if (!archive)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
-    return archive->DeleteFile(path);
+    return archive->_DeleteFile(path);
 }
 
 ResultCode ArchiveManager::RenameFileBetweenArchives(ArchiveHandle src_archive_handle,
                                                      const FileSys::Path& src_path,
                                                      ArchiveHandle dest_archive_handle,
                                                      const FileSys::Path& dest_path) {
-    ArchiveBackend* src_archive{GetArchive(src_archive_handle)};
-    ArchiveBackend* dest_archive{GetArchive(dest_archive_handle)};
+    auto src_archive{GetArchive(src_archive_handle)};
+    auto dest_archive{GetArchive(dest_archive_handle)};
     if (!src_archive || !dest_archive)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
     if (src_archive == dest_archive)
-        return src_archive->RenameFile(src_path, dest_path);
+        return src_archive->_RenameFile(src_path, dest_path);
     else
         // TODO: Implement renaming across archives
         return UnimplementedFunction(ErrorModule::FS);
@@ -109,46 +109,46 @@ ResultCode ArchiveManager::RenameFileBetweenArchives(ArchiveHandle src_archive_h
 
 ResultCode ArchiveManager::DeleteDirectoryFromArchive(ArchiveHandle archive_handle,
                                                       const FileSys::Path& path) {
-    ArchiveBackend* archive{GetArchive(archive_handle)};
+    auto archive{GetArchive(archive_handle)};
     if (!archive)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
-    return archive->DeleteDirectory(path);
+    return archive->_DeleteDirectory(path);
 }
 
 ResultCode ArchiveManager::DeleteDirectoryRecursivelyFromArchive(ArchiveHandle archive_handle,
                                                                  const FileSys::Path& path) {
-    ArchiveBackend* archive{GetArchive(archive_handle)};
+    auto archive{GetArchive(archive_handle)};
     if (!archive)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
-    return archive->DeleteDirectoryRecursively(path);
+    return archive->_DeleteDirectoryRecursively(path);
 }
 
 ResultCode ArchiveManager::CreateFileInArchive(ArchiveHandle archive_handle,
                                                const FileSys::Path& path, u64 file_size) {
-    ArchiveBackend* archive{GetArchive(archive_handle)};
+    auto archive{GetArchive(archive_handle)};
     if (!archive)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
-    return archive->CreateFile(path, file_size);
+    return archive->_CreateFile(path, file_size);
 }
 
 ResultCode ArchiveManager::CreateDirectoryFromArchive(ArchiveHandle archive_handle,
                                                       const FileSys::Path& path) {
-    ArchiveBackend* archive{GetArchive(archive_handle)};
+    auto archive{GetArchive(archive_handle)};
     if (!archive)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
-    return archive->CreateDirectory(path);
+    return archive->_CreateDirectory(path);
 }
 
 ResultCode ArchiveManager::RenameDirectoryBetweenArchives(ArchiveHandle src_archive_handle,
                                                           const FileSys::Path& src_path,
                                                           ArchiveHandle dest_archive_handle,
                                                           const FileSys::Path& dest_path) {
-    ArchiveBackend* src_archive{GetArchive(src_archive_handle)};
-    ArchiveBackend* dest_archive{GetArchive(dest_archive_handle)};
+    auto src_archive{GetArchive(src_archive_handle)};
+    auto dest_archive{GetArchive(dest_archive_handle)};
     if (!src_archive || !dest_archive)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
     if (src_archive == dest_archive)
-        return src_archive->RenameDirectory(src_path, dest_path);
+        return src_archive->_RenameDirectory(src_path, dest_path);
     else
         // TODO: Implement renaming across archives
         return UnimplementedFunction(ErrorModule::FS);
@@ -156,10 +156,10 @@ ResultCode ArchiveManager::RenameDirectoryBetweenArchives(ArchiveHandle src_arch
 
 ResultVal<std::shared_ptr<Directory>> ArchiveManager::OpenDirectoryFromArchive(
     ArchiveHandle archive_handle, const FileSys::Path& path) {
-    ArchiveBackend* archive{GetArchive(archive_handle)};
+    auto archive{GetArchive(archive_handle)};
     if (!archive)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
-    auto backend{archive->OpenDirectory(path)};
+    auto backend{archive->_OpenDirectory(path)};
     if (backend.Failed())
         return backend.Code();
     auto directory{std::shared_ptr<Directory>(new Directory(std::move(backend).Unwrap(), path))};
@@ -167,7 +167,7 @@ ResultVal<std::shared_ptr<Directory>> ArchiveManager::OpenDirectoryFromArchive(
 }
 
 ResultVal<u64> ArchiveManager::GetFreeBytesInArchive(ArchiveHandle archive_handle) {
-    ArchiveBackend* archive{GetArchive(archive_handle)};
+    auto archive{GetArchive(archive_handle)};
     if (!archive)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
     return MakeResult<u64>(archive->GetFreeBytes());

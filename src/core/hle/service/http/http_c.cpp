@@ -1293,7 +1293,7 @@ void HTTP_C::DecryptClCertA(Core::System& system) {
         FileSys::NCCHFileOpenType::NCCHData, 0, FileSys::NCCHFilePathType::RomFS, exefs_filepath)};
     FileSys::Mode open_mode{};
     open_mode.read_flag.Assign(1);
-    auto file_result{archive.OpenFile(file_path, open_mode)};
+    auto file_result{archive._OpenFile(file_path, open_mode)};
     if (file_result.Failed()) {
         LOG_ERROR(Service_HTTP, "ClCertA file missing");
         return;
@@ -1388,7 +1388,7 @@ void HTTP_C::LoadDefaultCerts(Core::System& system) {
         FileSys::NCCHFileOpenType::NCCHData, 0, FileSys::NCCHFilePathType::Code, exefs_filepath)};
     FileSys::Mode open_mode{};
     open_mode.read_flag.Assign(1);
-    auto file_result{archive.OpenFile(file_path, open_mode)};
+    auto file_result{archive._OpenFile(file_path, open_mode)};
     if (file_result.Failed()) {
         LOG_ERROR(Service_HTTP, "SSL system archive file missing");
         return;

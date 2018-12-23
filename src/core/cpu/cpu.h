@@ -18,7 +18,7 @@ struct PageTable;
 } // namespace Memory
 
 namespace Dynarmic::A32 {
-class Context;
+struct Context;
 class Jit;
 } // namespace Dynarmic::A32
 

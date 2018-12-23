@@ -122,11 +122,11 @@ Module::Module(Core::System& system) : system{system} {
                    "Couldn't open the PTM SharedExtSaveData archive!");
         FileSys::Path gamecoin_path{"/gamecoin.dat"};
         auto archive{std::move(new_archive_result).Unwrap()};
-        archive->CreateFile(gamecoin_path, sizeof(GameCoin));
+        archive->_CreateFile(gamecoin_path, sizeof(GameCoin));
         FileSys::Mode open_mode{};
         open_mode.write_flag.Assign(1);
         // Open the file and write the default gamecoin information
-        auto gamecoin_result{archive->OpenFile(gamecoin_path, open_mode)};
+        auto gamecoin_result{archive->_OpenFile(gamecoin_path, open_mode)};
         if (gamecoin_result.Succeeded()) {
             auto gamecoin{std::move(gamecoin_result).Unwrap()};
             gamecoin->Write(0, sizeof(GameCoin), true,
@@ -148,7 +148,7 @@ void SetPlayCoins(u16 play_coins) {
     open_mode.read_flag.Assign(1);
     open_mode.write_flag.Assign(1);
     // Open the file and write the gamecoin information
-    auto gamecoin_result{archive->OpenFile(gamecoin_path, open_mode)};
+    auto gamecoin_result{archive->_OpenFile(gamecoin_path, open_mode)};
     if (gamecoin_result.Succeeded()) {
         auto gamecoin{std::move(gamecoin_result).Unwrap()};
         GameCoin game_coin;

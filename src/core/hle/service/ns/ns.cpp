@@ -125,7 +125,7 @@ bool Module::LoadSharedFont() {
     FileSys::Path file_path{romfs_path};
     FileSys::Mode open_mode{};
     open_mode.read_flag.Assign(1);
-    auto file_result{archive.OpenFile(file_path, open_mode)};
+    auto file_result{archive._OpenFile(file_path, open_mode)};
     if (file_result.Failed())
         return false;
     auto romfs{std::move(file_result).Unwrap()};

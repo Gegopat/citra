@@ -14,8 +14,6 @@
 
 namespace HLE::Applets {
 
-constexpr std::size_t MiiSelectorMagic{0x13DE28CF};
-
 struct MiiConfig {
     u8 enable_cancel_button;
     u8 enable_guest_mii;

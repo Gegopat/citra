@@ -38,16 +38,12 @@ public:
 
     ResultVal<std::size_t> Write(u64 offset, std::size_t length, bool flush,
                                  const u8* buffer) override {
-        if (offset > size) {
+        if (offset > size)
             return ERR_WRITE_BEYOND_END;
-        } else if (offset == size) {
+        else if (offset == size)
             return MakeResult<std::size_t>(0);
-        }
-
-        if (offset + length > size) {
+        if (offset + length > size)
             length = size - offset;
-        }
-
         return DiskFile::Write(offset, length, flush, buffer);
     }
 
@@ -91,8 +87,8 @@ public:
         return "ExtSaveDataArchive: " + mount_point;
     }
 
-    ResultVal<std::unique_ptr<FileBackend>> OpenFile(const Path& path,
-                                                     const Mode& mode) const override {
+    ResultVal<std::unique_ptr<FileBackend>> _OpenFile(const Path& path,
+                                                      const Mode& mode) const override {
         LOG_DEBUG(Service_FS, "path={} mode={:01X}", path.DebugStr(), mode.hex);
         const PathParser path_parser{path};
         if (!path_parser.IsValid()) {
@@ -140,12 +136,12 @@ public:
         return MakeResult<std::unique_ptr<FileBackend>>(std::move(disk_file));
     }
 
-    ResultCode CreateFile(const Path& path, u64 size) const override {
+    ResultCode _CreateFile(const Path& path, u64 size) const override {
         if (size == 0) {
             LOG_ERROR(Service_FS, "Zero-size file isn't supported");
             return ERROR_UNSUPPORTED_OPEN_FLAGS;
         }
-        return SaveDataArchive::CreateFile(path, size);
+        return SaveDataArchive::_CreateFile(path, size);
     }
 };
 

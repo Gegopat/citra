@@ -30,8 +30,8 @@ public:
     }
 };
 
-ResultVal<std::unique_ptr<FileBackend>> SaveDataArchive::OpenFile(const Path& path,
-                                                                  const Mode& mode) const {
+ResultVal<std::unique_ptr<FileBackend>> SaveDataArchive::_OpenFile(const Path& path,
+                                                                   const Mode& mode) const {
     LOG_DEBUG(Service_FS, "path={} mode={:01X}", path.DebugStr(), mode.hex);
     const PathParser path_parser{path};
     if (!path_parser.IsValid()) {
@@ -79,7 +79,7 @@ ResultVal<std::unique_ptr<FileBackend>> SaveDataArchive::OpenFile(const Path& pa
     return MakeResult<std::unique_ptr<FileBackend>>(std::move(disk_file));
 }
 
-ResultCode SaveDataArchive::DeleteFile(const Path& path) const {
+ResultCode SaveDataArchive::_DeleteFile(const Path& path) const {
     const PathParser path_parser{path};
     if (!path_parser.IsValid()) {
         LOG_ERROR(Service_FS, "Invalid path {}", path.DebugStr());
@@ -107,7 +107,7 @@ ResultCode SaveDataArchive::DeleteFile(const Path& path) const {
     return ERROR_FILE_NOT_FOUND;
 }
 
-ResultCode SaveDataArchive::RenameFile(const Path& src_path, const Path& dest_path) const {
+ResultCode SaveDataArchive::_RenameFile(const Path& src_path, const Path& dest_path) const {
     const PathParser path_parser_src{src_path};
     // TODO: Verify these return codes with HW
     if (!path_parser_src.IsValid()) {
@@ -130,8 +130,8 @@ ResultCode SaveDataArchive::RenameFile(const Path& src_path, const Path& dest_pa
 }
 
 template <typename T>
-static ResultCode DeleteDirectoryHelper(const Path& path, const std::string& mount_point,
-                                        T deleter) {
+static ResultCode _DeleteDirectoryHelper(const Path& path, const std::string& mount_point,
+                                         T deleter) {
     const PathParser path_parser{path};
     if (!path_parser.IsValid()) {
         LOG_ERROR(Service_FS, "Invalid path {}", path.DebugStr());
@@ -161,16 +161,16 @@ static ResultCode DeleteDirectoryHelper(const Path& path, const std::string& mou
     return ERROR_DIRECTORY_NOT_EMPTY;
 }
 
-ResultCode SaveDataArchive::DeleteDirectory(const Path& path) const {
-    return DeleteDirectoryHelper(path, mount_point, FileUtil::DeleteDir);
+ResultCode SaveDataArchive::_DeleteDirectory(const Path& path) const {
+    return _DeleteDirectoryHelper(path, mount_point, FileUtil::DeleteDir);
 }
 
-ResultCode SaveDataArchive::DeleteDirectoryRecursively(const Path& path) const {
-    return DeleteDirectoryHelper(
+ResultCode SaveDataArchive::_DeleteDirectoryRecursively(const Path& path) const {
+    return _DeleteDirectoryHelper(
         path, mount_point, [](const std::string& p) { return FileUtil::DeleteDirRecursively(p); });
 }
 
-ResultCode SaveDataArchive::CreateFile(const FileSys::Path& path, u64 size) const {
+ResultCode SaveDataArchive::_CreateFile(const FileSys::Path& path, u64 size) const {
     const PathParser path_parser{path};
     if (!path_parser.IsValid()) {
         LOG_ERROR(Service_FS, "Invalid path {}", path.DebugStr());
@@ -209,7 +209,7 @@ ResultCode SaveDataArchive::CreateFile(const FileSys::Path& path, u64 size) cons
                       ErrorLevel::Info);
 }
 
-ResultCode SaveDataArchive::CreateDirectory(const Path& path) const {
+ResultCode SaveDataArchive::_CreateDirectory(const Path& path) const {
     const PathParser path_parser{path};
     if (!path_parser.IsValid()) {
         LOG_ERROR(Service_FS, "Invalid path {}", path.DebugStr());
@@ -240,7 +240,7 @@ ResultCode SaveDataArchive::CreateDirectory(const Path& path) const {
                       ErrorLevel::Status);
 }
 
-ResultCode SaveDataArchive::RenameDirectory(const Path& src_path, const Path& dest_path) const {
+ResultCode SaveDataArchive::_RenameDirectory(const Path& src_path, const Path& dest_path) const {
     const PathParser path_parser_src{src_path};
     // TODO: Verify these return codes with HW
     if (!path_parser_src.IsValid()) {
@@ -262,7 +262,7 @@ ResultCode SaveDataArchive::RenameDirectory(const Path& src_path, const Path& de
                       ErrorSummary::NothingHappened, ErrorLevel::Status);
 }
 
-ResultVal<std::unique_ptr<DirectoryBackend>> SaveDataArchive::OpenDirectory(
+ResultVal<std::unique_ptr<DirectoryBackend>> SaveDataArchive::_OpenDirectory(
     const Path& path) const {
     const PathParser path_parser{path};
     if (!path_parser.IsValid()) {

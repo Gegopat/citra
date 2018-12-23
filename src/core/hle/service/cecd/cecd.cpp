@@ -53,10 +53,10 @@ void Module::Interface::Open(Kernel::HLERequestContext& ctx) {
     case CecDataPathType::MboxDir:
     case CecDataPathType::InboxDir:
     case CecDataPathType::OutboxDir: {
-        auto dir_result{cecd->cecd_system_save_data_archive->OpenDirectory(path)};
+        auto dir_result{cecd->cecd_system_save_data_archive->_OpenDirectory(path)};
         if (dir_result.Failed()) {
             if (open_mode.create) {
-                cecd->cecd_system_save_data_archive->CreateDirectory(path);
+                cecd->cecd_system_save_data_archive->_CreateDirectory(path);
                 rb.Push(RESULT_SUCCESS);
             } else {
                 LOG_DEBUG(Service_CECD, "Failed to open directory: {}", path.AsString());
@@ -78,7 +78,7 @@ void Module::Interface::Open(Kernel::HLERequestContext& ctx) {
         break;
     }
     default: { // If not directory, then it is a file
-        auto file_result{cecd->cecd_system_save_data_archive->OpenFile(path, mode)};
+        auto file_result{cecd->cecd_system_save_data_archive->_OpenFile(path, mode)};
         if (file_result.Failed()) {
             LOG_DEBUG(Service_CECD, "Failed to open file: {}", path.AsString());
             rb.Push(ResultCode(ErrorDescription::NoData, ErrorModule::CEC, ErrorSummary::NotFound,
@@ -160,7 +160,7 @@ void Module::Interface::ReadMessage(Kernel::HLERequestContext& ctx) {
                                                                     : CecDataPathType::InboxMsg,
                                                                 ncch_program_id, id_buffer)
                                    .data()};
-    auto message_result{cecd->cecd_system_save_data_archive->OpenFile(message_path, mode)};
+    auto message_result{cecd->cecd_system_save_data_archive->_OpenFile(message_path, mode)};
     auto rb{rp.MakeBuilder(2, 4)};
     if (message_result.Succeeded()) {
         auto message{std::move(message_result).Unwrap()};
@@ -219,7 +219,7 @@ void Module::Interface::ReadMessageWithHMAC(Kernel::HLERequestContext& ctx) {
                                                                     : CecDataPathType::InboxMsg,
                                                                 ncch_program_id, id_buffer)
                                    .data()};
-    auto message_result{cecd->cecd_system_save_data_archive->OpenFile(message_path, mode)};
+    auto message_result{cecd->cecd_system_save_data_archive->_OpenFile(message_path, mode)};
     auto rb{rp.MakeBuilder(2, 6)};
     if (message_result.Succeeded()) {
         auto message{std::move(message_result).Unwrap()};
@@ -333,7 +333,7 @@ void Module::Interface::WriteMessage(Kernel::HLERequestContext& ctx) {
                                                                     : CecDataPathType::InboxMsg,
                                                                 ncch_program_id, id_buffer)
                                    .data()};
-    auto message_result{cecd->cecd_system_save_data_archive->OpenFile(message_path, mode)};
+    auto message_result{cecd->cecd_system_save_data_archive->_OpenFile(message_path, mode)};
     auto rb{rp.MakeBuilder(1, 4)};
     if (message_result.Succeeded()) {
         auto message{std::move(message_result).Unwrap()};
@@ -389,7 +389,7 @@ void Module::Interface::WriteMessageWithHMAC(Kernel::HLERequestContext& ctx) {
                                                                     : CecDataPathType::InboxMsg,
                                                                 ncch_program_id, id_buffer)
                                    .data()};
-    auto message_result{cecd->cecd_system_save_data_archive->OpenFile(message_path, mode)};
+    auto message_result{cecd->cecd_system_save_data_archive->_OpenFile(message_path, mode)};
     auto rb{rp.MakeBuilder(1, 6)};
     if (message_result.Succeeded()) {
         auto message{std::move(message_result).Unwrap()};
@@ -455,11 +455,11 @@ void Module::Interface::Delete(Kernel::HLERequestContext& ctx) {
     case CecDataPathType::MboxDir:
     case CecDataPathType::InboxDir:
     case CecDataPathType::OutboxDir:
-        rb.Push(cecd->cecd_system_save_data_archive->DeleteDirectoryRecursively(path));
+        rb.Push(cecd->cecd_system_save_data_archive->_DeleteDirectoryRecursively(path));
         break;
     default: // If not directory, then it is a file
         if (message_id_size == 0)
-            rb.Push(cecd->cecd_system_save_data_archive->DeleteFile(path));
+            rb.Push(cecd->cecd_system_save_data_archive->_DeleteFile(path));
         else {
             std::vector<u8> id_buffer(message_id_size);
             message_id_buffer.Read(id_buffer.data(), 0, message_id_size);
@@ -468,7 +468,7 @@ void Module::Interface::Delete(Kernel::HLERequestContext& ctx) {
                                                            : CecDataPathType::InboxMsg,
                                                  ncch_program_id, id_buffer)
                     .data()};
-            rb.Push(cecd->cecd_system_save_data_archive->DeleteFile(message_path));
+            rb.Push(cecd->cecd_system_save_data_archive->_DeleteFile(message_path));
         }
     }
     rb.PushMappedBuffer(message_id_buffer);
@@ -491,7 +491,7 @@ void Module::Interface::SetData(Kernel::HLERequestContext& ctx) {
         FileSys::Mode mode{};
         mode.write_flag.Assign(1);
         mode.create_flag.Assign(1);
-        auto file_result{cecd->cecd_system_save_data_archive->OpenFile(path, mode)};
+        auto file_result{cecd->cecd_system_save_data_archive->_OpenFile(path, mode)};
         if (file_result.Succeeded()) {
             auto file{std::move(file_result).Unwrap()};
             std::vector<u8> buffer(buffer_size);
@@ -621,7 +621,7 @@ void Module::Interface::OpenAndWrite(Kernel::HLERequestContext& ctx) {
                            ErrorSummary::NotFound, ErrorLevel::Status));
         break;
     default: // If not directory, then it is a file
-        auto file_result{cecd->cecd_system_save_data_archive->OpenFile(path, mode)};
+        auto file_result{cecd->cecd_system_save_data_archive->_OpenFile(path, mode)};
         if (file_result.Succeeded()) {
             auto file{std::move(file_result).Unwrap()};
             std::vector<u8> buffer(buffer_size);
@@ -670,7 +670,7 @@ void Module::Interface::OpenAndRead(Kernel::HLERequestContext& ctx) {
         rb.Push<u32>(0); // No entries read
         break;
     default: // If not directory, then it is a file
-        auto file_result{cecd->cecd_system_save_data_archive->OpenFile(path, mode)};
+        auto file_result{cecd->cecd_system_save_data_archive->_OpenFile(path, mode)};
         if (file_result.Succeeded()) {
             auto file{std::move(file_result).Unwrap()};
             std::vector<u8> buffer(buffer_size);
@@ -857,7 +857,7 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
                 /// the MBoxList____ file that is present in the directory as well.
                 FileSys::Path root_path{
                     GetCecDataPathTypeAsString(CecDataPathType::RootDir, 0).data()};
-                auto dir_result{cecd_system_save_data_archive->OpenDirectory(root_path)};
+                auto dir_result{cecd_system_save_data_archive->_OpenDirectory(root_path)};
                 auto root_dir{std::move(dir_result).Unwrap()};
                 std::vector<FileSys::Entry> entries(max_num_boxes + 1); // + 1 mboxlist
                 const u32 entry_count{root_dir->Read(max_num_boxes + 1, entries.data())};
@@ -1010,7 +1010,7 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
         /// the BoxInfo____ and OBIndex_____files that are present in the directory as well.
         FileSys::Path outbox_path{
             GetCecDataPathTypeAsString(CecDataPathType::OutboxDir, ncch_program_id).data()};
-        auto dir_result{cecd_system_save_data_archive->OpenDirectory(outbox_path)};
+        auto dir_result{cecd_system_save_data_archive->_OpenDirectory(outbox_path)};
         auto outbox_dir{std::move(dir_result).Unwrap()};
         std::vector<FileSys::Entry> entries(outbox_info_header.max_message_num + 2);
         const u32 entry_count{
@@ -1033,7 +1033,7 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
                         .data()};
                 FileSys::Mode mode{};
                 mode.read_flag.Assign(1);
-                auto message_result{cecd_system_save_data_archive->OpenFile(message_path, mode)};
+                auto message_result{cecd_system_save_data_archive->_OpenFile(message_path, mode)};
                 auto message{std::move(message_result).Unwrap()};
                 const u64 message_size{message->GetSize()};
                 std::vector<u8> buffer(message_size);
@@ -1083,7 +1083,7 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
         /// the BoxInfo____ and OBIndex_____files that are present in the directory as well.
         FileSys::Path outbox_path{
             GetCecDataPathTypeAsString(CecDataPathType::OutboxDir, ncch_program_id).data()};
-        auto dir_result{cecd_system_save_data_archive->OpenDirectory(outbox_path)};
+        auto dir_result{cecd_system_save_data_archive->_OpenDirectory(outbox_path)};
         auto outbox_dir{std::move(dir_result).Unwrap()};
         std::vector<FileSys::Entry> entries(8);
         const u32 entry_count{outbox_dir->Read(8, entries.data())};
@@ -1104,7 +1104,7 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
                         .data()};
                 FileSys::Mode mode{};
                 mode.read_flag.Assign(1);
-                auto message_result{cecd_system_save_data_archive->OpenFile(message_path, mode)};
+                auto message_result{cecd_system_save_data_archive->_OpenFile(message_path, mode)};
                 auto message{std::move(message_result).Unwrap()};
                 const u64 message_size{message->GetSize()};
                 std::vector<u8> buffer(message_size);
@@ -1135,7 +1135,8 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
     case CecDataPathType::MboxData:
     case CecDataPathType::MboxIcon:
     case CecDataPathType::MboxTitle:
-    default: {}
+    default: {
+    }
     }
 }
 
@@ -1172,7 +1173,7 @@ Module::Module(Core::System& system) : system{system} {
         /// eventlog.dat, and CEC/MBoxList____
         const FileSys::Path root_dir_path{
             GetCecDataPathTypeAsString(CecDataPathType::RootDir, 0).data()};
-        cecd_system_save_data_archive->CreateDirectory(root_dir_path);
+        cecd_system_save_data_archive->_CreateDirectory(root_dir_path);
         FileSys::Mode mode{};
         mode.write_flag.Assign(1);
         mode.create_flag.Assign(1);
@@ -1182,7 +1183,7 @@ Module::Module(Core::System& system) : system{system} {
         /// at offset 0x30d53. 0xDD means that the cec module hasn't written data to that
         /// region yet.
         FileSys::Path eventlog_path{"/eventlog.dat"};
-        auto eventlog_result{cecd_system_save_data_archive->OpenFile(eventlog_path, mode)};
+        auto eventlog_result{cecd_system_save_data_archive->_OpenFile(eventlog_path, mode)};
         constexpr u32 eventlog_size{0x30d54};
         auto eventlog{std::move(eventlog_result).Unwrap()};
         std::vector<u8> eventlog_buffer(eventlog_size);
@@ -1198,7 +1199,7 @@ Module::Module(Core::System& system) : system{system} {
         /// file at offset 0x18b
         FileSys::Path mboxlist_path{
             GetCecDataPathTypeAsString(CecDataPathType::MboxList, 0).data()};
-        auto mboxlist_result{cecd_system_save_data_archive->OpenFile(mboxlist_path, mode)};
+        auto mboxlist_result{cecd_system_save_data_archive->_OpenFile(mboxlist_path, mode)};
         constexpr u32 mboxlist_size{0x18c};
         auto mboxlist{std::move(mboxlist_result).Unwrap()};
         std::vector<u8> mboxlist_buffer(mboxlist_size);

@@ -172,7 +172,7 @@ ResultVal<VAddr> Process::HeapAllocate(VAddr target, u32 size, VMAPermission per
         LOG_DEBUG(Kernel, "Allocated FCRAM region lower={:08X}, upper={:08X}", interval.lower(),
                   interval.upper());
         auto& memory{system.Memory()};
-        std::fill(memory.fcram.begin() + interval.lower(), memory.fcram.begin() + interval.upper(),
+        std::fill(memory.GetFCRAMPointer(interval.lower()), memory.GetFCRAMPointer(interval.upper()),
                   0);
         auto vma{vm_manager.MapBackingMemory(interval_target,
                                              memory.GetFCRAMPointer(interval.lower()),

@@ -56,8 +56,8 @@ static const bool CheckSSE41Supported() {
             return true;
         else
             return false;
-        return false;
     }
+    return false;
 }
 
 namespace Pica::Shader {

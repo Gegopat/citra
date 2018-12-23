@@ -12,7 +12,7 @@
 
 namespace Kernel {
 
-class Session;
+struct Session;
 class Thread;
 
 class ClientSession final : public Object {

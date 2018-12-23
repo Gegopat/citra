@@ -207,10 +207,10 @@ bool IsValidVirtualAddress(const Kernel::Process& process, VAddr vaddr);
 class MemorySystem {
 public:
     explicit MemorySystem(Core::System& system);
+    ~MemorySystem();
 
     /**
      * Maps an allocated buffer onto a region of the emulated process address space.
-     *
      * @param page_table The page table of the emulated process.
      * @param base The address to start mapping at. Must be page-aligned.
      * @param size The amount of bytes to map. Must be page-aligned.
@@ -292,8 +292,6 @@ public:
 
     /// Unregisters page table for rasterizer cache marking
     void UnregisterPageTable(PageTable* page_table);
-
-    std::array<u8, FCRAM_N3DS_SIZE> fcram{};
 
 private:
     template <typename T>
