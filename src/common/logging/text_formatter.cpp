@@ -19,12 +19,10 @@
 namespace Log {
 
 std::string FormatLogMessage(const Entry& entry) {
-    unsigned int time_seconds{static_cast<unsigned int>(entry.timestamp.count() / 1000000)};
-    unsigned int time_fractional{static_cast<unsigned int>(entry.timestamp.count() % 1000000)};
-
-    const char* class_name{GetLogClassName(entry.log_class)};
-    const char* level_name{GetLevelName(entry.log_level)};
-
+    auto time_seconds{static_cast<unsigned>(entry.timestamp.count() / 1000000)};
+    auto time_fractional{static_cast<unsigned>(entry.timestamp.count() % 1000000)};
+    auto class_name{GetLogClassName(entry.log_class)};
+    auto level_name{GetLevelName(entry.log_level)};
     return fmt::format("[{:d}.{:d}] {} <{}> {}:{}:{}: {}", time_seconds, time_fractional,
                        class_name, level_name, entry.filename, entry.function, entry.line_num,
                        entry.message);
@@ -37,7 +35,7 @@ void PrintMessage(const Entry& entry) {
 
 void PrintColoredMessage(const Entry& entry) {
 #ifdef _WIN32
-    HANDLE console_handle{GetStdHandle(STD_ERROR_HANDLE)};
+    auto console_handle{GetStdHandle(STD_ERROR_HANDLE)};
     if (console_handle == INVALID_HANDLE_VALUE)
         return;
     CONSOLE_SCREEN_BUFFER_INFO original_info;
@@ -102,7 +100,6 @@ void PrintColoredMessage(const Entry& entry) {
     fputs(ESC "[0m", stderr);
 #undef ESC
 #endif
-    fflush(stderr);
 }
 
 } // namespace Log
