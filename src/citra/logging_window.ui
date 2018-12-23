@@ -18,6 +18,9 @@
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <widget class="QTextEdit" name="logs">
+       <property name="styleSheet">
+        <string notr="true">QTextEdit {background-color: #000000;}</string>
+       </property>
        <property name="readOnly">
         <bool>true</bool>
        </property>

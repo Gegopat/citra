@@ -42,7 +42,7 @@ install:
           C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S mingw64/mingw-w64-x86_64-freetype mingw64/mingw-w64-x86_64-fontconfig" 2> $null
           C:\msys64\usr\bin\bash -lc "pacman --noconfirm -U http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-SDL2-2.0.5-2-any.pkg.tar.xz" 2> $null
           C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S $dependencies" 2> $null
-          # Freeze the cmake to a stable version, on version < 3.9.6 cmake may generate a Makefile links against gcc_eh instead of gcc_s_eh
+          # Freeze CMake to a stable version, on version < 3.9.6 CMake may generate a Makefile links against gcc_eh instead of gcc_s_eh
           C:\msys64\usr\bin\bash -lc "pacman --noconfirm -U http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-cmake-3.11.1-2-any.pkg.tar.xz" 2> $null
         }
 
