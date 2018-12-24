@@ -18,7 +18,7 @@ class System;
 
 namespace RPC {
 
-class PacketHeader;
+struct PacketHeader;
 
 class RPCServer {
 public:

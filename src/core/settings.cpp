@@ -135,7 +135,7 @@ void CreateProfile(std::string name) {
     profile.udp_input_port = values.udp_input_port;
     profile.udp_pad_index = values.udp_pad_index;
     values.profiles.push_back(profile);
-    LoadProfile(values.profiles.size() - 1);
+    LoadProfile(static_cast<int>(values.profiles.size() - 1));
 }
 
 void DeleteProfile(int index) {
