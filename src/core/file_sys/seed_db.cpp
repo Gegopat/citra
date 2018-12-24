@@ -105,21 +105,18 @@ bool AddSeed(const Seed& seed) {
 
 std::optional<Seed::Data> GetSeed(u64 program_id) {
     SeedDB db;
-    if (!db.Load()) {
+    if (!db.Load())
         return {};
-    }
     const auto found_seed_iter{db.FindSeedByProgramID(program_id)};
-    if (found_seed_iter != db.seeds.end()) {
+    if (found_seed_iter != db.seeds.end())
         return found_seed_iter->data;
-    }
     return {};
 }
 
-u32 GetSeedCount() {
+std::size_t GetSeedCount() {
     SeedDB db;
-    if (!db.Load()) {
+    if (!db.Load())
         return 0;
-    }
     return db.GetCount();
 }
 

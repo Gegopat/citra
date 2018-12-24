@@ -755,7 +755,7 @@ void HTTP_C::GetResponseHeader(Kernel::HLERequestContext& ctx) {
         value_buffer.Write(value.c_str(), 0, value.length());
         auto rb{rp.MakeBuilder(2, 2)};
         rb.Push(RESULT_SUCCESS);
-        rb.Push<u32>(value.length());
+        rb.Push<u32>(static_cast<u32>(value.length()));
         rb.PushMappedBuffer(value_buffer);
         LOG_DEBUG(Service_HTTP, "name={}, name_size={}, value={}, value_max_size={}, context_id={}",
                   name, name_size, value, value_max_size, context_id);
@@ -786,7 +786,7 @@ void HTTP_C::GetResponseHeaderTimeout(Kernel::HLERequestContext& ctx) {
         value_buffer.Write(value.c_str(), 0, value.length());
         auto rb{rp.MakeBuilder(2, 2)};
         rb.Push(RESULT_SUCCESS);
-        rb.Push<u32>(value.length());
+        rb.Push<u32>(static_cast<u32>(value.length()));
         rb.PushMappedBuffer(value_buffer);
         LOG_DEBUG(Service_HTTP,
                   "name={}, name_size={}, value={}, value_max_size={}, timeout={}, context_id={}",
@@ -814,7 +814,7 @@ void HTTP_C::GetResponseData(Kernel::HLERequestContext& ctx) {
     buffer.Write(raw.c_str(), 0, raw.length());
     auto rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(raw.length());
+    rb.Push<u32>(static_cast<u32>(raw.length()));
     rb.PushMappedBuffer(buffer);
     LOG_DEBUG(Service_HTTP, "context_id={}, max_buffer_size={}", context_id, max_buffer_size);
 }
@@ -833,7 +833,7 @@ void HTTP_C::GetResponseDataTimeout(Kernel::HLERequestContext& ctx) {
     buffer.Write(raw.c_str(), 0, raw.length());
     auto rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(raw.length());
+    rb.Push<u32>(static_cast<u32>(raw.length()));
     rb.PushMappedBuffer(buffer);
     LOG_DEBUG(Service_HTTP, "context_id={}, max_buffer_size={}, timeout={}", context_id,
               max_buffer_size, timeout);

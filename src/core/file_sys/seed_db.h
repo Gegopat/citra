@@ -33,6 +33,6 @@ struct SeedDB {
 
 bool AddSeed(const Seed& seed);
 std::optional<Seed::Data> GetSeed(u64 program_id);
-u32 GetSeedCount();
+std::size_t GetSeedCount();
 
 } // namespace FileSys

@@ -68,13 +68,13 @@ static void SaveBanList(const Network::Room::BanList& ban_list, const std::strin
 /// Application entry point
 int main(int argc, char** argv) {
     asl::CmdArgs args{argc, argv};
-    std::string room_name{args["room-name"]};
-    std::string room_description{args["room-description"]};
+    std::string room_name{static_cast<const char*>(args["room-name"])};
+    std::string room_description{static_cast<const char*>(args["room-description"])};
     u32 port{static_cast<u32>(args("port", asl::String{Network::DefaultRoomPort}).toInt())};
     u32 max_members{static_cast<u32>(args("max-members", "16").toInt())};
-    std::string password{args["password"]};
-    std::string creator{args["creator"]};
-    std::string ban_list_file{args["ban-list-file"]};
+    std::string password{static_cast<const char*>(args["password"])};
+    std::string creator{static_cast<const char*>(args["creator"])};
+    std::string ban_list_file{static_cast<const char*>(args["ban-list-file"])};
     bool announce{args.is("announce")};
     if (args.is("help")) {
         PrintHelp(argv[0]);

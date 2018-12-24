@@ -620,7 +620,7 @@ void FS_USER::ObsoletedDeleteExtSaveData(Kernel::HLERequestContext& ctx) {
 void FS_USER::GetNumSeeds(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{ctx, 0x87D, 2, 0};
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(FileSys::GetSeedCount());
+    rb.Push<u32>(static_cast<u32>(FileSys::GetSeedCount()));
 }
 
 void FS_USER::CheckUpdatedDat(Kernel::HLERequestContext& ctx) {
