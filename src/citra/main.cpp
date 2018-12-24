@@ -1601,7 +1601,7 @@ void GMainWindow::UpdateDiscordRPC(const Network::RoomInformation& info) {
         auto& member{system.RoomMember()};
         if (member.IsConnected()) {
             const auto& member_info{member.GetMemberInformation()};
-            presence.partySize = member_info.size();
+            presence.partySize = static_cast<int>(member_info.size());
             presence.partyMax = info.max_members;
             presence.state = info.name.c_str();
         }

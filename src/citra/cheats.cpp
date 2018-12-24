@@ -34,8 +34,8 @@ CheatDialog::~CheatDialog() = default;
 
 void CheatDialog::LoadCheats() {
     const auto& cheats{system.CheatEngine().GetCheats()};
-    ui->tableCheats->setRowCount(cheats.size());
-    for (std::size_t i{}; i < cheats.size(); i++) {
+    ui->tableCheats->setRowCount(static_cast<int>(cheats.size()));
+    for (int i{}; i < static_cast<int>(cheats.size()); i++) {
         auto enabled{new QCheckBox()};
         enabled->setChecked(cheats[i]->IsEnabled());
         enabled->setStyleSheet("margin-left:7px;");
@@ -45,7 +45,7 @@ void CheatDialog::LoadCheats() {
             i, 1, new QTableWidgetItem(QString::fromStdString(cheats[i]->GetName())));
         ui->tableCheats->setItem(
             i, 2, new QTableWidgetItem(QString::fromStdString(cheats[i]->GetType())));
-        enabled->setProperty("row", static_cast<int>(i));
+        enabled->setProperty("row", i);
         connect(enabled, &QCheckBox::stateChanged, this, &CheatDialog::OnCheckChanged);
     }
 }
@@ -63,7 +63,7 @@ void CheatDialog::OnRowSelected(int row, int column) {
 }
 
 void CheatDialog::OnCheckChanged(int state) {
-    const auto checkbox{qobject_cast<QCheckBox*>(sender())};
-    int row{static_cast<int>(checkbox->property("row").toInt())};
-    system.CheatEngine().GetCheats()[row]->SetEnabled(state);
+    system.CheatEngine()
+        .GetCheats()[qobject_cast<QCheckBox*>(sender())->property("row").toInt()]
+        ->SetEnabled(state);
 }
