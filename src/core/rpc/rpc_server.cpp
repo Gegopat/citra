@@ -136,21 +136,16 @@ void RPCServer::HandleAdvanceFrame() {
 }
 
 void RPCServer::HandleGetCurrentFrame(Packet& packet) {
-    /*if (VideoCore::g_screenshot_requested) {
-        std::condition_variable cv;
-        std::mutex m;
-        std::unique_lock lock{m};
-        cv.wait(lock, []() -> bool { return !VideoCore::g_screenshot_requested; });
-    }*/
     const auto& layout{system.GetFrontend().GetFramebufferLayout()};
     const auto size{(layout.width * layout.height) * sizeof(u32)};
     std::vector<u8> data(size);
     std::condition_variable cv;
     std::mutex m;
     std::unique_lock lock{m};
-    VideoCore::RequestScreenshot(data.data(), [&cv] { cv.notify_one(); }, layout);
+    VideoCore::RequestScreenshot(
+        data.data(), [&cv] { cv.notify_one(); }, layout);
     cv.wait(lock);
-    packet.SetPacketDataSize(size);
+    packet.SetPacketDataSize(static_cast<u32>(size));
     packet.GetPacketData() = std::move(data);
     packet.SendReply();
 }
