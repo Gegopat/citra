@@ -19,16 +19,16 @@
 static void PrintHelp(const char* argv0) {
     std::cout << "Usage: " << argv0
               << " [options] <filename>\n"
-                 "-room-name         The name of the room\n"
-                 "-room-description  The room description\n"
-                 "-port              The port used for the room\n"
-                 "-max-members       The maximum number of members for this room\n"
-                 "-announce!         Create a public room\n"
-                 "-password          The password for the room\n"
-                 "-creator           The creator of the room\n"
-                 "-ban-list-file     The file for storing the room ban list\n"
-                 "-h, --help         Display this help and exit\n"
-                 "-v, --version      Output version information and exit\n";
+                 "-room-name        The name of the room\n"
+                 "-room-description The room description\n"
+                 "-port             The port used for the room\n"
+                 "-max-members      The maximum number of members for this room\n"
+                 "-announce!        Create a public room\n"
+                 "-password         The password for the room\n"
+                 "-creator          The creator of the room\n"
+                 "-ban-list-file    The file for storing the room ban list\n"
+                 "-help             Display this help and exit\n"
+                 "-version          Output version information and exit\n";
 }
 
 static void PrintVersion() {
