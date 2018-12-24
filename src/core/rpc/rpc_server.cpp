@@ -142,8 +142,7 @@ void RPCServer::HandleGetCurrentFrame(Packet& packet) {
     std::condition_variable cv;
     std::mutex m;
     std::unique_lock lock{m};
-    VideoCore::RequestScreenshot(
-        data.data(), [&cv] { cv.notify_one(); }, layout);
+    VideoCore::RequestScreenshot(data.data(), [&cv] { cv.notify_one(); }, layout);
     cv.wait(lock);
     packet.SetPacketDataSize(static_cast<u32>(size));
     packet.GetPacketData() = std::move(data);
