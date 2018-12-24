@@ -77,7 +77,7 @@ void Module::Interface::Open(Kernel::HLERequestContext& ctx) {
         }
         break;
     }
-    default: { // If not directory, then it is a file
+    default: { // If not directory, then it's a file
         auto file_result{cecd->cecd_system_save_data_archive->_OpenFile(path, mode)};
         if (file_result.Failed()) {
             LOG_DEBUG(Service_CECD, "Failed to open file: {}", path.AsString());
@@ -129,7 +129,7 @@ void Module::Interface::Read(Kernel::HLERequestContext& ctx) {
                            ErrorSummary::NotFound, ErrorLevel::Status));
         rb.Push<u32>(0); // No bytes read
         break;
-    default: // If not directory, then it is a file
+    default: // If not directory, then it's a file
         std::vector<u8> buffer(write_buffer_size);
         const u32 bytes_read{static_cast<u32>(
             session_data->file->Read(0, write_buffer_size, buffer.data()).Unwrap())};
@@ -299,7 +299,7 @@ void Module::Interface::Write(Kernel::HLERequestContext& ctx) {
         rb.Push(ResultCode(ErrorDescription::NotAuthorized, ErrorModule::CEC,
                            ErrorSummary::NotFound, ErrorLevel::Status));
         break;
-    default: // If not directory, then it is a file
+    default: // If not directory, then it's a file
         std::vector<u8> buffer(read_buffer_size);
         read_buffer.Read(buffer.data(), 0, read_buffer_size);
         if (session_data->file->GetSize() != read_buffer_size)
@@ -457,7 +457,7 @@ void Module::Interface::Delete(Kernel::HLERequestContext& ctx) {
     case CecDataPathType::OutboxDir:
         rb.Push(cecd->cecd_system_save_data_archive->_DeleteDirectoryRecursively(path));
         break;
-    default: // If not directory, then it is a file
+    default: // If not directory, then it's a file
         if (message_id_size == 0)
             rb.Push(cecd->cecd_system_save_data_archive->_DeleteFile(path));
         else {
@@ -620,7 +620,7 @@ void Module::Interface::OpenAndWrite(Kernel::HLERequestContext& ctx) {
         rb.Push(ResultCode(ErrorDescription::NotAuthorized, ErrorModule::CEC,
                            ErrorSummary::NotFound, ErrorLevel::Status));
         break;
-    default: // If not directory, then it is a file
+    default: // If not directory, then it's a file
         auto file_result{cecd->cecd_system_save_data_archive->_OpenFile(path, mode)};
         if (file_result.Succeeded()) {
             auto file{std::move(file_result).Unwrap()};
@@ -669,7 +669,7 @@ void Module::Interface::OpenAndRead(Kernel::HLERequestContext& ctx) {
                            ErrorSummary::NotFound, ErrorLevel::Status));
         rb.Push<u32>(0); // No entries read
         break;
-    default: // If not directory, then it is a file
+    default: // If not directory, then it's a file
         auto file_result{cecd->cecd_system_save_data_archive->_OpenFile(path, mode)};
         if (file_result.Succeeded()) {
             auto file{std::move(file_result).Unwrap()};
@@ -819,7 +819,7 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
             std::memset(&mbox_list_header, 0, sizeof(CecMBoxListHeader));
             mbox_list_header.magic = 0x6868;
         }
-        if (mbox_list_header.version != 0x01) { // Not quite sure if it is a version
+        if (mbox_list_header.version != 0x01) { // Not quite sure if it's a version
             if (mbox_list_header.version == 0)
                 LOG_DEBUG(Service_CECD, "CecMBoxListHeader version isn't set");
             else
@@ -1135,7 +1135,8 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
     case CecDataPathType::MboxData:
     case CecDataPathType::MboxIcon:
     case CecDataPathType::MboxTitle:
-    default: {}
+    default: {
+    }
     }
 }
 

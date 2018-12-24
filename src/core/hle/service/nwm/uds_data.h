@@ -36,11 +36,11 @@ static_assert(sizeof(LLCHeader) == 8, "LLCHeader has the wrong size");
 
 /*
  * Nintendo SecureData header, every UDS packet contains one,
- * it is used to store metadata about the transmission such as
+ * it's used to store metadata about the transmission such as
  * the source and destination network node ids.
  */
 struct SecureDataHeader {
-    // TODO: It is likely that the first 4 bytes of this header are
+    // TODO: It's likely that the first 4 bytes of this header are
     // actually part of another container protocol.
     u16_be protocol_size;
     INSERT_PADDING_BYTES(2);

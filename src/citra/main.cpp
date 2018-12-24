@@ -1191,7 +1191,7 @@ void GMainWindow::OnRecordMovie() {
     if (system.IsPoweredOn()) {
         auto answer{QMessageBox::warning(
             this, "Record Movie",
-            "To keep consistency with the RNG, it is recommended to record the movie from program "
+            "To keep consistency with the RNG, it's recommended to record the movie from program "
             "start.<br>Are you sure you still want to record movies now?",
             QMessageBox::Yes | QMessageBox::No)};
         if (answer == QMessageBox::No)
@@ -1259,7 +1259,7 @@ void GMainWindow::OnPlayMovie() {
     if (system.IsPoweredOn()) {
         auto answer{QMessageBox::warning(
             this, "Play Movie",
-            "To keep consistency with the RNG, it is recommended to play the movie from program "
+            "To keep consistency with the RNG, it's recommended to play the movie from program "
             "start.<br>Are you sure you still want to play movies now?",
             QMessageBox::Yes | QMessageBox::No)};
         if (answer == QMessageBox::No)

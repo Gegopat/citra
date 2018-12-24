@@ -22,7 +22,7 @@ static inline u64 ComputeHash64(const void* data, std::size_t len) {
 }
 
 /**
- * Computes a 64-bit hash of a struct. In addition to being trivially copyable, it is also critical
+ * Computes a 64-bit hash of a struct. In addition to being trivially copyable, it's also critical
  * that either the struct includes no padding, or that any padding is initialized to a known value
  * by memsetting the struct to 0 before filling it in.
  */

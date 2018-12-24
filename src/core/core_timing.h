@@ -28,7 +28,7 @@
 #include "common/threadsafe_queue.h"
 
 // The timing we get from the assembly is 268,111,855.956 Hz
-// It is possible that this number isn't just an integer because the compiler could have
+// It's possible that this number isn't just an integer because the compiler could have
 // optimized the multiplication by a multiply-by-constant division.
 // Rounding to the nearest integer should be fine
 constexpr u64 BASE_CLOCK_RATE_ARM11{268111856};

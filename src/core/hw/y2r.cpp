@@ -176,7 +176,7 @@ static void WriteTileToOutput(u32* output, const ImageTile& tile, int height, in
 /**
  * Performs a Y2R colorspace conversion.
  *
- * The Y2R hardware implements hardware-accelerated YUV to RGB colorspace conversions. It is most
+ * The Y2R hardware implements hardware-accelerated YUV to RGB colorspace conversions. It's most
  * commonly used for video playback or to display camera input to the screen.
  *
  * The conversion process is quite configurable, and can be divided in distinct steps. From

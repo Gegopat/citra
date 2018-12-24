@@ -7,8 +7,5 @@ add_executable(citra-room
 
 create_target_directory_groups(citra-room)
 
-target_link_libraries(citra-room PRIVATE common network)
-if (MSVC)
-    target_link_libraries(citra-room PRIVATE getopt)
-endif()
+target_link_libraries(citra-room PRIVATE common network enet asls)
 target_link_libraries(citra-room PRIVATE ${PLATFORM_LIBRARIES} Threads::Threads)

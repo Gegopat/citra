@@ -95,7 +95,7 @@ public:
     }
 
 private:
-    // It is important to align the below variables for performance reasons:
+    // It's important to align the below variables for performance reasons:
     // Having them on the same cache-line would result in false-sharing between them.
     alignas(128) std::atomic<std::size_t> m_read_index{};
     alignas(128) std::atomic<std::size_t> m_write_index{};

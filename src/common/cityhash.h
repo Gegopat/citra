@@ -42,7 +42,7 @@
 //
 // For 32-bit x86 code, we don't know of anything faster than CityHash32 that
 // is of comparable quality. We believe our nearest competitor is Murmur3A.
-// (On 64-bit CPUs, it is typically faster to use the other CityHash variants.)
+// (On 64-bit CPUs, it's typically faster to use the other CityHash variants.)
 //
 // Functions in the CityHash family aren't suitable for cryptography.
 //
@@ -50,7 +50,7 @@
 // measurements and so on.
 //
 // WARNING: This code has been only lightly tested on big-endian platforms!
-// It is known to work well on little-endian platforms that have a small penalty
+// It's known to work well on little-endian platforms that have a small penalty
 // for unaligned reads, such as current Intel and AMD moderate-to-high-end CPUs.
 // It should work on all 32-bit and 64-bit platforms that allow unaligned reads;
 // bug reports are welcome.

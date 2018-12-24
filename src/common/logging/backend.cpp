@@ -95,7 +95,7 @@ private:
 };
 
 // _SH_DENYWR allows read only access to the file for other programs.
-// It is #defined to 0 on other platforms
+// It's #defined to 0 on other platforms
 FileBackend::FileBackend(const std::string& filename) : file{filename, "w", _SH_DENYWR} {}
 
 void FileBackend::Write(const Entry& entry) {
