@@ -44,7 +44,7 @@ static Network::Room::BanList LoadBanList(const std::string& path) {
     }
     Network::Room::BanList ban_list;
     while (!file.end()) {
-        std::string line{file.readLine()};
+        std::string line{static_cast<const char*>(file.readLine())};
         line.erase(std::remove(line.begin(), line.end(), '\0'), line.end());
         line = Common::StripSpaces(line);
         if (!line.empty())
