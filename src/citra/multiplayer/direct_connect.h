@@ -38,6 +38,7 @@ private:
     void Connect();
     void BeginConnecting();
     void EndConnecting();
+
     QFutureWatcher<void>* watcher;
     std::unique_ptr<Ui::DirectConnect> ui;
     Validation validation;
