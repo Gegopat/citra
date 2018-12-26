@@ -194,7 +194,7 @@ const char* GetLogClassName(Class log_class) {
         ALL_LOG_CLASSES()
 #undef CLS
 #undef SUB
-    case Class::Count:
+    default:
         UNREACHABLE();
     }
 }
@@ -210,7 +210,7 @@ const char* GetLevelName(Level log_level) {
         LVL(Warning);
         LVL(Error);
         LVL(Critical);
-    case Level::Count:
+    default:
         UNREACHABLE();
     }
 #undef LVL

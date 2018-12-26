@@ -928,6 +928,8 @@ void Room::Destroy() {
         std::lock_guard lock{room_impl->member_mutex};
         room_impl->members.clear();
     }
+    room_impl->http_server->stop();
+    room_impl->http_server->waitForStop();
     room_impl->http_server.reset();
 }
 

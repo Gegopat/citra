@@ -45,7 +45,7 @@ public:
         // Add the element to the queue
         write_ptr->current = std::move(t);
         // Set the next pointer to a new element pointer then advance the write pointer
-        ElementPtr* new_ptr{new ElementPtr()};
+        auto new_ptr{new ElementPtr()};
         write_ptr->next.store(new_ptr, std::memory_order_release);
         write_ptr = new_ptr;
         if (NeedSize)
